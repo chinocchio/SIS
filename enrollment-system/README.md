@@ -1,68 +1,182 @@
-# CodeIgniter 4 Application Starter
+# Student Information System (SIS)
 
-## What is CodeIgniter?
+A comprehensive Student Information System built with CodeIgniter 4 that manages student admissions, grade progression, and academic records.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Features
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+### 🎓 Student Admission Management
+- **Smart Admission Type Detection**: Automatically determines if a student is regular, transferee, re-enrolling, or promoted
+- **Grade Level Validation**: Ensures proper grade progression and strand selection
+- **Admission Timeframes**: Configurable periods when students can apply
+- **Document Requirements**: Automatic detection of document requirements based on student type
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+### 🏫 School Year Management
+- **Academic Year Control**: Create and manage multiple school years
+- **Automatic Grade Progression**: Students automatically advance to next grade level
+- **Grade Validation**: Students with failing grades (<75) cannot progress
+- **Year Transition**: Seamless transition between academic years
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+### 📚 Strand/Track Management
+- **Dynamic Strand Selection**: Dropdown-based strand selection for SHS students
+- **Configurable Options**: Admin can add, edit, and manage available strands
+- **Grade Level Integration**: Strands only available for Grade 11-12 (SHS)
 
-## Installation & updates
+### 👨‍🏫 Teacher Grade Management
+- **Grade Input System**: Teachers can input and update student grades
+- **Subject Assignment**: Track which teachers teach which subjects
+- **Grade Validation**: Ensures grades are within valid range (0-100)
+- **Report Card Generation**: Automatic calculation of averages and pass/fail status
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+### 📊 Student Sectioning
+- **Dynamic Sectioning**: Sections with 35-40 student capacity
+- **Grade-Based Ranking**: SHS sections determined by academic performance
+- **Flexible Assignment**: Students can be assigned to different sections per school year
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+### 🔐 User Management
+- **Student Authentication**: Secure login system for students
+- **Admin Panel**: Comprehensive administration interface
+- **Teacher Access**: Dedicated teacher dashboard for grade management
 
-## Setup
+## Business Rules
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+### Admission Types
+1. **Regular**: New students starting at Grade 7
+2. **Transferee**: Students entering at Grade 8+ without previous enrollment
+3. **Re-enroll**: Students repeating the same grade level
+4. **Promoted**: Students advancing to next grade level
 
-## Important Change with index.php
+### Grade Progression Rules
+- Students must have grades ≥75 in all subjects to progress
+- Automatic promotion at end of school year
+- JHS graduates (Grade 10) must re-enroll for SHS (Grade 11)
+- No documents required for JHS to SHS transition
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+### Sectioning Rules
+- **JHS (Grade 7-10)**: Fixed subjects, grade-based ranking
+- **SHS (Grade 11-12)**: Strand-specific subjects, performance-based sections
+- Section capacity: 35-40 students
+- SHS sections: 11-A, 11-B, etc. (performance-based)
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+## Database Structure
 
-**Please** read the user guide for a better explanation of how CI4 works!
+### Core Tables
+- `students` - Student information and admission details
+- `school_years` - Academic year management
+- `sections` - Class sections with capacity limits
+- `subjects` - Course offerings by grade level and strand
+- `strands` - SHS track options (STEM, ABM, HUMSS, TVL)
+- `student_grades` - Academic performance records
+- `student_sections` - Section assignments and rankings
+- `admission_timeframes` - Application period controls
 
-## Repository Management
+### Supporting Tables
+- `teachers` - Faculty information
+- `teacher_subject_assignments` - Subject teaching assignments
+- `users` - System user accounts
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+## Installation
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+### Prerequisites
+- PHP 7.4 or higher
+- MySQL 5.7 or higher
+- Composer
 
-## Server Requirements
+### Setup Steps
+1. Clone the repository
+2. Install dependencies: `composer install`
+3. Configure database in `app/Config/Database.php`
+4. Run migrations: `php spark migrate`
+5. Seed initial data: `php spark db:seed`
+6. Configure web server to point to `public/` directory
 
-PHP version 8.1 or higher is required, with the following extensions installed:
+### Database Seeding
+```bash
+# Seed default data
+php spark db:seed StrandSeeder
+php spark db:seed SchoolYearSeeder
+php spark db:seed AdmissionTimeframeSeeder
+```
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+## Usage
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
+### Admin Access
+- **URL**: `/admin`
+- **Features**: School year management, admission timeframes, student promotions
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+### Student Admission
+- **URL**: `/admission/enroll`
+- **Features**: Online application form with automatic validation
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+### Teacher Dashboard
+- **URL**: `/teacher`
+- **Features**: Grade input, student management, report generation
+
+## Configuration
+
+### Admission Timeframes
+- Set start and end dates for application periods
+- Outside timeframe: admission form is closed
+- Multiple timeframes per school year supported
+
+### School Year Management
+- Create new academic years
+- Activate/deactivate school years
+- Automatic student promotion at year end
+
+### Strand Configuration
+- Add/edit available SHS strands
+- Set descriptions and active status
+- Dynamic form integration
+
+## Security Features
+
+- Password hashing for all user accounts
+- Session-based authentication
+- Input validation and sanitization
+- CSRF protection
+- Role-based access control
+
+## API Endpoints
+
+### Admin
+- `GET /admin` - Dashboard
+- `POST /admin/create-school-year` - Create school year
+- `GET /admin/promote-students` - Promote students
+- `POST /admin/strands` - Manage strands
+
+### Admission
+- `GET /admission/enroll` - Show form
+- `POST /admission/submit` - Submit application
+
+### Teacher
+- `GET /teacher` - Teacher dashboard
+- `POST /teacher/input-grades` - Input grades
+- `GET /teacher/student/{id}/grades/{year}` - View grades
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support and questions, please contact the development team or create an issue in the repository.
+
+## Changelog
+
+### Version 1.0.0
+- Initial release with core admission system
+- School year management
+- Grade progression system
+- Teacher grade management
+- Admin dashboard
+- Dynamic strand selection
+- Admission timeframes
+- Student sectioning

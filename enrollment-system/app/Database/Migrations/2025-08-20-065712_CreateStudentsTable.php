@@ -37,8 +37,14 @@ class CreateStudentsTable extends Migration
                 'constraint' => 2,
                 'comment'    => '7-12',
             ],
+            'previous_grade_level' => [
+                'type'       => 'INT',
+                'constraint' => 2,
+                'null'       => true,
+                'comment'    => 'Previous grade level for tracking progression',
+            ],
             'admission_type' => [
-                'type'       => "ENUM('regular','transferee','re-enroll')",
+                'type'       => "ENUM('regular','transferee','re-enroll','promoted')",
                 'default'    => 'regular',
             ],
             'strand_id' => [

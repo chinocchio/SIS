@@ -3,60 +3,100 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use CodeIgniter\HTTP\ResponseInterface;
-
-use App\Models\StudentModel;
 use App\Models\UserModel;
 
 class AuthController extends BaseController
 {
-    public function landing()
+    public function index()
     {
         return view('landing');
     }
-
+    
     public function login()
     {
         return view('auth/login');
     }
-
-    public function attemptLogin()
+    
+    public function authenticate()
     {
-        $email = $this->request->getPost('email');
+        $username = $this->request->getPost('username');
         $password = $this->request->getPost('password');
-
-        // Check student first
-        $studentModel = new StudentModel();
-        $student = $studentModel->where('email', $email)->first();
-
-        if ($student && password_verify($password, $student['password'])) {
-            session()->set([
-                'id'   => $student['id'],
-                'role' => 'student',
-                'logged_in' => true
-            ]);
-            return redirect()->to('/student/dashboard');
-        }
-
-        // Check admin/registrar
+        
         $userModel = new UserModel();
-        $user = $userModel->where('email', $email)->first();
-
+        $user = $userModel->where('username', $username)
+                         ->where('is_active', 1)
+                         ->first();
+        
         if ($user && password_verify($password, $user['password'])) {
-            session()->set([
-                'id'   => $user['id'],
+            // Update last login
+            $userModel->update($user['id'], ['last_login' => date('Y-m-d H:i:s')]);
+            
+            // Set session data
+            $session = session();
+            $session->set([
+                'user_id' => $user['id'],
+                'username' => $user['username'],
                 'role' => $user['role'],
-                'logged_in' => true
+                'first_name' => $user['first_name'],
+                'last_name' => $user['last_name'],
+                'email' => $user['email'],
+                'is_logged_in' => true
             ]);
-            return redirect()->to('/admin/dashboard');
+            
+            // Redirect based on role
+            switch ($user['role']) {
+                case 'admin':
+                    return redirect()->to('/admin/dashboard');
+                case 'registrar':
+                    return redirect()->to('/registrar/dashboard');
+                case 'teacher':
+                    return redirect()->to('/teacher/dashboard');
+                case 'student':
+                    return redirect()->to('/student/dashboard');
+                default:
+                    return redirect()->to('/auth/login')->with('error', 'Invalid user role.');
+            }
+        } else {
+            return redirect()->back()->with('error', 'Invalid username or password.');
         }
-
-        return redirect()->back()->with('error', 'Invalid credentials');
     }
-
+    
     public function logout()
     {
-        session()->destroy();
-        return redirect()->to('/');
+        $session = session();
+        $session->destroy();
+        return redirect()->to('/auth/login')->with('success', 'Successfully logged out.');
+    }
+    
+    public function changePassword()
+    {
+        if (!session()->get('is_logged_in')) {
+            return redirect()->to('/auth/login');
+        }
+        
+        if ($this->request->getMethod() === 'post') {
+            $currentPassword = $this->request->getPost('current_password');
+            $newPassword = $this->request->getPost('new_password');
+            $confirmPassword = $this->request->getPost('confirm_password');
+            
+            if ($newPassword !== $confirmPassword) {
+                return redirect()->back()->with('error', 'New passwords do not match.');
+            }
+            
+            $userModel = new UserModel();
+            $user = $userModel->find(session()->get('user_id'));
+            
+            if (!password_verify($currentPassword, $user['password'])) {
+                return redirect()->back()->with('error', 'Current password is incorrect.');
+            }
+            
+            $userModel->update($user['id'], [
+                'password' => password_hash($newPassword, PASSWORD_DEFAULT)
+            ]);
+            
+            return redirect()->back()->with('success', 'Password changed successfully.');
+        }
+        
+        return view('auth/change_password');
     }
 }
