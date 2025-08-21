@@ -30,4 +30,11 @@ class AdmissionTimeframeModel extends Model
     {
         return $this->where('is_active', 1)->first();
     }
+    
+    public function getAllTimeframesWithSchoolYear()
+    {
+        return $this->select('admission_timeframes.*, school_years.name as school_year_name')
+                    ->join('school_years', 'school_years.id = admission_timeframes.school_year_id')
+                    ->findAll();
+    }
 }

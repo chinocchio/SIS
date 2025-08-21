@@ -101,12 +101,12 @@
             background-color: #0056b3;
         }
         
-        .btn-success {
-            background-color: #28a745;
+        .btn-secondary {
+            background-color: #6c757d;
         }
         
-        .btn-success:hover {
-            background-color: #1e7e34;
+        .btn-secondary:hover {
+            background-color: #545b62;
         }
         
         .btn-warning {
@@ -170,6 +170,12 @@
             color: #155724;
             border: 1px solid #c3e6cb;
         }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 <body>
@@ -185,13 +191,24 @@
             </div>
         <?php endif; ?>
         
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="alert alert-error">
+                <?= session()->getFlashdata('error') ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (isset($error)): ?>
+            <div class="alert alert-error">
+                <?= $error ?>
+            </div>
+        <?php endif; ?>
+        
         <div class="content-grid">
             <!-- Add/Edit Strand Form -->
             <div class="card">
-                <h3 id="formTitle">Add New Strand</h3>
-                <form method="post" action="/admin/strands" id="strandForm">
-                    <input type="hidden" name="id" id="strand_id">
-                    
+                <h3>Add New Strand</h3>
+                <form method="post" action="/admin/addStrand" id="strandForm">
+                    <input type="hidden" name="strand_id" id="strand_id">
                     <div class="form-group">
                         <label for="name">Strand Name *</label>
                         <input type="text" name="name" id="name" placeholder="e.g., STEM, ABM, HUMSS" required>
@@ -229,20 +246,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (isset($strands)): ?>
+                        <?php if (isset($strands) && !empty($strands)): ?>
                             <?php foreach ($strands as $strand): ?>
                                 <tr>
-                                    <td><?= $strand['name'] ?></td>
-                                    <td><?= $strand['description'] ?: 'No description' ?></td>
+                                    <td><?= esc($strand['name']) ?></td>
+                                    <td><?= esc($strand['description'] ?: 'No description') ?></td>
                                     <td>
                                         <span class="<?= $strand['is_active'] ? 'status-active' : 'status-inactive' ?>">
                                             <?= $strand['is_active'] ? 'Active' : 'Inactive' ?>
                                         </span>
                                     </td>
                                     <td class="actions">
-                                        <button class="btn btn-warning" onclick="editStrand(<?= htmlspecialchars(json_encode($strand)) ?>)">
-                                            Edit
-                                        </button>
+                                        <button class="btn btn-warning" onclick="editStrand(<?= htmlspecialchars(json_encode($strand)) ?>)">Edit</button>
+                                        <a href="/admin/deleteStrand/<?= $strand['id'] ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this strand?')">Delete</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -263,19 +279,31 @@
     
     <script>
         function editStrand(strand) {
-            document.getElementById('formTitle').textContent = 'Edit Strand';
+            // Update form title and button
+            document.querySelector('.card h3').textContent = 'Edit Strand';
+            document.getElementById('submitBtn').textContent = 'Update Strand';
+            
+            // Fill form with strand data
             document.getElementById('strand_id').value = strand.id;
             document.getElementById('name').value = strand.name;
             document.getElementById('description').value = strand.description || '';
             document.getElementById('is_active').checked = strand.is_active == 1;
-            document.getElementById('submitBtn').textContent = 'Update Strand';
+            
+            // Change form action to edit
+            document.getElementById('strandForm').action = '/admin/editStrand/' + strand.id;
         }
         
         function resetForm() {
-            document.getElementById('formTitle').textContent = 'Add New Strand';
+            // Reset form title and button
+            document.querySelector('.card h3').textContent = 'Add New Strand';
+            document.getElementById('submitBtn').textContent = 'Add Strand';
+            
+            // Clear form
             document.getElementById('strandForm').reset();
             document.getElementById('strand_id').value = '';
-            document.getElementById('submitBtn').textContent = 'Add Strand';
+            
+            // Reset form action to add
+            document.getElementById('strandForm').action = '/admin/addStrand';
         }
     </script>
 </body>

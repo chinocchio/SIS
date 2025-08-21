@@ -27,4 +27,15 @@ class StrandModel extends Model
         }
         return []; // JHS doesn't have strands
     }
+    
+    public function checkTableExists()
+    {
+        try {
+            $result = $this->db->query("SHOW TABLES LIKE 'strands'");
+            return $result->getResult() ? true : false;
+        } catch (\Exception $e) {
+            log_message('error', 'Error checking strands table: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

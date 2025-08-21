@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use CodeIgniter\HTTP\ResponseInterface;
+
 use App\Models\SchoolYearModel;
 use App\Models\AdmissionTimeframeModel;
 use App\Models\StudentModel;
@@ -18,7 +20,8 @@ class AdminController extends BaseController
         $data = [
             'activeSchoolYear' => $schoolYearModel->getActiveSchoolYear(),
             'admissionTimeframe' => $admissionTimeframeModel->getCurrentTimeframe(),
-            'schoolYears' => $schoolYearModel->findAll()
+            'schoolYears' => $schoolYearModel->findAll(),
+            'admissionTimeframes' => $admissionTimeframeModel->getAllTimeframesWithSchoolYear()
         ];
         
         return view('admin/dashboard', $data);
@@ -26,7 +29,7 @@ class AdminController extends BaseController
     
     public function createSchoolYear()
     {
-        if ($this->request->getMethod() === 'post') {
+        if ($this->request->getMethod() === 'POST') {
             $schoolYearModel = new SchoolYearModel();
             
             $data = [
@@ -51,9 +54,33 @@ class AdminController extends BaseController
         return redirect()->to('/admin')->with('success', 'School year activated successfully.');
     }
     
+    public function deactivateSchoolYear($id)
+    {
+        $schoolYearModel = new SchoolYearModel();
+        $schoolYearModel->deactivateSchoolYear($id);
+        
+        return redirect()->to('/admin')->with('success', 'School year deactivated successfully.');
+    }
+    
+    public function deleteSchoolYear($id)
+    {
+        $schoolYearModel = new SchoolYearModel();
+        
+        try {
+            $result = $schoolYearModel->delete($id);
+            if ($result) {
+                return redirect()->to('/admin')->with('success', 'School year deleted successfully.');
+            } else {
+                return redirect()->to('/admin')->with('error', 'Failed to delete school year.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin')->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+    
     public function createAdmissionTimeframe()
     {
-        if ($this->request->getMethod() === 'post') {
+        if ($this->request->getMethod() === 'POST') {
             $admissionTimeframeModel = new AdmissionTimeframeModel();
             
             $data = [
@@ -71,6 +98,67 @@ class AdminController extends BaseController
         $data['schoolYears'] = $schoolYearModel->findAll();
         
         return view('admin/create_admission_timeframe', $data);
+    }
+    
+    public function editAdmissionTimeframe($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin')->with('error', 'Invalid timeframe ID.');
+        }
+        
+        $admissionTimeframeModel = new AdmissionTimeframeModel();
+        $schoolYearModel = new SchoolYearModel();
+        
+        $timeframe = $admissionTimeframeModel->find($id);
+        if (!$timeframe) {
+            return redirect()->to('/admin')->with('error', 'Timeframe not found.');
+        }
+        
+        if ($this->request->getMethod() === 'POST') {
+            $data = [
+                'school_year_id' => $this->request->getPost('school_year_id'),
+                'start_date' => $this->request->getPost('start_date'),
+                'end_date' => $this->request->getPost('end_date')
+            ];
+            
+            try {
+                $result = $admissionTimeframeModel->update($id, $data);
+                if ($result) {
+                    return redirect()->to('/admin')->with('success', 'Admission timeframe updated successfully.');
+                } else {
+                    return redirect()->to('/admin')->with('error', 'Failed to update admission timeframe.');
+                }
+            } catch (\Exception $e) {
+                return redirect()->to('/admin')->with('error', 'Error: ' . $e->getMessage());
+            }
+        }
+        
+        $data = [
+            'timeframe' => $timeframe,
+            'schoolYears' => $schoolYearModel->findAll()
+        ];
+        
+        return view('admin/edit_admission_timeframe', $data);
+    }
+    
+    public function deleteAdmissionTimeframe($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin')->with('error', 'Invalid timeframe ID.');
+        }
+        
+        $admissionTimeframeModel = new AdmissionTimeframeModel();
+        
+        try {
+            $result = $admissionTimeframeModel->delete($id);
+            if ($result) {
+                return redirect()->to('/admin')->with('success', 'Admission timeframe deleted successfully.');
+            } else {
+                return redirect()->to('/admin')->with('error', 'Failed to delete admission timeframe.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin')->with('error', 'Error: ' . $e->getMessage());
+        }
     }
     
     public function promoteStudents()
@@ -91,26 +179,112 @@ class AdminController extends BaseController
     public function manageStrands()
     {
         $strandModel = new StrandModel();
-        
-        if ($this->request->getMethod() === 'post') {
-            $data = [
-                'name' => $this->request->getPost('name'),
-                'description' => $this->request->getPost('description'),
-                'is_active' => $this->request->getPost('is_active') ? 1 : 0
-            ];
-            
-            if ($this->request->getPost('id')) {
-                $strandModel->update($this->request->getPost('id'), $data);
-                $message = 'Strand updated successfully.';
-            } else {
-                $strandModel->insert($data);
-                $message = 'Strand created successfully.';
-            }
-            
-            return redirect()->to('/admin/strands')->with('success', $message);
+
+        try {
+            $data['strands'] = $strandModel->findAll();
+        } catch (\Exception $e) {
+            $data['strands'] = [];
+            $data['error'] = 'Error loading strands: ' . $e->getMessage();
         }
         
-        $data['strands'] = $strandModel->findAll();
         return view('admin/manage_strands', $data);
     }
+    
+    public function addStrand()
+    {
+        if ($this->request->getMethod() !== 'POST') {
+            return redirect()->to('/admin/strands');
+        }
+
+        $strandModel = new StrandModel();
+        
+        // Get form data
+        $name = $this->request->getPost('name');
+        $description = $this->request->getPost('description');
+        $isActive = $this->request->getPost('is_active') ? 1 : 0;
+        
+        // Validation
+        if (empty($name)) {
+            return redirect()->to('/admin/strands')->with('error', 'Strand name is required.');
+        }
+        
+        // Prepare data
+        $data = [
+            'name' => $name,
+            'description' => $description,
+            'is_active' => $isActive
+        ];
+        
+        // Insert into database
+        try {
+            $result = $strandModel->insert($data);
+            if ($result) {
+                return redirect()->to('/admin/strands')->with('success', 'Strand created successfully!');
+            } else {
+                return redirect()->to('/admin/strands')->with('error', 'Failed to create strand.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin/strands')->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+    
+    public function editStrand($id = null)
+    {
+        if ($this->request->getMethod() !== 'POST' || !$id) {
+            return redirect()->to('/admin/strands');
+        }
+        
+        $strandModel = new StrandModel();
+        
+        // Get form data
+        $name = $this->request->getPost('name');
+        $description = $this->request->getPost('description');
+        $isActive = $this->request->getPost('is_active') ? 1 : 0;
+        
+        // Validation
+        if (empty($name)) {
+            return redirect()->to('/admin/strands')->with('error', 'Strand name is required.');
+        }
+        
+        // Prepare data
+        $data = [
+            'name' => $name,
+            'description' => $description,
+            'is_active' => $isActive
+        ];
+        
+        // Update database
+        try {
+            $result = $strandModel->update($id, $data);
+            if ($result) {
+                return redirect()->to('/admin/strands')->with('success', 'Strand updated successfully!');
+            } else {
+                return redirect()->to('/admin/strands')->with('error', 'Failed to update strand.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin/strands')->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+    
+    public function deleteStrand($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin/strands');
+        }
+        
+        $strandModel = new StrandModel();
+        
+        try {
+            $result = $strandModel->delete($id);
+            if ($result) {
+                return redirect()->to('/admin/strands')->with('success', 'Strand deleted successfully!');
+            } else {
+                return redirect()->to('/admin/strands')->with('error', 'Failed to delete strand.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin/strands')->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+    
+
 }

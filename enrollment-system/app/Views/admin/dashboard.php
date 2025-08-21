@@ -93,6 +93,18 @@
             background-color: #e0a800;
         }
         
+        .actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .actions .btn {
+            margin: 2px;
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+        
         .alert {
             padding: 15px;
             margin-bottom: 20px;
@@ -132,6 +144,19 @@
 </head>
 <body>
     <div class="container">
+        <div class="nav" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <div>
+                <a href="/admin/dashboard" class="btn">Dashboard</a>
+                <a href="/admin/create-school-year" class="btn">School Years</a>
+                <a href="/admin/create-admission-timeframe" class="btn">Admission Timeframe</a>
+                <a href="/admin/strands" class="btn btn-warning">Strands</a>
+                <a href="/admin/users" class="btn">Users</a>
+            </div>
+            <div>
+                <a href="/auth/change-password" class="btn">Change Password</a>
+                <a href="/auth/logout" class="btn" style="background-color:#dc3545;">Logout</a>
+            </div>
+        </div>
         <div class="header">
             <h1>Admin Dashboard</h1>
             <p>Manage School Years, Admission Timeframes, and Student Promotions</p>
@@ -158,8 +183,10 @@
                     <p><strong>Start Date:</strong> <?= date('M d, Y', strtotime($activeSchoolYear['start_date'])) ?></p>
                     <p><strong>End Date:</strong> <?= date('M d, Y', strtotime($activeSchoolYear['end_date'])) ?></p>
                     <p><strong>Status:</strong> <span class="status-active">Active</span></p>
+                    <p><em>Note: Only one school year can be active at a time.</em></p>
                 <?php else: ?>
                     <p>No active school year found.</p>
+                    <p><em>You need to activate a school year to manage admissions and student promotions.</em></p>
                 <?php endif; ?>
                 
                 <div style="margin-top: 20px;">
@@ -215,7 +242,7 @@
                         <th>Start Date</th>
                         <th>End Date</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th style="min-width: 200px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -235,13 +262,68 @@
                                         <a href="/admin/activate-school-year/<?= $schoolYear['id'] ?>" class="btn btn-success">
                                             Activate
                                         </a>
+                                    <?php else: ?>
+                                        <a href="/admin/deactivate-school-year/<?= $schoolYear['id'] ?>" class="btn btn-warning" onclick="return confirm('Are you sure you want to deactivate this school year? This will remove it as the active school year.')">
+                                            Deactivate
+                                        </a>
                                     <?php endif; ?>
+                                    <a href="/admin/delete-school-year/<?= $schoolYear['id'] ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this school year? This action cannot be undone.')">
+                                        Delete
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
                             <td colspan="5">No school years found.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Admission Timeframes List -->
+        <div class="card">
+            <h3>All Admission Timeframes</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>School Year</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th style="min-width: 200px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (isset($admissionTimeframes)): ?>
+                        <?php foreach ($admissionTimeframes as $timeframe): ?>
+                            <tr>
+                                <td><?= $timeframe['school_year_name'] ?></td>
+                                <td><?= date('M d, Y', strtotime($timeframe['start_date'])) ?></td>
+                                <td><?= date('M d, Y', strtotime($timeframe['end_date'])) ?></td>
+                                <td>
+                                    <?php 
+                                    $today = date('Y-m-d');
+                                    $isOpen = ($today >= $timeframe['start_date'] && $today <= $timeframe['end_date']);
+                                    ?>
+                                    <span class="<?= $isOpen ? 'status-active' : 'status-inactive' ?>">
+                                        <?= $isOpen ? 'Open' : 'Closed' ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/admin/edit-admission-timeframe/<?= $timeframe['id'] ?>" class="btn btn-warning">
+                                        Edit
+                                    </a>
+                                    <a href="/admin/delete-admission-timeframe/<?= $timeframe['id'] ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this admission timeframe? This action cannot be undone.')">
+                                        Delete
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="5">No admission timeframes found.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

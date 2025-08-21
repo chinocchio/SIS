@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\StudentModel;
 use App\Models\UserModel;
+use App\Models\DocumentModel;
 
 class RegistrarController extends BaseController
 {
@@ -58,12 +59,29 @@ class RegistrarController extends BaseController
         if (!$student) {
             return redirect()->to('/registrar/dashboard')->with('error', 'Student not found.');
         }
+        $documentModel = new DocumentModel();
+        $documents = $documentModel->getDocumentsByStudent($studentId);
         
         $data = [
-            'student' => $student
+            'student' => $student,
+            'documents' => $documents
         ];
         
         return view('registrar/view_student', $data);
+    }
+
+    public function approveDocument($documentId)
+    {
+        $documentModel = new DocumentModel();
+        $documentModel->approveDocument((int)$documentId);
+        return redirect()->back()->with('success', 'Document approved.');
+    }
+
+    public function rejectDocument($documentId)
+    {
+        $documentModel = new DocumentModel();
+        $documentModel->rejectDocument((int)$documentId);
+        return redirect()->back()->with('success', 'Document rejected.');
     }
     
     public function approveEnrollment($studentId)

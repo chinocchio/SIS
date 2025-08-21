@@ -215,9 +215,15 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>📋 Registrar Dashboard</h1>
-        <p>Welcome, <?= session()->get('first_name') ?> <?= session()->get('last_name') ?></p>
+    <div class="header" style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+            <h1>📋 Registrar Dashboard</h1>
+            <p>Welcome, <?= session()->get('first_name') ?> <?= session()->get('last_name') ?></p>
+        </div>
+        <div>
+            <a href="/auth/change-password" class="nav-link" style="margin-right:10px;color:#fff;text-decoration:underline;">Change Password</a>
+            <a href="/auth/logout" class="logout" style="padding:8px 12px;border-radius:6px;">Logout</a>
+        </div>
     </div>
     
     <div class="nav">
@@ -228,10 +234,6 @@
             <a href="/registrar/enrollments/rejected">Rejected</a>
             <a href="/registrar/search">Search Students</a>
             <a href="/registrar/report">Generate Report</a>
-        </div>
-        <div>
-            <a href="/auth/change-password">Change Password</a>
-            <a href="/auth/logout" class="logout">Logout</a>
         </div>
     </div>
     

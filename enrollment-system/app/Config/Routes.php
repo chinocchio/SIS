@@ -25,6 +25,8 @@ $routes->post('/student/login', 'StudentAuthController::login');
 $routes->get('/student/dashboard', 'StudentController::dashboard', ['filter' => 'studentauth']);
 $routes->get('/student/profile/edit', 'StudentController::edit');
 $routes->post('/student/profile/update', 'StudentController::update');
+$routes->post('/student/upload-document', 'StudentController::uploadDocument');
+$routes->get('/student/document/(:num)', 'StudentController::viewDocument/$1');
 $routes->get('/student/logout', 'StudentController::logout');
 
 // Auth
@@ -39,12 +41,21 @@ $routes->get('/admin', 'AdminController::index');
 $routes->get('/admin/dashboard', 'AdminController::index');
 $routes->get('/admin/create-school-year', 'AdminController::createSchoolYear');
 $routes->post('/admin/create-school-year', 'AdminController::createSchoolYear');
-$routes->get('/admin/activate-school-year/(:num)', 'AdminController::activateSchoolYear/$1');
-$routes->get('/admin/create-admission-timeframe', 'AdminController::createAdmissionTimeframe');
-$routes->post('/admin/create-admission-timeframe', 'AdminController::createAdmissionTimeframe');
+           $routes->get('/admin/activate-school-year/(:num)', 'AdminController::activateSchoolYear/$1');
+           $routes->get('/admin/deactivate-school-year/(:num)', 'AdminController::deactivateSchoolYear/$1');
+           $routes->get('/admin/delete-school-year/(:num)', 'AdminController::deleteSchoolYear/$1');
+           $routes->get('/admin/create-admission-timeframe', 'AdminController::createAdmissionTimeframe');
+           $routes->post('/admin/create-admission-timeframe', 'AdminController::createAdmissionTimeframe');
+           $routes->get('/admin/edit-admission-timeframe/(:num)', 'AdminController::editAdmissionTimeframe/$1');
+           $routes->post('/admin/edit-admission-timeframe/(:num)', 'AdminController::editAdmissionTimeframe/$1');
+           $routes->get('/admin/delete-admission-timeframe/(:num)', 'AdminController::deleteAdmissionTimeframe/$1');
 $routes->get('/admin/promote-students', 'AdminController::promoteStudents');
 $routes->get('/admin/strands', 'AdminController::manageStrands');
-$routes->post('/admin/strands', 'AdminController::manageStrands');
+$routes->post('/admin/addStrand', 'AdminController::addStrand');
+$routes->get('/admin/test-add', 'AdminController::addStrand'); // Test route
+$routes->post('/admin/editStrand/(:num)', 'AdminController::editStrand/$1');
+$routes->get('/admin/deleteStrand/(:num)', 'AdminController::deleteStrand/$1');
+
 $routes->get('/admin/users', 'AdminController::manageUsers');
 $routes->post('/admin/users', 'AdminController::manageUsers');
 
@@ -53,6 +64,8 @@ $routes->get('/registrar', 'RegistrarController::index');
 $routes->get('/registrar/dashboard', 'RegistrarController::dashboard');
 $routes->get('/registrar/enrollments/(:any)', 'RegistrarController::viewEnrollments/$1');
 $routes->get('/registrar/student/(:num)', 'RegistrarController::viewStudent/$1');
+$routes->get('/registrar/document/approve/(:num)', 'RegistrarController::approveDocument/$1');
+$routes->get('/registrar/document/reject/(:num)', 'RegistrarController::rejectDocument/$1');
 $routes->post('/registrar/approve/(:num)', 'RegistrarController::approveEnrollment/$1');
 $routes->post('/registrar/reject/(:num)', 'RegistrarController::rejectEnrollment/$1');
 $routes->get('/registrar/search', 'RegistrarController::searchStudents');
