@@ -9,7 +9,7 @@ class StrandModel extends Model
     protected $table = 'strands';
     protected $primaryKey = 'id';
     protected $allowedFields = [
-        'name', 'description', 'is_active'
+        'name', 'track_id', 'description', 'is_active'
     ];
     
     protected $useTimestamps = true;
@@ -17,6 +17,17 @@ class StrandModel extends Model
     public function getActiveStrands()
     {
         return $this->where('is_active', 1)->findAll();
+    }
+    
+    public function getActiveStrandsWithTracks()
+    {
+        return $this->select('strands.*, tracks.name as track_name, tracks.level as track_level')
+                    ->join('tracks', 'tracks.id = strands.track_id', 'left')
+                    ->where('strands.is_active', 1)
+                    ->orderBy('tracks.level', 'ASC')
+                    ->orderBy('tracks.name', 'ASC')
+                    ->orderBy('strands.name', 'ASC')
+                    ->findAll();
     }
     
     public function getStrandsByGradeLevel($gradeLevel)

@@ -9,6 +9,8 @@ use App\Models\SchoolYearModel;
 use App\Models\AdmissionTimeframeModel;
 use App\Models\StudentModel;
 use App\Models\StrandModel;
+use App\Models\CurriculumModel;
+use App\Models\TrackModel;
 
 class AdminController extends BaseController
 {
@@ -179,15 +181,127 @@ class AdminController extends BaseController
     public function manageStrands()
     {
         $strandModel = new StrandModel();
+        $trackModel = new TrackModel();
 
         try {
             $data['strands'] = $strandModel->findAll();
+            $data['tracks'] = $trackModel->getAllActiveTracks();
         } catch (\Exception $e) {
             $data['strands'] = [];
+            $data['tracks'] = [];
             $data['error'] = 'Error loading strands: ' . $e->getMessage();
         }
         
         return view('admin/manage_strands', $data);
+    }
+    
+    // Track management methods (integrated with strand management)
+    public function addTrackFromStrands()
+    {
+        if ($this->request->getMethod() !== 'POST') {
+            return redirect()->to('/admin/strands');
+        }
+
+        $trackModel = new TrackModel();
+        
+        // Get form data
+        $name = $this->request->getPost('track_name');
+        $level = $this->request->getPost('track_level');
+        $description = $this->request->getPost('track_description');
+        $isActive = $this->request->getPost('track_is_active') ? 1 : 0;
+        
+        // Validation
+        if (empty($name) || empty($level)) {
+            return redirect()->to('/admin/strands')->with('error', 'Track name and level are required.');
+        }
+        
+        // Prepare data
+        $data = [
+            'name' => $name,
+            'level' => $level,
+            'description' => $description,
+            'is_active' => $isActive
+        ];
+        
+        // Insert into database
+        try {
+            $result = $trackModel->insert($data);
+            if ($result) {
+                return redirect()->to('/admin/strands')->with('success', 'Track created successfully!');
+            } else {
+                return redirect()->to('/admin/strands')->with('error', 'Failed to create track.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin/strands')->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+    
+    public function editTrackFromStrands($id = null)
+    {
+        if ($this->request->getMethod() !== 'POST' || !$id) {
+            return redirect()->to('/admin/strands');
+        }
+        
+        $trackModel = new TrackModel();
+        
+        // Get form data
+        $name = $this->request->getPost('track_name');
+        $level = $this->request->getPost('track_level');
+        $description = $this->request->getPost('track_description');
+        $isActive = $this->request->getPost('track_is_active') ? 1 : 0;
+        
+        // Validation
+        if (empty($name) || empty($level)) {
+            return redirect()->to('/admin/strands')->with('error', 'Track name and level are required.');
+        }
+        
+        // Prepare data
+        $data = [
+            'name' => $name,
+            'level' => $level,
+            'description' => $description,
+            'is_active' => $isActive
+        ];
+        
+        // Update database
+        try {
+            $result = $trackModel->update($id, $data);
+            if ($result) {
+                return redirect()->to('/admin/strands')->with('success', 'Track updated successfully!');
+            } else {
+                return redirect()->to('/admin/strands')->with('error', 'Failed to update track.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin/strands')->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+    
+    public function deleteTrackFromStrands($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin/strands');
+        }
+        
+        $trackModel = new TrackModel();
+        $strandModel = new StrandModel();
+        
+        // Check if there are strands under this track
+        $strandsUnderTrack = $strandModel->where('track_id', $id)->findAll();
+        
+        if (!empty($strandsUnderTrack)) {
+            return redirect()->to('/admin/strands')->with('error', 'Cannot delete track. There are strands assigned to this track. Please delete or reassign the strands first.');
+        }
+        
+        try {
+            $result = $trackModel->delete($id);
+            if ($result) {
+                return redirect()->to('/admin/strands')->with('success', 'Track deleted successfully!');
+            } else {
+                return redirect()->to('/admin/strands')->with('error', 'Failed to delete track.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin/strands')->with('error', 'Error: ' . $e->getMessage());
+        }
     }
     
     public function addStrand()
@@ -199,17 +313,19 @@ class AdminController extends BaseController
         $strandModel = new StrandModel();
         
         // Get form data
+        $trackId = $this->request->getPost('track_id');
         $name = $this->request->getPost('name');
         $description = $this->request->getPost('description');
         $isActive = $this->request->getPost('is_active') ? 1 : 0;
         
         // Validation
-        if (empty($name)) {
-            return redirect()->to('/admin/strands')->with('error', 'Strand name is required.');
+        if (empty($trackId) || empty($name)) {
+            return redirect()->to('/admin/strands')->with('error', 'Track and strand name are required.');
         }
         
         // Prepare data
         $data = [
+            'track_id' => $trackId,
             'name' => $name,
             'description' => $description,
             'is_active' => $isActive
@@ -237,17 +353,19 @@ class AdminController extends BaseController
         $strandModel = new StrandModel();
         
         // Get form data
+        $trackId = $this->request->getPost('track_id');
         $name = $this->request->getPost('name');
         $description = $this->request->getPost('description');
         $isActive = $this->request->getPost('is_active') ? 1 : 0;
         
         // Validation
-        if (empty($name)) {
-            return redirect()->to('/admin/strands')->with('error', 'Strand name is required.');
+        if (empty($trackId) || empty($name)) {
+            return redirect()->to('/admin/strands')->with('error', 'Track and strand name are required.');
         }
         
         // Prepare data
         $data = [
+            'track_id' => $trackId,
             'name' => $name,
             'description' => $description,
             'is_active' => $isActive
@@ -286,5 +404,118 @@ class AdminController extends BaseController
         }
     }
     
+    // Curriculum Management Methods
+    public function manageCurriculums()
+    {
+        $curriculumModel = new CurriculumModel();
+        
+        try {
+            $data['curriculums'] = $curriculumModel->getAllActiveCurriculums();
+        } catch (\Exception $e) {
+            $data['curriculums'] = [];
+            $data['error'] = 'Error loading curriculums: ' . $e->getMessage();
+        }
+        
+        return view('admin/manage_curriculums', $data);
+    }
+    
+    public function addCurriculum()
+    {
+        if ($this->request->getMethod() !== 'POST') {
+            return redirect()->to('/admin/curriculums');
+        }
 
+        $curriculumModel = new CurriculumModel();
+        
+        // Get form data
+        $name = $this->request->getPost('name');
+        $description = $this->request->getPost('description');
+        $isActive = $this->request->getPost('is_active') ? 1 : 0;
+        
+        // Validation
+        if (empty($name)) {
+            return redirect()->to('/admin/curriculums')->with('error', 'Curriculum name is required.');
+        }
+        
+        // Prepare data
+        $data = [
+            'name' => $name,
+            'level' => 'jhs', // Always JHS
+            'track' => null, // No track for curriculum
+            'description' => $description,
+            'is_active' => $isActive
+        ];
+        
+        // Insert into database
+        try {
+            $result = $curriculumModel->insert($data);
+            if ($result) {
+                return redirect()->to('/admin/curriculums')->with('success', 'Curriculum created successfully!');
+            } else {
+                return redirect()->to('/admin/curriculums')->with('error', 'Failed to create curriculum.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin/curriculums')->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+    
+    public function editCurriculum($id = null)
+    {
+        if ($this->request->getMethod() !== 'POST' || !$id) {
+            return redirect()->to('/admin/curriculums');
+        }
+        
+        $curriculumModel = new CurriculumModel();
+        
+        // Get form data
+        $name = $this->request->getPost('name');
+        $description = $this->request->getPost('description');
+        $isActive = $this->request->getPost('is_active') ? 1 : 0;
+        
+        // Validation
+        if (empty($name)) {
+            return redirect()->to('/admin/curriculums')->with('error', 'Curriculum name is required.');
+        }
+        
+        // Prepare data
+        $data = [
+            'name' => $name,
+            'level' => 'jhs', // Always JHS
+            'track' => null, // No track for curriculum
+            'description' => $description,
+            'is_active' => $isActive
+        ];
+        
+        // Update database
+        try {
+            $result = $curriculumModel->update($id, $data);
+            if ($result) {
+                return redirect()->to('/admin/curriculums')->with('success', 'Curriculum updated successfully!');
+            } else {
+                return redirect()->to('/admin/curriculums')->with('error', 'Failed to update curriculum.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin/curriculums')->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+    
+    public function deleteCurriculum($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin/curriculums');
+        }
+        
+        $curriculumModel = new CurriculumModel();
+        
+        try {
+            $result = $curriculumModel->delete($id);
+            if ($result) {
+                return redirect()->to('/admin/curriculums')->with('success', 'Curriculum deleted successfully!');
+            } else {
+                return redirect()->to('/admin/curriculums')->with('error', 'Failed to delete curriculum.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin/curriculums')->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
 }

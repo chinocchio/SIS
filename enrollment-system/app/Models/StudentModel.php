@@ -10,7 +10,7 @@ class StudentModel extends Model
     protected $primaryKey = 'id';
     protected $allowedFields = [
         'first_name','last_name','email','password',
-        'grade_level','previous_grade_level','admission_type','strand_id','status'
+        'grade_level','previous_grade_level','admission_type','strand_id','curriculum_id','status'
     ];
     
     protected $useTimestamps = true;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Strands - Admin</title>
+    <title>Manage Strands & Tracks - Admin</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,7 +13,7 @@
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 1400px;
             margin: 0 auto;
         }
         
@@ -32,8 +32,9 @@
         
         .content-grid {
             display: grid;
-            grid-template-columns: 1fr 2fr;
+            grid-template-columns: 1fr 1fr;
             gap: 30px;
+            margin-bottom: 30px;
         }
         
         .card {
@@ -62,6 +63,7 @@
         }
         
         .form-group input,
+        .form-group select,
         .form-group textarea {
             width: 100%;
             padding: 10px;
@@ -126,6 +128,14 @@
             background-color: #c82333;
         }
         
+        .btn-success {
+            background-color: #28a745;
+        }
+        
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+        
         .table {
             width: 100%;
             border-collapse: collapse;
@@ -176,13 +186,94 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        
+        .level-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .level-jhs {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .level-shs {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .track-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .track-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .strand-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .strand-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .strand-info {
+            flex: 1;
+        }
+        
+        .strand-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .strand-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        
+        .strand-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Manage Strands/Tracks</h1>
-            <p>Add, edit, and manage available strands for Senior High School students</p>
+            <h1>Manage Strands & Tracks</h1>
+            <p>Add, edit, and manage tracks and their associated strands</p>
         </div>
         
         <?php if (session()->getFlashdata('success')): ?>
@@ -204,11 +295,67 @@
         <?php endif; ?>
         
         <div class="content-grid">
-            <!-- Add/Edit Strand Form -->
+            <!-- Track Management -->
             <div class="card">
-                <h3>Add New Strand</h3>
+                <h3>Track Management</h3>
+                
+                <!-- Add New Track Form -->
+                <form method="post" action="/admin/strands/add-track" id="trackForm">
+                    <input type="hidden" name="track_id" id="track_id">
+                    
+                    <div class="form-group">
+                        <label for="track_name">Track Name *</label>
+                        <input type="text" name="track_name" id="track_name" placeholder="e.g., Academic Track, TVL Track" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="track_level">Level *</label>
+                        <select name="track_level" id="track_level" required>
+                            <option value="">Select Level</option>
+                            <option value="jhs">Junior High School (JHS)</option>
+                            <option value="shs">Senior High School (SHS)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="track_description">Description</label>
+                        <textarea name="track_description" id="track_description" placeholder="Brief description of the track"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" name="track_is_active" id="track_is_active" value="1" checked>
+                            <label for="track_is_active">Active</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success" id="trackSubmitBtn">Add Track</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetTrackForm()">Clear</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Strand Management -->
+            <div class="card">
+                <h3>Strand Management</h3>
+                
+                <!-- Add New Strand Form -->
                 <form method="post" action="/admin/addStrand" id="strandForm">
                     <input type="hidden" name="strand_id" id="strand_id">
+                    
+                    <div class="form-group">
+                        <label for="track_id">Track *</label>
+                        <select name="track_id" id="track_id" required>
+                            <option value="">-- Select Track --</option>
+                            <?php if (isset($tracks)): ?>
+                                <?php foreach ($tracks as $track): ?>
+                                    <option value="<?= $track['id'] ?>"><?= esc($track['name']) ?> (<?= strtoupper($track['level']) ?>)</option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="name">Strand Name *</label>
                         <input type="text" name="name" id="name" placeholder="e.g., STEM, ABM, HUMSS" required>
@@ -227,49 +374,81 @@
                     </div>
                     
                     <div class="form-group">
-                        <button type="submit" class="btn" id="submitBtn">Add Strand</button>
-                        <button type="button" class="btn btn-secondary" onclick="resetForm()">Clear</button>
+                        <button type="submit" class="btn" id="strandSubmitBtn">Add Strand</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetStrandForm()">Clear</button>
                     </div>
                 </form>
             </div>
+        </div>
+        
+        <!-- Tracks and Strands Display -->
+        <div class="card">
+            <h3>Current Tracks and Strands</h3>
             
-            <!-- Strands List -->
-            <div class="card">
-                <h3>Current Strands</h3>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (isset($strands) && !empty($strands)): ?>
-                            <?php foreach ($strands as $strand): ?>
-                                <tr>
-                                    <td><?= esc($strand['name']) ?></td>
-                                    <td><?= esc($strand['description'] ?: 'No description') ?></td>
-                                    <td>
-                                        <span class="<?= $strand['is_active'] ? 'status-active' : 'status-inactive' ?>">
-                                            <?= $strand['is_active'] ? 'Active' : 'Inactive' ?>
-                                        </span>
-                                    </td>
-                                    <td class="actions">
-                                        <button class="btn btn-warning" onclick="editStrand(<?= htmlspecialchars(json_encode($strand)) ?>)">Edit</button>
-                                        <a href="/admin/deleteStrand/<?= $strand['id'] ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this strand?')">Delete</a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="4">No strands found.</td>
-                            </tr>
+            <?php if (isset($tracks) && !empty($tracks)): ?>
+                <?php foreach ($tracks as $track): ?>
+                    <div class="track-section">
+                        <div class="track-header">
+                            <div>
+                                <span class="track-title"><?= esc($track['name']) ?></span>
+                                <span class="level-badge level-<?= $track['level'] ?>"><?= strtoupper($track['level']) ?></span>
+                                <span class="<?= $track['is_active'] ? 'status-active' : 'status-inactive' ?>">
+                                    <?= $track['is_active'] ? 'Active' : 'Inactive' ?>
+                                </span>
+                            </div>
+                            <div class="actions">
+                                <button class="btn btn-warning btn-sm" onclick="editTrack(<?= htmlspecialchars(json_encode($track)) ?>)">Edit Track</button>
+                                <a href="/admin/strands/delete-track/<?= $track['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this track? This action cannot be undone.')">Delete Track</a>
+                            </div>
+                        </div>
+                        
+                        <?php if (isset($track['description']) && $track['description']): ?>
+                            <p style="margin-bottom: 15px; color: #666;"><?= esc($track['description']) ?></p>
                         <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
+                        
+                        <ul class="strand-list">
+                            <?php 
+                            $trackStrands = [];
+                            if (isset($strands)) {
+                                foreach ($strands as $strand) {
+                                    if ($strand['track_id'] == $track['id']) {
+                                        $trackStrands[] = $strand;
+                                    }
+                                }
+                            }
+                            ?>
+                            
+                            <?php if (!empty($trackStrands)): ?>
+                                <?php foreach ($trackStrands as $strand): ?>
+                                    <li class="strand-item">
+                                        <div class="strand-info">
+                                            <div class="strand-name"><?= esc($strand['name']) ?></div>
+                                            <?php if ($strand['description']): ?>
+                                                <div class="strand-description"><?= esc($strand['description']) ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="strand-actions">
+                                            <span class="<?= $strand['is_active'] ? 'status-active' : 'status-inactive' ?>">
+                                                <?= $strand['is_active'] ? 'Active' : 'Inactive' ?>
+                                            </span>
+                                            <button class="btn btn-warning btn-sm" onclick="editStrand(<?= htmlspecialchars(json_encode($strand)) ?>)">Edit</button>
+                                            <a href="/admin/deleteStrand/<?= $strand['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this strand?')">Delete</a>
+                                        </div>
+                                    </li>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <li class="strand-item">
+                                    <div class="strand-info">
+                                        <em>No strands assigned to this track yet.</em>
+                                    </div>
+                                </li>
+                            <?php endif; ?>
+                        </ul>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>No tracks found. Please create a track first.</p>
+            <?php endif; ?>
         </div>
         
         <div style="text-align: center; margin-top: 30px;">
@@ -278,13 +457,45 @@
     </div>
     
     <script>
+        // Track form management
+        function editTrack(track) {
+            // Update form title and button
+            document.querySelector('.card h3').textContent = 'Edit Track';
+            document.getElementById('trackSubmitBtn').textContent = 'Update Track';
+            
+            // Fill form with track data
+            document.getElementById('track_id').value = track.id;
+            document.getElementById('track_name').value = track.name;
+            document.getElementById('track_level').value = track.level;
+            document.getElementById('track_description').value = track.description || '';
+            document.getElementById('track_is_active').checked = track.is_active == 1;
+            
+            // Change form action to edit
+            document.getElementById('trackForm').action = '/admin/strands/edit-track/' + track.id;
+        }
+        
+        function resetTrackForm() {
+            // Reset form title and button
+            document.querySelector('.card h3').textContent = 'Track Management';
+            document.getElementById('trackSubmitBtn').textContent = 'Add Track';
+            
+            // Clear form
+            document.getElementById('trackForm').reset();
+            document.getElementById('track_id').value = '';
+            
+            // Reset form action to add
+            document.getElementById('trackForm').action = '/admin/strands/add-track';
+        }
+        
+        // Strand form management
         function editStrand(strand) {
             // Update form title and button
-            document.querySelector('.card h3').textContent = 'Edit Strand';
-            document.getElementById('submitBtn').textContent = 'Update Strand';
+            document.querySelectorAll('.card h3')[1].textContent = 'Edit Strand';
+            document.getElementById('strandSubmitBtn').textContent = 'Update Strand';
             
             // Fill form with strand data
             document.getElementById('strand_id').value = strand.id;
+            document.getElementById('track_id').value = strand.track_id || '';
             document.getElementById('name').value = strand.name;
             document.getElementById('description').value = strand.description || '';
             document.getElementById('is_active').checked = strand.is_active == 1;
@@ -293,10 +504,10 @@
             document.getElementById('strandForm').action = '/admin/editStrand/' + strand.id;
         }
         
-        function resetForm() {
+        function resetStrandForm() {
             // Reset form title and button
-            document.querySelector('.card h3').textContent = 'Add New Strand';
-            document.getElementById('submitBtn').textContent = 'Add Strand';
+            document.querySelectorAll('.card h3')[1].textContent = 'Strand Management';
+            document.getElementById('strandSubmitBtn').textContent = 'Add Strand';
             
             // Clear form
             document.getElementById('strandForm').reset();

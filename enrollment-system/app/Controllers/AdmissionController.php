@@ -8,6 +8,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\StudentModel;
 use App\Models\AdmissionTimeframeModel;
 use App\Models\StrandModel;
+use App\Models\CurriculumModel;
 
 class AdmissionController extends BaseController
 {
@@ -21,6 +22,7 @@ class AdmissionController extends BaseController
         // Check if admission is open
         $admissionTimeframeModel = new AdmissionTimeframeModel();
         $strandModel = new StrandModel();
+        $curriculumModel = new CurriculumModel();
         
         // Temporarily disable timeframe check for testing
         // Comment out this block to make admission always open
@@ -31,7 +33,8 @@ class AdmissionController extends BaseController
         
         
         $data = [
-            'strands' => $strandModel->getActiveStrands()
+            'strands' => $strandModel->getActiveStrandsWithTracks(),
+            'curriculums' => $curriculumModel->getAllActiveCurriculums()
         ];
         
         return view('admission/form', $data);
@@ -53,20 +56,23 @@ class AdmissionController extends BaseController
         $gradeLevel = $this->request->getPost('grade_level');
         $previousGradeLevel = $this->request->getPost('previous_grade_level');
         $strandId = $this->request->getPost('strand_id');
+        $curriculumId = $this->request->getPost('curriculum_id');
+        
+        // Validate curriculum selection for JHS students
+        if ($gradeLevel >= 7 && $gradeLevel <= 10 && empty($curriculumId)) {
+            return redirect()->back()->with('error', 'Curriculum selection is required for Junior High School students.');
+        }
+        
+        // Validate strand selection for SHS students
+        if ($gradeLevel >= 11 && empty($strandId)) {
+            return redirect()->back()->with('error', 'Strand selection is required for Senior High School students.');
+        }
         
         // Determine admission type based on business rules
         $admissionType = $studentModel->determineAdmissionType($gradeLevel, $previousGradeLevel);
         
-        // Validate strand selection for SHS
-        if ($gradeLevel >= 11 && empty($strandId)) {
-            return redirect()->back()->with('error', 'Strand selection is required for Senior High School.');
-        }
-        
-        // For JHS graduates going to SHS, no documents needed
-        $requiresDocuments = true;
-        if ($gradeLevel == 11 && $previousGradeLevel == 10) {
-            $requiresDocuments = false;
-        }
+        // For SHS students, no documents needed (simplified process)
+        $requiresDocuments = ($gradeLevel < 11);
         
         $data = [
             'first_name'   => $this->request->getPost('first_name'),
@@ -74,9 +80,10 @@ class AdmissionController extends BaseController
             'email'        => $this->request->getPost('email'),
             'password'     => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
             'grade_level'  => $gradeLevel,
-            'previous_grade_level' => $previousGradeLevel ?: null,
+            'previous_grade_level' => ($gradeLevel < 11) ? ($previousGradeLevel ?: null) : null,
             'admission_type'=> $admissionType,
-            'strand_id'    => $strandId ?: null,
+            'strand_id'    => ($gradeLevel >= 11) ? $strandId : null,
+            'curriculum_id'=> ($gradeLevel >= 7 && $gradeLevel <= 10) ? $curriculumId : null,
             'status'       => 'pending'
         ];
 

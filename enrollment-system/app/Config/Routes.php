@@ -56,6 +56,17 @@ $routes->get('/admin/test-add', 'AdminController::addStrand'); // Test route
 $routes->post('/admin/editStrand/(:num)', 'AdminController::editStrand/$1');
 $routes->get('/admin/deleteStrand/(:num)', 'AdminController::deleteStrand/$1');
 
+// Curriculum Management Routes
+$routes->get('/admin/curriculums', 'AdminController::manageCurriculums');
+$routes->post('/admin/curriculums', 'AdminController::addCurriculum');
+$routes->post('/admin/curriculums/edit/(:num)', 'AdminController::editCurriculum/$1');
+$routes->get('/admin/curriculums/delete/(:num)', 'AdminController::deleteCurriculum/$1');
+
+// Track Management Routes (integrated with strands)
+$routes->post('/admin/strands/add-track', 'AdminController::addTrackFromStrands');
+$routes->post('/admin/strands/edit-track/(:num)', 'AdminController::editTrackFromStrands/$1');
+$routes->get('/admin/strands/delete-track/(:num)', 'AdminController::deleteTrackFromStrands/$1');
+
 $routes->get('/admin/users', 'AdminController::manageUsers');
 $routes->post('/admin/users', 'AdminController::manageUsers');
 
