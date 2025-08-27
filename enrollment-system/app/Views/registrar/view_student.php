@@ -53,13 +53,14 @@
                              <td><?= esc($doc['uploaded_at']) ?></td>
                              <td>
                     <?php 
-                    $fileExt = strtolower(pathinfo($doc['file_path'], PATHINFO_EXTENSION));
-                    if (in_array($fileExt, ['jpg', 'jpeg', 'png', 'gif'])): ?>
-                        <img src="<?= base_url($doc['file_path']) ?>" alt="Document Preview" style="max-width:100px; max-height:100px; border:1px solid #ddd; cursor:pointer;" onclick="openImageModal('<?= base_url($doc['file_path']) ?>', '<?= esc($doc['document_type']) ?>')">
-                        <br><small><a href="<?= base_url($doc['file_path']) ?>" target="_blank">Full Size</a></small>
-                    <?php else: ?>
-                        <a href="<?= base_url($doc['file_path']) ?>" target="_blank">View PDF</a>
-                    <?php endif; ?>
+                   $fileExt = strtolower(pathinfo($doc['file_path'], PATHINFO_EXTENSION));
+                   $streamUrl = base_url('/registrar/document/view/' . $doc['id']);
+                   if (in_array($fileExt, ['jpg', 'jpeg', 'png', 'gif'])): ?>
+                       <img src="<?= $streamUrl ?>" alt="Document Preview" style="max-width:100px; max-height:100px; border:1px solid #ddd; cursor:pointer;" onclick="openImageModal('<?= $streamUrl ?>', '<?= esc($doc['document_type']) ?>')">
+                       <br><small><a href="<?= $streamUrl ?>" target="_blank">Full Size</a></small>
+                   <?php else: ?>
+                       <a href="<?= $streamUrl ?>" target="_blank">View Document</a>
+                   <?php endif; ?>
                 </td>
                              <td>
                                  <a class="btn btn-approve" href="/registrar/document/approve/<?= $doc['id'] ?>" onclick="return confirm('Approve this document?')">Approve</a>

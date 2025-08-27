@@ -83,6 +83,26 @@ class RegistrarController extends BaseController
         $documentModel->rejectDocument((int)$documentId);
         return redirect()->back()->with('success', 'Document rejected.');
     }
+
+    public function viewDocument($documentId)
+    {
+        $documentModel = new DocumentModel();
+        $doc = $documentModel->find((int) $documentId);
+        if (!$doc) {
+            return redirect()->back()->with('error', 'Document not found.');
+        }
+
+        $fullPath = ROOTPATH . $doc['file_path'];
+        if (!is_file($fullPath)) {
+            return redirect()->back()->with('error', 'File not found on server.');
+        }
+
+        $mimeType = function_exists('mime_content_type') ? mime_content_type($fullPath) : 'application/octet-stream';
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . basename($fullPath) . '"')
+            ->setBody(file_get_contents($fullPath));
+    }
     
     public function approveEnrollment($studentId)
     {
