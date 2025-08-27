@@ -477,16 +477,22 @@
             if (gradeLevel >= 11) {
                 strandDiv.style.display = 'block';
                 strandSelect.required = true;
-                // Hide curriculum section for SHS
+                // Hide curriculum section for SHS and remove required attribute
                 curriculumSection.style.display = 'none';
+                document.querySelectorAll('input[name="curriculum_id"]').forEach(radio => {
+                    radio.required = false;
+                });
                 // Hide previous grade for SHS
                 previousGradeDiv.style.display = 'none';
                 previousGradeSelect.value = '';
             } else {
                 strandDiv.style.display = 'none';
                 strandSelect.required = false;
-                // Show curriculum section for JHS
+                // Show curriculum section for JHS and add required attribute
                 curriculumSection.style.display = 'block';
+                document.querySelectorAll('input[name="curriculum_id"]').forEach(radio => {
+                    radio.required = true;
+                });
                 // Show previous grade for non-Grade 7 JHS students
                 if (gradeLevel > 7) {
                     previousGradeDiv.style.display = 'block';
@@ -552,23 +558,24 @@
         document.getElementById('admissionForm').addEventListener('submit', function(e) {
             const gradeLevel = parseInt(document.getElementById('grade_level').value) || 0;
             const curriculumId = document.querySelector('input[name="curriculum_id"]:checked');
+            const strandId = document.getElementById('strand_id').value;
             
-            // Validate curriculum selection for JHS students
+            // Validate curriculum selection for JHS students only (Grade 7-10)
             if (gradeLevel >= 7 && gradeLevel <= 10 && !curriculumId) {
                 e.preventDefault();
                 alert('Please select a curriculum for Junior High School students.');
                 return false;
             }
             
-            // Validate strand selection for SHS students
-            if (gradeLevel >= 11) {
-                const strandId = document.getElementById('strand_id').value;
-                if (!strandId) {
-                    e.preventDefault();
-                    alert('Please select a strand for Senior High School students.');
-                    return false;
-                }
+            // Validate strand selection for SHS students only (Grade 11+)
+            if (gradeLevel >= 11 && !strandId) {
+                e.preventDefault();
+                alert('Please select a strand for Senior High School students.');
+                return false;
             }
+            
+            // If we get here, form is valid
+            return true;
         });
     </script>
 </body>
