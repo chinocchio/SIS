@@ -535,13 +535,68 @@ class AdminController extends BaseController
     {
         $subjectModel = new SubjectModel();
         $curriculumModel = new CurriculumModel();
+        $strandModel = new StrandModel();
         
         try {
-            $data['subjects'] = $subjectModel->getAllActiveSubjectsWithCurriculum();
-            $data['curriculums'] = $curriculumModel->getAllActiveCurriculums();
+            // Debug: Check what's in the database
+            $allSubjects = $subjectModel->findAll();
+            log_message('info', 'Total subjects in database: ' . count($allSubjects));
+            
+            // Try the JOIN method first
+            try {
+                $subjects = $subjectModel->getAllActiveSubjectsWithCurriculumAndStrand();
+                log_message('info', 'Subjects after JOIN query: ' . count($subjects));
+            } catch (\Exception $joinError) {
+                log_message('error', 'JOIN query failed: ' . $joinError->getMessage());
+                $subjects = [];
+            }
+            
+            // If JOIN query returns no results or fails, try fallback method
+            if (empty($subjects)) {
+                log_message('info', 'JOIN query returned no results, trying fallback method');
+                $subjects = $subjectModel->getAllActiveSubjectsSimple();
+                log_message('info', 'Subjects from fallback method: ' . count($subjects));
+                
+                // Manually populate curriculum and strand names
+                if (!empty($subjects)) {
+                    foreach ($subjects as &$subject) {
+                        if (!empty($subject['curriculum_id'])) {
+                            $curriculum = $curriculumModel->find($subject['curriculum_id']);
+                            $subject['curriculum_name'] = $curriculum ? $curriculum['name'] : 'Unknown';
+                        } else {
+                            $subject['curriculum_name'] = null;
+                        }
+                        
+                        if (!empty($subject['strand_id'])) {
+                            $strand = $strandModel->find($subject['strand_id']);
+                            $subject['strand_name'] = $strand ? $strand['name'] : 'Unknown';
+                        } else {
+                            $subject['strand_name'] = null;
+                        }
+                    }
+                }
+            }
+            
+            $curriculums = $curriculumModel->getAllActiveCurriculums();
+            log_message('info', 'Curriculums found: ' . count($curriculums));
+            
+            $strands = $strandModel->getActiveStrandsWithTracks();
+            log_message('info', 'Strands found: ' . count($strands));
+            
+            $data['subjects'] = $subjects;
+            $data['curriculums'] = $curriculums;
+            $data['strands'] = $strands;
+            
+            // Debug: Log first few subjects
+            if (!empty($subjects)) {
+                log_message('info', 'First subject data: ' . json_encode(array_slice($subjects, 0, 1)));
+            }
+            
         } catch (\Exception $e) {
+            log_message('error', 'Error in manageSubjects: ' . $e->getMessage());
             $data['subjects'] = [];
             $data['curriculums'] = [];
+            $data['strands'] = [];
             $data['error'] = 'Error loading subjects: ' . $e->getMessage();
         }
         

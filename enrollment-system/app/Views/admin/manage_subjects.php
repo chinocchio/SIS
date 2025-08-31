@@ -287,22 +287,59 @@
         
         <!-- Curriculum Filter -->
         <div class="curriculum-filter">
-            <label for="curriculumFilter">Filter by Curriculum:</label>
-            <select id="curriculumFilter" onchange="filterByCurriculum()">
-                <option value="">All Curriculums</option>
-                <?php foreach ($curriculums ?? [] as $curriculum): ?>
-                    <option value="<?= esc($curriculum['id']) ?>"><?= esc($curriculum['name']) ?></option>
-                <?php endforeach; ?>
-            </select>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                <div>
+                    <label for="curriculumFilter">Filter by Curriculum:</label>
+                    <select id="curriculumFilter" onchange="filterSubjects()">
+                        <option value="">All Curriculums</option>
+                        <?php foreach ($curriculums ?? [] as $curriculum): ?>
+                            <option value="<?= esc($curriculum['id']) ?>"><?= esc($curriculum['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="strandFilter">Filter by Strand:</label>
+                    <select id="strandFilter" onchange="filterSubjects()">
+                        <option value="">All Strands</option>
+                        <?php foreach ($strands ?? [] as $strand): ?>
+                            <option value="<?= esc($strand['id']) ?>"><?= esc($strand['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="gradeFilter">Filter by Grade Level:</label>
+                    <select id="gradeFilter" onchange="filterSubjects()">
+                        <option value="">All Grades</option>
+                        <option value="7">Grade 7</option>
+                        <option value="8">Grade 8</option>
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+                <button type="button" onclick="clearFilters()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 12px;">
+                    🗑️ Clear All Filters
+                </button>
+            </div>
         </div>
         
         <?php if (!empty($subjects)): ?>
+            <div style="margin-bottom: 20px; padding: 10px; background: #e8f5e8; border-radius: 6px; border: 1px solid #c3e6c3;">
+                <strong>📊 Found <?= count($subjects) ?> subjects</strong>
+            </div>
             <table>
                 <thead>
                     <tr>
                         <th>Subject Code</th>
                         <th>Subject Name</th>
                         <th>Curriculum</th>
+                        <th>Strand</th>
+                        <th>Grade Level</th>
                         <th>Units</th>
                         <th>Type</th>
                         <th>Status</th>
@@ -311,29 +348,31 @@
                 </thead>
                 <tbody>
                     <?php foreach ($subjects as $subject): ?>
-                        <tr data-curriculum="<?= esc($subject['curriculum_id']) ?>">
-                            <td><strong><?= esc($subject['code']) ?></strong></td>
+                        <tr data-curriculum="<?= esc($subject['curriculum_id'] ?? '') ?>" data-strand="<?= esc($subject['strand_id'] ?? '') ?>" data-grade="<?= esc($subject['grade_level'] ?? '') ?>">
+                            <td><strong><?= esc($subject['code'] ?? 'N/A') ?></strong></td>
                             <td>
-                                <strong><?= esc($subject['name']) ?></strong>
+                                <strong><?= esc($subject['name'] ?? 'N/A') ?></strong>
                                 <?php if (!empty($subject['description'])): ?>
                                     <br><small><?= esc($subject['description']) ?></small>
                                 <?php endif; ?>
                             </td>
-                            <td><?= esc($subject['curriculum_name']) ?></td>
-                            <td><?= esc($subject['units']) ?> unit(s)</td>
+                            <td><?= esc($subject['curriculum_name'] ?? 'N/A') ?></td>
+                            <td><?= esc($subject['strand_name'] ?? 'N/A') ?></td>
+                            <td>Grade <?= esc($subject['grade_level'] ?? 'N/A') ?></td>
+                            <td><?= esc($subject['units'] ?? 'N/A') ?> unit(s)</td>
                             <td>
-                                <span class="status-badge <?= $subject['is_core'] ? 'core-badge' : 'elective-badge' ?>">
-                                    <?= $subject['is_core'] ? 'Core' : 'Elective' ?>
+                                <span class="status-badge <?= ($subject['is_core'] ?? 0) ? 'core-badge' : 'elective-badge' ?>">
+                                    <?= ($subject['is_core'] ?? 0) ? 'Core' : 'Elective' ?>
                                 </span>
                             </td>
                             <td>
-                                <span class="status-badge status-<?= $subject['is_active'] ? 'active' : 'inactive' ?>">
-                                    <?= $subject['is_active'] ? 'Active' : 'Inactive' ?>
+                                <span class="status-badge status-<?= ($subject['is_active'] ?? 0) ? 'active' : 'inactive' ?>">
+                                    <?= ($subject['is_active'] ?? 0) ? 'Active' : 'Inactive' ?>
                                 </span>
                             </td>
                             <td class="actions">
-                                <a href="/admin/subjects/edit/<?= $subject['id'] ?>" class="btn btn-warning">✏️ Edit</a>
-                                <a href="/admin/subjects/delete/<?= $subject['id'] ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this subject?')">🗑️ Delete</a>
+                                <a href="/admin/subjects/edit/<?= $subject['id'] ?? '' ?>" class="btn btn-warning">✏️ Edit</a>
+                                <a href="/admin/subjects/delete/<?= $subject['id'] ?? '' ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this subject?')">🗑️ Delete</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -365,17 +404,35 @@
             }
         }
         
-        function filterByCurriculum() {
+        function filterSubjects() {
             const curriculumId = document.getElementById('curriculumFilter').value;
+            const strandId = document.getElementById('strandFilter').value;
+            const gradeLevel = document.getElementById('gradeFilter').value;
             const rows = document.querySelectorAll('tbody tr');
             
             rows.forEach(row => {
-                if (!curriculumId || row.dataset.curriculum === curriculumId) {
+                const rowCurriculum = row.dataset.curriculum;
+                const rowStrand = row.dataset.strand;
+                const rowGrade = row.dataset.grade;
+
+                // Check if row matches all selected filters
+                const curriculumMatch = !curriculumId || rowCurriculum === curriculumId;
+                const strandMatch = !strandId || rowStrand === strandId;
+                const gradeMatch = !gradeLevel || rowGrade === gradeLevel;
+
+                if (curriculumMatch && strandMatch && gradeMatch) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
                 }
             });
+        }
+
+        function clearFilters() {
+            document.getElementById('curriculumFilter').value = '';
+            document.getElementById('strandFilter').value = '';
+            document.getElementById('gradeFilter').value = '';
+            filterSubjects(); // Apply filters after clearing
         }
         
         // Search on Enter key

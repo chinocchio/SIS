@@ -100,6 +100,38 @@ class SubjectModel extends Model
     }
     
     /**
+     * Get all active subjects with curriculum and strand information
+     */
+    public function getAllActiveSubjectsWithCurriculumAndStrand()
+    {
+        $db = \Config\Database::connect();
+        
+        $query = $db->table('subjects s')
+                    ->select('s.*, c.name as curriculum_name, st.name as strand_name')
+                    ->join('curriculums c', 'c.id = s.curriculum_id', 'left')
+                    ->join('strands st', 'st.id = s.strand_id', 'left')
+                    ->where('s.is_active', 1)
+                    ->orderBy('s.grade_level', 'ASC')
+                    ->orderBy('s.quarter', 'ASC')
+                    ->orderBy('s.code', 'ASC')
+                    ->get();
+        
+        return $query->getResultArray();
+    }
+    
+    /**
+     * Fallback method to get all active subjects (without JOINs)
+     */
+    public function getAllActiveSubjectsSimple()
+    {
+        return $this->where('is_active', 1)
+                    ->orderBy('grade_level', 'ASC')
+                    ->orderBy('quarter', 'ASC')
+                    ->orderBy('code', 'ASC')
+                    ->findAll();
+    }
+    
+    /**
      * Get subject by code and curriculum
      */
     public function getSubjectByCodeAndCurriculum($code, $curriculumId)
