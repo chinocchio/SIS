@@ -147,10 +147,12 @@
         <div class="nav" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
             <div>
                 <a href="/admin/dashboard" class="btn">Dashboard</a>
+                <a href="/admin/students" class="btn btn-success">👥 Students</a>
                 <a href="/admin/create-school-year" class="btn">School Years</a>
                 <a href="/admin/create-admission-timeframe" class="btn">Admission Timeframe</a>
                 <a href="/admin/strands" class="btn btn-warning">Strands & Tracks</a>
                 <a href="/admin/curriculums" class="btn">Curriculums</a>
+                <a href="/admin/subjects" class="btn btn-info">📚 Subjects</a>
                 <a href="/admin/users" class="btn">Users</a>
             </div>
             <div>

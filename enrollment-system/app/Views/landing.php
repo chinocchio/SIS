@@ -107,24 +107,31 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎓 School Enrollment Portal</h1>
+        <h1>🎓 Student Information System</h1>
         <p class="description">
             Welcome to our comprehensive Student Information System. 
-            Apply for admission, manage your academic journey, and track your progress.
+            Access your academic records, manage documents, and track your progress.
         </p>
         
         <div>
-            <a href="/admission/enroll" class="btn btn-primary">📝 Apply for Admission</a>
             <a href="/auth/login" class="btn btn-secondary">🔐 Staff Login</a>
             <a href="/student/login" class="btn btn-tertiary">👨‍🎓 Student Login</a>
         </div>
         
         <div class="features">
             <h3>✨ What We Offer:</h3>
-            <div class="feature-item">Smart admission type detection</div>
-            <div class="feature-item">Dynamic strand selection for SHS</div>
-            <div class="feature-item">Grade progression tracking</div>
-            <div class="feature-item">Comprehensive academic management</div>
+            <div class="feature-item">Student account management</div>
+            <div class="feature-item">Document upload and verification</div>
+            <div class="feature-item">Academic progress tracking</div>
+            <div class="feature-item">Comprehensive student management</div>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 15px; background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 8px; text-align: left;">
+            <h4 style="margin-top: 0; color: #1976d2;">ℹ️ How to Get Started</h4>
+            <p style="margin-bottom: 0; color: #0d47a1; font-size: 14px;">
+                <strong>New Students:</strong> Your account must be created by school administrators first. 
+                Please contact the school office to begin the enrollment process.
+            </p>
         </div>
     </div>
 </body>

@@ -213,6 +213,7 @@
                 <h2>Curriculum Management</h2>
             </div>
             <div>
+                <a href="/admin/subjects" class="btn btn-info">📚 Manage Subjects</a>
                 <a href="/auth/logout" class="btn btn-danger">Logout</a>
             </div>
         </div>

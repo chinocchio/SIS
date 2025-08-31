@@ -15,6 +15,11 @@ class CreateStudentsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+            'lrn' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 12,
+                'comment'    => 'Learner Reference Number (12 digits)',
+            ],
             'first_name' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 100,
@@ -22,6 +27,17 @@ class CreateStudentsTable extends Migration
             'last_name' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 100,
+            ],
+            'middle_name' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 100,
+                'null'       => true,
+            ],
+            'full_name' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
+                'null'       => false,
+                'comment'    => 'Complete name as shown in SF9 document',
             ],
             'email' => [
                 'type'       => 'VARCHAR',
@@ -31,6 +47,14 @@ class CreateStudentsTable extends Migration
             'password' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 255,
+            ],
+            'birth_date' => [
+                'type'       => 'DATE',
+                'null'       => true,
+            ],
+            'gender' => [
+                'type'       => "ENUM('Male','Female')",
+                'null'       => true,
             ],
             'grade_level' => [
                 'type'       => 'INT',
@@ -46,6 +70,16 @@ class CreateStudentsTable extends Migration
             'admission_type' => [
                 'type'       => "ENUM('regular','transferee','re-enroll','promoted')",
                 'default'    => 'regular',
+                'null'       => true,
+            ],
+            'enrollment_type' => [
+                'type'       => "ENUM('new','transferee','returning')",
+                'default'    => 'new',
+            ],
+            'previous_school' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
+                'null'       => true,
             ],
             'strand_id' => [
                 'type'       => 'INT',
@@ -53,15 +87,24 @@ class CreateStudentsTable extends Migration
                 'unsigned'   => true,
                 'null'       => true,
             ],
+            'curriculum_id' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'unsigned'   => true,
+                'null'       => true,
+            ],
             'status' => [
-                'type'       => "ENUM('pending','approved','rejected')",
-                'default'    => 'pending',
+                'type'       => "ENUM('draft','pending','approved','rejected')",
+                'default'    => 'draft',
             ],
             'created_at' => ['type' => 'DATETIME', 'null' => true],
             'updated_at' => ['type' => 'DATETIME', 'null' => true],
         ]);
         $this->forge->addKey('id', true);
+        $this->forge->addKey('lrn');
         $this->forge->addKey('strand_id');
+        $this->forge->addKey('curriculum_id');
+        
         $this->forge->createTable('students');
     }
 
