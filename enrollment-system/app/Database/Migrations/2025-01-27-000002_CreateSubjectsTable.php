@@ -31,7 +31,13 @@ class CreateSubjectsTable extends Migration
                 'type'       => 'INT',
                 'constraint' => 11,
                 'unsigned'   => true,
-                'null'       => false,
+                'null'       => true, // Can be null for SHS subjects
+            ],
+            'strand_id' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'unsigned'   => true,
+                'null'       => true, // Can be null for JHS subjects
             ],
             'code' => [
                 'type'       => 'VARCHAR',
@@ -52,6 +58,24 @@ class CreateSubjectsTable extends Migration
                 'constraint' => '3,1',
                 'null'       => false,
                 'default'    => 1.0,
+            ],
+            'grade_level' => [
+                'type'       => 'INT',
+                'constraint' => 2,
+                'null'       => false,
+                'comment'    => '7,8,9,10 for JHS; 11,12 for SHS',
+            ],
+            'semester' => [
+                'type'       => 'INT',
+                'constraint' => 1,
+                'null'       => true,
+                'comment'    => '1 or 2 for SHS; null for JHS',
+            ],
+            'quarter' => [
+                'type'       => 'INT',
+                'constraint' => 1,
+                'null'       => false,
+                'comment'    => '1,2,3,4 for both JHS and SHS',
             ],
             'is_core' => [
                 'type'       => 'TINYINT',
@@ -79,13 +103,16 @@ class CreateSubjectsTable extends Migration
         
         $this->forge->addKey('id', true);
         $this->forge->addKey('curriculum_id');
+        $this->forge->addKey('strand_id');
         $this->forge->addKey('code');
+        $this->forge->addKey(['grade_level', 'semester', 'quarter']);
         
-        // Add foreign key constraint
+        // Add foreign key constraints
         $this->forge->addForeignKey('curriculum_id', 'curriculums', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('strand_id', 'strands', 'id', 'CASCADE', 'CASCADE');
         
-        // Create unique constraint for code within curriculum
-        $this->forge->addUniqueKey(['curriculum_id', 'code']);
+        // Create unique constraint for code within curriculum/strand and grade/semester/quarter
+        $this->forge->addUniqueKey(['curriculum_id', 'strand_id', 'grade_level', 'semester', 'quarter', 'code']);
         
         $this->forge->createTable('subjects');
     }
@@ -94,16 +121,31 @@ class CreateSubjectsTable extends Migration
     {
         // Add missing columns if they don't exist
         $fields = [
-            'curriculum_id' => [
+            'strand_id' => [
                 'type'       => 'INT',
                 'constraint' => 11,
                 'unsigned'   => true,
-                'null'       => false,
+                'null'       => true,
             ],
-            'code' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 20,
+            'grade_level' => [
+                'type'       => 'INT',
+                'constraint' => 2,
                 'null'       => false,
+                'default'    => 7,
+                'comment'    => '7,8,9,10 for JHS; 11,12 for SHS',
+            ],
+            'semester' => [
+                'type'       => 'INT',
+                'constraint' => 1,
+                'null'       => true,
+                'comment'    => '1 or 2 for SHS; null for JHS',
+            ],
+            'quarter' => [
+                'type'       => 'INT',
+                'constraint' => 1,
+                'null'       => false,
+                'default'    => 1,
+                'comment'    => '1,2,3,4 for both JHS and SHS',
             ],
             'description' => [
                 'type'       => 'TEXT',
@@ -129,16 +171,6 @@ class CreateSubjectsTable extends Migration
                 'default'    => 1,
                 'comment'    => '1 = Active, 0 = Inactive',
             ],
-            'created_at' => [
-                'type' => 'DATETIME',
-                'null' => false,
-                'default' => date('Y-m-d H:i:s'),
-            ],
-            'updated_at' => [
-                'type' => 'DATETIME',
-                'null' => false,
-                'default' => date('Y-m-d H:i:s'),
-            ],
         ];
         
         // Add each field if it doesn't exist
@@ -149,19 +181,19 @@ class CreateSubjectsTable extends Migration
         }
         
         // Add indexes if they don't exist
-        $this->forge->addKey('curriculum_id');
-        $this->forge->addKey('code');
+        $this->forge->addKey('strand_id');
+        $this->forge->addKey(['grade_level', 'semester', 'quarter']);
         
         // Add foreign key constraint if it doesn't exist
         try {
-            $this->forge->addForeignKey('curriculum_id', 'curriculums', 'id', 'CASCADE', 'CASCADE');
+            $this->forge->addForeignKey('strand_id', 'strands', 'id', 'CASCADE', 'CASCADE');
         } catch (\Exception $e) {
             // Foreign key might already exist
         }
         
         // Add unique constraint if it doesn't exist
         try {
-            $this->forge->addUniqueKey(['curriculum_id', 'code']);
+            $this->forge->addUniqueKey(['curriculum_id', 'strand_id', 'grade_level', 'semester', 'quarter', 'code']);
         } catch (\Exception $e) {
             // Unique constraint might already exist
         }

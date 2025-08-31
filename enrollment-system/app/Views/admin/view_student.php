@@ -260,6 +260,59 @@
             display: block;
             font-style: italic;
         }
+
+        /* New styles for grade input */
+        .grade-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .grade-field {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .save-grade-btn {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .quarters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Adjust as needed */
+            gap: 20px;
+        }
+
+        .quarter-section h5 {
+            color: #495057;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .subjects-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .grade-section h4 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .no-subjects {
+            color: #6c757d;
+            font-style: italic;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -358,27 +411,76 @@
             
             <!-- Subjects Section -->
             <div class="profile-section full-width">
-                <h3>📚 Subjects</h3>
+                <h3>📚 Subjects & Grades</h3>
                 <?php if (!empty($student['subjects'])): ?>
-                    <div class="subjects-grid">
-                        <?php foreach ($student['subjects'] as $subject): ?>
-                            <div class="subject-item">
-                                <div class="subject-header">
-                                    <span class="subject-code"><?= esc($subject['code']) ?></span>
-                                    <span class="subject-type <?= $subject['is_core'] ? 'core' : 'elective' ?>">
-                                        <?= $subject['is_core'] ? 'Core' : 'Elective' ?>
-                                    </span>
-                                </div>
-                                <div class="subject-name"><?= esc($subject['name']) ?></div>
-                                <div class="subject-details">
-                                    <span class="subject-units"><?= esc($subject['units']) ?> unit(s)</span>
-                                    <?php if (!empty($subject['description'])): ?>
-                                        <span class="subject-description"><?= esc($subject['description']) ?></span>
-                                    <?php endif; ?>
-                                </div>
+                    <?php
+                    // Organize subjects by grade level and quarter
+                    $organizedSubjects = [];
+                    foreach ($student['subjects'] as $subject) {
+                        $grade = $subject['grade_level'];
+                        $quarter = $subject['quarter'];
+                        $organizedSubjects[$grade][$quarter][] = $subject;
+                    }
+                    
+                    // Sort by grade level and quarter
+                    ksort($organizedSubjects);
+                    ?>
+                    
+                    <?php foreach ($organizedSubjects as $gradeLevel => $quarters): ?>
+                        <div class="grade-section">
+                            <h4>Grade <?= $gradeLevel ?></h4>
+                            <div class="quarters-grid">
+                                <?php for ($q = 1; $q <= 4; $q++): ?>
+                                    <div class="quarter-section">
+                                        <h5><?= $q ?>st Quarter</h5>
+                                        <?php if (isset($quarters[$q])): ?>
+                                            <div class="subjects-list">
+                                                <?php foreach ($quarters[$q] as $subject): ?>
+                                                    <div class="subject-item">
+                                                        <div class="subject-header">
+                                                            <span class="subject-code"><?= esc($subject['code']) ?></span>
+                                                            <span class="subject-type <?= $subject['is_core'] ? 'core' : 'elective' ?>">
+                                                                <?= $subject['is_core'] ? 'Core' : 'Elective' ?>
+                                                            </span>
+                                                        </div>
+                                                        <div class="subject-name"><?= esc($subject['name']) ?></div>
+                                                        <div class="subject-details">
+                                                            <span class="subject-units"><?= esc($subject['units']) ?> unit(s)</span>
+                                                            <?php if (!empty($subject['description'])): ?>
+                                                                <span class="subject-description"><?= esc($subject['description']) ?></span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <div class="grade-input">
+                                                            <label for="grade_<?= $subject['id'] ?>_<?= $q ?>">Grade:</label>
+                                                            <input type="number" 
+                                                                   id="grade_<?= $subject['id'] ?>_<?= $q ?>" 
+                                                                   name="grade_<?= $subject['id'] ?>_<?= $q ?>" 
+                                                                   min="75" 
+                                                                   max="100" 
+                                                                   placeholder="75-100"
+                                                                   class="grade-field"
+                                                                   data-subject-id="<?= $subject['id'] ?>"
+                                                                   data-quarter="<?= $q ?>"
+                                                                   data-student-id="<?= $student['id'] ?>">
+                                                            <button type="button" 
+                                                                    class="btn btn-sm btn-success save-grade-btn"
+                                                                    data-subject-id="<?= $subject['id'] ?>"
+                                                                    data-quarter="<?= $q ?>"
+                                                                    data-student-id="<?= $student['id'] ?>">
+                                                                💾 Save
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="no-subjects">No subjects for this quarter</div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endfor; ?>
                             </div>
-                        <?php endforeach; ?>
-                    </div>
+                        </div>
+                    <?php endforeach; ?>
                 <?php else: ?>
                     <div class="no-data">No subjects assigned to this curriculum yet.</div>
                 <?php endif; ?>
@@ -421,5 +523,76 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        // Handle grade saving
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to all save grade buttons
+            document.querySelectorAll('.save-grade-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const subjectId = this.getAttribute('data-subject-id');
+                    const quarter = this.getAttribute('data-quarter');
+                    const studentId = this.getAttribute('data-student-id');
+                    const gradeInput = document.getElementById(`grade_${subjectId}_${quarter}`);
+                    const grade = gradeInput.value;
+                    
+                    if (!grade || grade < 75 || grade > 100) {
+                        alert('Please enter a valid grade between 75 and 100');
+                        return;
+                    }
+                    
+                    // Save the grade
+                    saveGrade(studentId, subjectId, quarter, grade, this);
+                });
+            });
+        });
+        
+        function saveGrade(studentId, subjectId, quarter, grade, button) {
+            // Disable button and show loading state
+            button.disabled = true;
+            button.textContent = '💾 Saving...';
+            
+            // Make AJAX request to save grade
+            fetch('/admin/students/save-grade', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    subject_id: subjectId,
+                    quarter: quarter,
+                    grade: grade
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    button.textContent = '✅ Saved!';
+                    button.style.background = '#28a745';
+                    
+                    // Reset button after 2 seconds
+                    setTimeout(() => {
+                        button.textContent = '💾 Save';
+                        button.style.background = '#28a745';
+                        button.disabled = false;
+                    }, 2000);
+                } else {
+                    // Show error message
+                    alert('Error saving grade: ' + (data.message || 'Unknown error'));
+                    button.textContent = '💾 Save';
+                    button.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving grade. Please try again.');
+                button.textContent = '💾 Save';
+                button.disabled = false;
+            });
+        }
+    </script>
 </body>
 </html>

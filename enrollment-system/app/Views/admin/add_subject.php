@@ -168,11 +168,9 @@
         <div class="note">
             <h4>📋 How to add a subject:</h4>
             <ol>
-                <li>Select the curriculum this subject belongs to</li>
-                <li>Enter a unique subject code (e.g., MATH101, ENG101)</li>
-                <li>Provide the full subject name and description</li>
-                <li>Set the number of units (typically 1-6 for JHS)</li>
-                <li>Mark as core (required) or elective (optional)</li>
+                <li><strong>JHS Subjects:</strong> Select curriculum and enter subject name. System automatically creates subjects for all grade levels (7-10) and quarters (1-4).</li>
+                <li><strong>SHS Subjects:</strong> Select strand, grade level, quarter, and subject category (Core/Applied/Specialized).</li>
+                <li>Provide the full subject name and optional description</li>
                 <li>Set the subject status (active/inactive)</li>
             </ol>
         </div>
@@ -180,8 +178,20 @@
         <form action="/admin/subjects" method="POST">
             <div class="form-row">
                 <div class="form-group">
+                    <label for="subject_type">Subject Type <span class="required">*</span></label>
+                    <select id="subject_type" name="subject_type" required onchange="toggleSubjectFields()">
+                        <option value="">Select Subject Type</option>
+                        <option value="jhs">JHS (Junior High School)</option>
+                        <option value="shs">SHS (Senior High School)</option>
+                    </select>
+                    <div class="help-text">Choose whether this is a JHS or SHS subject</div>
+                </div>
+            </div>
+            
+            <div class="form-row" id="jhs_fields" style="display: none;">
+                <div class="form-group">
                     <label for="curriculum_id">Curriculum <span class="required">*</span></label>
-                    <select id="curriculum_id" name="curriculum_id" required>
+                    <select id="curriculum_id" name="curriculum_id">
                         <option value="">Select Curriculum</option>
                         <?php foreach ($curriculums as $curriculum): ?>
                             <option value="<?= esc($curriculum['id']) ?>"><?= esc($curriculum['name']) ?></option>
@@ -191,9 +201,63 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="code">Subject Code <span class="required">*</span></label>
-                    <input type="text" id="code" name="code" required maxlength="20" placeholder="e.g., MATH101">
-                    <div class="help-text">Unique code within the curriculum (2-20 characters)</div>
+                    <label>JHS Subject Info</label>
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 6px; border: 1px solid #c3e6c3;">
+                        <p style="margin: 0; color: #155724;"><strong>ℹ️ Note:</strong> This subject will automatically be created for:</p>
+                        <ul style="margin: 10px 0 0 20px; color: #155724;">
+                            <li>All grade levels (7, 8, 9, 10)</li>
+                            <li>All quarters (1st, 2nd, 3rd, 4th)</li>
+                            <li>All subjects are core (required)</li>
+                            <li>Default units: 1.0</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row" id="shs_fields" style="display: none;">
+                <div class="form-group">
+                    <label for="strand_id">Strand <span class="required">*</span></label>
+                    <select id="strand_id" name="strand_id">
+                        <option value="">Select Strand</option>
+                        <?php foreach ($strands as $strand): ?>
+                            <option value="<?= esc($strand['id']) ?>"><?= esc($strand['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <div class="help-text">Choose which strand this subject belongs to</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="grade_level_shs">Grade Level <span class="required">*</span></label>
+                    <select id="grade_level_shs" name="grade_level_shs">
+                        <option value="">Select Grade</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                    <div class="help-text">Grade level for this subject</div>
+                </div>
+            </div>
+            
+            <div class="form-row" id="quarter_field" style="display: none;">
+                <div class="form-group">
+                    <label for="quarter">Quarter <span class="required">*</span></label>
+                    <select id="quarter" name="quarter">
+                        <option value="">Select Quarter</option>
+                        <option value="1">1st Quarter</option>
+                        <option value="2">2nd Quarter</option>
+                        <option value="3">3rd Quarter</option>
+                        <option value="4">4th Quarter</option>
+                    </select>
+                    <div class="help-text">Quarter when this subject is taught</div>
+                </div>
+                
+                <div class="form-group" id="semester_field" style="display: none;">
+                    <label for="semester">Semester</label>
+                    <select id="semester" name="semester">
+                        <option value="">Select Semester</option>
+                        <option value="1">1st Semester</option>
+                        <option value="2">2nd Semester</option>
+                    </select>
+                    <div class="help-text">Semester for SHS subjects (Q1-2 = Sem 1, Q3-4 = Sem 2)</div>
                 </div>
             </div>
             
@@ -209,21 +273,22 @@
                 <div class="help-text">Optional description of the subject content</div>
             </div>
             
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="units">Units <span class="required">*</span></label>
-                    <input type="number" id="units" name="units" required min="1" max="9" step="0.5" placeholder="1.0">
-                    <div class="help-text">Number of units (typically 1-6 for JHS subjects)</div>
+            <div class="form-group" id="jhs_core_notice" style="display: none;">
+                <label>JHS Subject Type</label>
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 6px; border: 1px solid #c3e6c3;">
+                    <p style="margin: 0; color: #155724;"><strong>✅ Core Subject:</strong> All JHS subjects are automatically marked as core (required) subjects.</p>
                 </div>
-                
-                <div class="form-group">
-                    <label>Subject Type</label>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="is_core" name="is_core" value="1">
-                        <label for="is_core">Core Subject (Required)</label>
-                    </div>
-                    <div class="help-text">Core subjects are mandatory for all students</div>
-                </div>
+            </div>
+            
+            <div class="form-group" id="shs_subject_type" style="display: none;">
+                <label for="shs_subject_category">Subject Category <span class="required">*</span></label>
+                <select id="shs_subject_category" name="shs_subject_category">
+                    <option value="">Select Subject Category</option>
+                    <option value="core">Core Subject</option>
+                    <option value="applied">Applied Subject</option>
+                    <option value="specialized">Specialized Subject</option>
+                </select>
+                <div class="help-text">Choose the category of this SHS subject</div>
             </div>
             
             <div class="form-group">
@@ -248,36 +313,103 @@
             this.value = this.value.toUpperCase();
         });
         
+        // Toggle subject type fields
+        function toggleSubjectFields() {
+            const subjectType = document.getElementById('subject_type').value;
+            const jhsFields = document.getElementById('jhs_fields');
+            const shsFields = document.getElementById('shs_fields');
+            const quarterField = document.getElementById('quarter_field');
+            const jhsCoreNotice = document.getElementById('jhs_core_notice');
+            const shsSubjectType = document.getElementById('shs_subject_type');
+            
+            // Hide all fields first
+            jhsFields.style.display = 'none';
+            shsFields.style.display = 'none';
+            quarterField.style.display = 'none';
+            jhsCoreNotice.style.display = 'none';
+            shsSubjectType.style.display = 'none';
+            
+            // Show relevant fields based on selection
+            if (subjectType === 'jhs') {
+                jhsFields.style.display = 'grid';
+                // Make JHS fields required
+                document.getElementById('curriculum_id').required = true;
+                // Make SHS fields not required
+                document.getElementById('strand_id').required = false;
+                document.getElementById('grade_level_shs').required = false;
+                jhsCoreNotice.style.display = 'block';
+            } else if (subjectType === 'shs') {
+                shsFields.style.display = 'grid';
+                quarterField.style.display = 'grid';
+                shsSubjectType.style.display = 'block';
+                // Make SHS fields required
+                document.getElementById('strand_id').required = true;
+                document.getElementById('grade_level_shs').required = true;
+                document.getElementById('quarter').required = true;
+                document.getElementById('shs_subject_category').required = true;
+                // Make JHS fields not required
+                document.getElementById('curriculum_id').required = false;
+                jhsCoreNotice.style.display = 'none';
+            }
+        }
+        
+        // Auto-set semester based on quarter for SHS
+        document.getElementById('quarter').addEventListener('change', function() {
+            const quarter = parseInt(this.value);
+            const semesterField = document.getElementById('semester_field');
+            const semester = document.getElementById('semester');
+            
+            if (document.getElementById('subject_type').value === 'shs') {
+                if (quarter === 1 || quarter === 2) {
+                    semester.value = '1';
+                } else if (quarter === 3 || quarter === 4) {
+                    semester.value = '2';
+                }
+            }
+        });
+        
         // Form validation
         document.querySelector('form').addEventListener('submit', function(e) {
-            const curriculum = document.getElementById('curriculum_id').value;
-            const code = document.getElementById('code').value;
+            const subjectType = document.getElementById('subject_type').value;
             const name = document.getElementById('name').value;
-            const units = document.getElementById('units').value;
             
-            console.log('Form submission - Curriculum:', curriculum, 'Code:', code, 'Name:', name, 'Units:', units);
+            // Check subject type specific fields
+            let isValid = true;
+            let errorMessage = '';
             
-            if (!curriculum || !code || !name || !units) {
-                e.preventDefault();
-                alert('Please fill in all required fields marked with *');
-                return false;
+            if (subjectType === 'jhs') {
+                const curriculum = document.getElementById('curriculum_id').value;
+                
+                if (!curriculum) {
+                    isValid = false;
+                    errorMessage = 'Please select curriculum for JHS subject.';
+                }
+            } else if (subjectType === 'shs') {
+                const strand = document.getElementById('strand_id').value;
+                const gradeLevel = document.getElementById('grade_level_shs').value;
+                const quarter = document.getElementById('quarter').value;
+                const subjectCategory = document.getElementById('shs_subject_category').value;
+                
+                if (!strand || !gradeLevel || !quarter || !subjectCategory) {
+                    isValid = false;
+                    errorMessage = 'Please fill in all required fields for SHS subject.';
+                }
             }
             
-            if (code.length < 2) {
+            if (!name) {
+                isValid = false;
+                errorMessage = 'Please enter the subject name.';
+            }
+            
+            if (!isValid) {
                 e.preventDefault();
-                alert('Subject code must be at least 2 characters long');
+                alert(errorMessage);
                 return false;
             }
             
             if (name.length < 2) {
                 e.preventDefault();
                 alert('Subject name must be at least 2 characters long');
-                return false;
-            }
-            
-            if (units < 1 || units > 9) {
-                e.preventDefault();
-                alert('Units must be between 1 and 9');
                 return false;
             }
             

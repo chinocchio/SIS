@@ -551,9 +551,11 @@ class AdminController extends BaseController
     public function showAddSubjectForm()
     {
         $curriculumModel = new CurriculumModel();
+        $strandModel = new StrandModel();
         
         $data = [
-            'curriculums' => $curriculumModel->getAllActiveCurriculums()
+            'curriculums' => $curriculumModel->getAllActiveCurriculums(),
+            'strands' => $strandModel->getActiveStrandsWithTracks()
         ];
         
         return view('admin/add_subject', $data);
@@ -571,53 +573,136 @@ class AdminController extends BaseController
         $subjectModel = new SubjectModel();
         
         // Get form data
+        $subjectType = $this->request->getPost('subject_type');
         $curriculumId = $this->request->getPost('curriculum_id');
-        $code = $this->request->getPost('code');
+        $strandId = $this->request->getPost('strand_id');
         $name = $this->request->getPost('name');
         $description = $this->request->getPost('description');
-        $units = $this->request->getPost('units');
-        $isCore = $this->request->getPost('is_core') ? 1 : 0;
+        $gradeLevel = $this->request->getPost('grade_level_shs'); // Only for SHS
+        $semester = $this->request->getPost('semester');
+        $quarter = $this->request->getPost('quarter');
+        $shsSubjectCategory = $this->request->getPost('shs_subject_category'); // New field for SHS
         $isActive = $this->request->getPost('is_active') ? 1 : 0;
         
         // Debug: Log the extracted data
-        log_message('info', 'Extracted data - curriculum_id: ' . $curriculumId . ', code: ' . $code . ', name: ' . $name . ', units: ' . $units);
+        log_message('info', 'Extracted data - subject_type: ' . $subjectType . ', curriculum_id: ' . $curriculumId . ', strand_id: ' . $strandId . ', name: ' . $name . ', grade_level: ' . $gradeLevel . ', semester: ' . $semester . ', quarter: ' . $quarter . ', shs_subject_category: ' . $shsSubjectCategory);
         
-        // Validation
-        if (empty($curriculumId) || empty($code) || empty($name) || empty($units)) {
+        // Basic validation
+        if (empty($subjectType) || empty($name)) {
             log_message('error', 'Validation failed - missing required fields');
-            return redirect()->to('/admin/subjects')->with('error', 'Curriculum, code, name, and units are required.');
+            return redirect()->to('/admin/subjects')->with('error', 'Subject type and name are required.');
         }
         
-        // Check if subject code is unique within the curriculum
-        if (!$subjectModel->isCodeUniqueInCurriculum($code, $curriculumId)) {
-            log_message('error', 'Subject code already exists in curriculum: ' . $code . ' in ' . $curriculumId);
-            return redirect()->to('/admin/subjects')->with('error', 'Subject code already exists in this curriculum.');
+        // Validate subject type specific fields
+        if ($subjectType === 'jhs' && empty($curriculumId)) {
+            log_message('error', 'Validation failed - curriculum required for JHS');
+            return redirect()->to('/admin/subjects')->with('error', 'Curriculum is required for JHS subjects.');
         }
         
-        // Prepare data
-        $data = [
-            'curriculum_id' => $curriculumId,
-            'code' => strtoupper(trim($code)),
-            'name' => trim($name),
-            'description' => trim($description),
-            'units' => $units,
-            'is_core' => $isCore,
-            'is_active' => $isActive
-        ];
-        
-        // Debug: Log the prepared data
-        log_message('info', 'Prepared data for insert: ' . json_encode($data));
-        
-        // Insert into database
-        try {
-            $result = $subjectModel->insert($data);
-            if ($result) {
-                log_message('info', 'Subject created successfully with ID: ' . $result);
-                return redirect()->to('/admin/subjects')->with('success', 'Subject created successfully!');
-            } else {
-                log_message('error', 'Failed to create subject - insert returned false');
-                return redirect()->to('/admin/subjects')->with('error', 'Failed to create subject.');
+        if ($subjectType === 'shs') {
+            if (empty($strandId) || empty($gradeLevel) || empty($quarter) || empty($shsSubjectCategory)) {
+                log_message('error', 'Validation failed - missing SHS required fields');
+                return redirect()->to('/admin/subjects')->with('error', 'For SHS subjects: strand, grade level, quarter, and subject category are required.');
             }
+        }
+        
+        try {
+            if ($subjectType === 'jhs') {
+                // For JHS: Create subjects for all grade levels (7-10) and all quarters (1-4)
+                log_message('info', 'Creating JHS subjects for all grade levels and quarters');
+                
+                $jhsGrades = [7, 8, 9, 10];
+                $quarters = [1, 2, 3, 4];
+                $createdCount = 0;
+                
+                foreach ($jhsGrades as $grade) {
+                    foreach ($quarters as $q) {
+                        // Generate a unique code for each grade-quarter combination
+                        $subjectCode = strtoupper(substr($name, 0, 3)) . $grade . 'Q' . $q;
+                        
+                        // Check if this subject already exists
+                        if (!$subjectModel->isCodeUniqueInCurriculum($subjectCode, $curriculumId, $grade, null, $q)) {
+                            log_message('warning', 'Subject already exists for grade ' . $grade . ' quarter ' . $q . ' - skipping');
+                            continue;
+                        }
+                        
+                        // Prepare data for JHS subject
+                        $data = [
+                            'curriculum_id' => $curriculumId,
+                            'strand_id' => null,
+                            'code' => $subjectCode,
+                            'name' => trim($name),
+                            'description' => trim($description),
+                            'units' => 1.0, // Default units for JHS
+                            'grade_level' => $grade,
+                            'semester' => null, // No semester for JHS
+                            'quarter' => $q,
+                            'is_core' => 1, // All JHS subjects are core
+                            'is_active' => $isActive
+                        ];
+                        
+                        // Insert JHS subject
+                        $result = $subjectModel->insert($data);
+                        if ($result) {
+                            $createdCount++;
+                            log_message('info', 'Created JHS subject: ' . $subjectCode . ' for grade ' . $grade . ' quarter ' . $q);
+                        }
+                    }
+                }
+                
+                if ($createdCount > 0) {
+                    log_message('info', 'Successfully created ' . $createdCount . ' JHS subjects');
+                    return redirect()->to('/admin/subjects')->with('success', 'Successfully created ' . $createdCount . ' JHS subjects for all grade levels and quarters!');
+                } else {
+                    log_message('warning', 'No new JHS subjects were created (all already exist)');
+                    return redirect()->to('/admin/subjects')->with('warning', 'All subjects for this curriculum already exist.');
+                }
+                
+            } else {
+                // For SHS: Create single subject with specific grade, semester, and quarter
+                log_message('info', 'Creating SHS subject');
+                
+                // Map subject category to is_core field
+                $isCore = ($shsSubjectCategory === 'core') ? 1 : 0;
+                
+                // Generate a unique code for SHS subject
+                $subjectCode = strtoupper(substr($name, 0, 3)) . $gradeLevel . 'Q' . $quarter;
+                
+                // Check if subject code is unique within the strand and grade/semester/quarter
+                if (!$subjectModel->isCodeUniqueInStrand($subjectCode, $strandId, $gradeLevel, $semester, $quarter)) {
+                    log_message('error', 'Subject already exists: ' . $subjectCode . ' in grade ' . $gradeLevel . ' semester ' . $semester . ' quarter ' . $quarter);
+                    return redirect()->to('/admin/subjects')->with('error', 'A subject with this name already exists for this grade level, semester, and quarter.');
+                }
+                
+                // Prepare data for SHS subject
+                $data = [
+                    'curriculum_id' => null,
+                    'strand_id' => $strandId,
+                    'code' => $subjectCode,
+                    'name' => trim($name),
+                    'description' => trim($description),
+                    'units' => 1.0, // Default units for SHS
+                    'grade_level' => $gradeLevel,
+                    'semester' => $semester,
+                    'quarter' => $quarter,
+                    'is_core' => $isCore,
+                    'is_active' => $isActive
+                ];
+                
+                // Debug: Log the prepared data
+                log_message('info', 'Prepared SHS data for insert: ' . json_encode($data));
+                
+                // Insert SHS subject
+                $result = $subjectModel->insert($data);
+                if ($result) {
+                    log_message('info', 'SHS subject created successfully with ID: ' . $result);
+                    return redirect()->to('/admin/subjects')->with('success', 'SHS subject created successfully!');
+                } else {
+                    log_message('error', 'Failed to create SHS subject - insert returned false');
+                    return redirect()->to('/admin/subjects')->with('error', 'Failed to create SHS subject.');
+                }
+            }
+            
         } catch (\Exception $e) {
             log_message('error', 'Exception creating subject: ' . $e->getMessage());
             return redirect()->to('/admin/subjects')->with('error', 'Error: ' . $e->getMessage());
@@ -1068,5 +1153,68 @@ class AdminController extends BaseController
         }
         
         return view('admin/view_student', ['student' => $student]);
+    }
+    
+    public function saveStudentGrade()
+    {
+        // Check if this is an AJAX request
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Invalid request']);
+        }
+        
+        // Get JSON data
+        $jsonData = $this->request->getJSON(true);
+        
+        if (!$jsonData) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No data received']);
+        }
+        
+        $studentId = $jsonData['student_id'] ?? null;
+        $subjectId = $jsonData['subject_id'] ?? null;
+        $quarter = $jsonData['quarter'] ?? null;
+        $grade = $jsonData['grade'] ?? null;
+        
+        // Validation
+        if (!$studentId || !$subjectId || !$quarter || !$grade) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Missing required data']);
+        }
+        
+        if ($grade < 75 || $grade > 100) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Grade must be between 75 and 100']);
+        }
+        
+        try {
+            // Get current school year
+            $schoolYearModel = new \App\Models\SchoolYearModel();
+            $currentSchoolYear = $schoolYearModel->getActiveSchoolYear();
+            
+            if (!$currentSchoolYear) {
+                return $this->response->setJSON(['success' => false, 'message' => 'No active school year found']);
+            }
+            
+            // Save or update the grade
+            $studentGradeModel = new \App\Models\StudentGradeModel();
+            $gradeData = [
+                'student_id' => $studentId,
+                'subject_id' => $subjectId,
+                'school_year_id' => $currentSchoolYear['id'],
+                'quarter' => $quarter,
+                'grade' => $grade,
+                'remarks' => '',
+                'is_final' => 1
+            ];
+            
+            $result = $studentGradeModel->updateOrCreateGrade($gradeData);
+            
+            if ($result) {
+                return $this->response->setJSON(['success' => true, 'message' => 'Grade saved successfully']);
+            } else {
+                return $this->response->setJSON(['success' => false, 'message' => 'Failed to save grade']);
+            }
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error saving student grade: ' . $e->getMessage());
+            return $this->response->setJSON(['success' => false, 'message' => 'Error saving grade: ' . $e->getMessage()]);
+        }
     }
 }

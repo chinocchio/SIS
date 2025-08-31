@@ -157,10 +157,19 @@ class StudentModel extends Model
         
         $student = $query->getRowArray();
         
-        // Get subjects for the student's curriculum
-        if ($student && $student['curriculum_id']) {
+        // Get subjects for the student based on their curriculum or strand
+        if ($student) {
             $subjectModel = new \App\Models\SubjectModel();
-            $student['subjects'] = $subjectModel->getSubjectsByCurriculum($student['curriculum_id']);
+            
+            if ($student['curriculum_id']) {
+                // JHS student - get all subjects for their curriculum across all grade levels
+                $student['subjects'] = $subjectModel->getSubjectsByCurriculum($student['curriculum_id']);
+            } elseif ($student['strand_id']) {
+                // SHS student - get subjects for their strand and grade level
+                $student['subjects'] = $subjectModel->getSubjectsByGradeAndStrand($student['grade_level'], $student['strand_id']);
+            } else {
+                $student['subjects'] = [];
+            }
         } else {
             $student['subjects'] = [];
         }

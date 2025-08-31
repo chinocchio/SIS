@@ -63,6 +63,7 @@ $routes->get('/admin/students/edit/(:num)', 'AdminController::editStudent/$1');
 $routes->post('/admin/students/edit/(:num)', 'AdminController::updateStudent/$1');
 $routes->get('/admin/students/delete/(:num)', 'AdminController::deleteStudent/$1');
 $routes->get('/admin/students/view/(:num)', 'AdminController::viewStudent/$1');
+$routes->post('/admin/students/save-grade', 'AdminController::saveStudentGrade');
 
 // Curriculum Management Routes
 $routes->get('/admin/curriculums', 'AdminController::manageCurriculums');
