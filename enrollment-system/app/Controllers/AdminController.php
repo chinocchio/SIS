@@ -634,13 +634,12 @@ class AdminController extends BaseController
         $name = $this->request->getPost('name');
         $description = $this->request->getPost('description');
         $gradeLevel = $this->request->getPost('grade_level_shs'); // Only for SHS
-        $semester = $this->request->getPost('semester');
-        $quarter = $this->request->getPost('quarter');
+        $semester = $this->request->getPost('semester'); // Now required for SHS
         $shsSubjectCategory = $this->request->getPost('shs_subject_category'); // New field for SHS
         $isActive = $this->request->getPost('is_active') ? 1 : 0;
         
         // Debug: Log the extracted data
-        log_message('info', 'Extracted data - subject_type: ' . $subjectType . ', curriculum_id: ' . $curriculumId . ', strand_id: ' . $strandId . ', name: ' . $name . ', grade_level: ' . $gradeLevel . ', semester: ' . $semester . ', quarter: ' . $quarter . ', shs_subject_category: ' . $shsSubjectCategory);
+        log_message('info', 'Extracted data - subject_type: ' . $subjectType . ', curriculum_id: ' . $curriculumId . ', strand_id: ' . $strandId . ', name: ' . $name . ', grade_level: ' . $gradeLevel . ', semester: ' . $semester . ', shs_subject_category: ' . $shsSubjectCategory);
         
         // Basic validation
         if (empty($subjectType) || empty($name)) {
@@ -655,9 +654,9 @@ class AdminController extends BaseController
         }
         
         if ($subjectType === 'shs') {
-            if (empty($strandId) || empty($gradeLevel) || empty($quarter) || empty($shsSubjectCategory)) {
+            if (empty($strandId) || empty($gradeLevel) || empty($semester) || empty($shsSubjectCategory)) {
                 log_message('error', 'Validation failed - missing SHS required fields');
-                return redirect()->to('/admin/subjects')->with('error', 'For SHS subjects: strand, grade level, quarter, and subject category are required.');
+                return redirect()->to('/admin/subjects')->with('error', 'For SHS subjects: strand, grade level, semester, and subject category are required.');
             }
         }
         
@@ -714,47 +713,58 @@ class AdminController extends BaseController
                 }
                 
             } else {
-                // For SHS: Create single subject with specific grade, semester, and quarter
-                log_message('info', 'Creating SHS subject');
+                // For SHS: Create subjects for both quarters in the selected semester
+                log_message('info', 'Creating SHS subjects for semester ' . $semester);
                 
                 // Map subject category to is_core field
                 $isCore = ($shsSubjectCategory === 'core') ? 1 : 0;
                 
-                // Generate a unique code for SHS subject
-                $subjectCode = strtoupper(substr($name, 0, 3)) . $gradeLevel . 'Q' . $quarter;
+                // Determine quarters based on semester
+                $quarters = ($semester == 1) ? [1, 2] : [3, 4];
+                $createdCount = 0;
                 
-                // Check if subject code is unique within the strand and grade/semester/quarter
-                if (!$subjectModel->isCodeUniqueInStrand($subjectCode, $strandId, $gradeLevel, $semester, $quarter)) {
-                    log_message('error', 'Subject already exists: ' . $subjectCode . ' in grade ' . $gradeLevel . ' semester ' . $semester . ' quarter ' . $quarter);
-                    return redirect()->to('/admin/subjects')->with('error', 'A subject with this name already exists for this grade level, semester, and quarter.');
+                foreach ($quarters as $quarter) {
+                    // Generate a unique code for each quarter
+                    $subjectCode = strtoupper(substr($name, 0, 3)) . $gradeLevel . 'S' . $semester . 'Q' . $quarter;
+                    
+                    // Check if subject code is unique within the strand and grade/semester/quarter
+                    if (!$subjectModel->isCodeUniqueInStrand($subjectCode, $strandId, $gradeLevel, $semester, $quarter)) {
+                        log_message('warning', 'Subject already exists: ' . $subjectCode . ' in grade ' . $gradeLevel . ' semester ' . $semester . ' quarter ' . $quarter . ' - skipping');
+                        continue;
+                    }
+                    
+                    // Prepare data for SHS subject
+                    $data = [
+                        'curriculum_id' => null,
+                        'strand_id' => $strandId,
+                        'code' => $subjectCode,
+                        'name' => trim($name),
+                        'description' => trim($description),
+                        'units' => 1.0, // Default units for SHS
+                        'grade_level' => $gradeLevel,
+                        'semester' => $semester,
+                        'quarter' => $quarter,
+                        'is_core' => $isCore,
+                        'is_active' => $isActive
+                    ];
+                    
+                    // Debug: Log the prepared data
+                    log_message('info', 'Prepared SHS data for insert (Q' . $quarter . '): ' . json_encode($data));
+                    
+                    // Insert SHS subject
+                    $result = $subjectModel->insert($data);
+                    if ($result) {
+                        $createdCount++;
+                        log_message('info', 'SHS subject created successfully for Q' . $quarter . ' with ID: ' . $result);
+                    }
                 }
                 
-                // Prepare data for SHS subject
-                $data = [
-                    'curriculum_id' => null,
-                    'strand_id' => $strandId,
-                    'code' => $subjectCode,
-                    'name' => trim($name),
-                    'description' => trim($description),
-                    'units' => 1.0, // Default units for SHS
-                    'grade_level' => $gradeLevel,
-                    'semester' => $semester,
-                    'quarter' => $quarter,
-                    'is_core' => $isCore,
-                    'is_active' => $isActive
-                ];
-                
-                // Debug: Log the prepared data
-                log_message('info', 'Prepared SHS data for insert: ' . json_encode($data));
-                
-                // Insert SHS subject
-                $result = $subjectModel->insert($data);
-                if ($result) {
-                    log_message('info', 'SHS subject created successfully with ID: ' . $result);
-                    return redirect()->to('/admin/subjects')->with('success', 'SHS subject created successfully!');
+                if ($createdCount > 0) {
+                    log_message('info', 'Successfully created ' . $createdCount . ' SHS subjects for semester ' . $semester);
+                    return redirect()->to('/admin/subjects')->with('success', 'Successfully created ' . $createdCount . ' SHS subjects for semester ' . $semester . ' (quarters ' . implode(', ', $quarters) . ')!');
                 } else {
-                    log_message('error', 'Failed to create SHS subject - insert returned false');
-                    return redirect()->to('/admin/subjects')->with('error', 'Failed to create SHS subject.');
+                    log_message('warning', 'No new SHS subjects were created (all already exist)');
+                    return redirect()->to('/admin/subjects')->with('warning', 'All subjects for this strand, grade level, and semester already exist.');
                 }
             }
             

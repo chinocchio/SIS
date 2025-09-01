@@ -162,11 +162,15 @@ class StudentModel extends Model
             $subjectModel = new \App\Models\SubjectModel();
             
             if ($student['curriculum_id']) {
-                // JHS student - get all subjects for their curriculum across all grade levels
+                // JHS student - get all subjects for their curriculum across all grade levels (7-10)
                 $student['subjects'] = $subjectModel->getSubjectsByCurriculum($student['curriculum_id']);
             } elseif ($student['strand_id']) {
-                // SHS student - get subjects for their strand and grade level
-                $student['subjects'] = $subjectModel->getSubjectsByGradeAndStrand($student['grade_level'], $student['strand_id']);
+                // SHS student - get subjects for both Grade 11 and Grade 12 for their strand
+                $grade11Subjects = $subjectModel->getSubjectsByGradeAndStrand(11, $student['strand_id']);
+                $grade12Subjects = $subjectModel->getSubjectsByGradeAndStrand(12, $student['strand_id']);
+                
+                // Combine both grade levels' subjects
+                $student['subjects'] = array_merge($grade11Subjects, $grade12Subjects);
             } else {
                 $student['subjects'] = [];
             }

@@ -169,7 +169,7 @@
             <h4>📋 How to add a subject:</h4>
             <ol>
                 <li><strong>JHS Subjects:</strong> Select curriculum and enter subject name. System automatically creates subjects for all grade levels (7-10) and quarters (1-4).</li>
-                <li><strong>SHS Subjects:</strong> Select strand, grade level, quarter, and subject category (Core/Applied/Specialized).</li>
+                <li><strong>SHS Subjects:</strong> Select strand, grade level, semester, and subject category (Core/Applied/Specialized). System automatically creates subjects for both quarters in the selected semester.</li>
                 <li>Provide the full subject name and optional description</li>
                 <li>Set the subject status (active/inactive)</li>
             </ol>
@@ -239,25 +239,20 @@
             
             <div class="form-row" id="quarter_field" style="display: none;">
                 <div class="form-group">
-                    <label for="quarter">Quarter <span class="required">*</span></label>
-                    <select id="quarter" name="quarter">
-                        <option value="">Select Quarter</option>
-                        <option value="1">1st Quarter</option>
-                        <option value="2">2nd Quarter</option>
-                        <option value="3">3rd Quarter</option>
-                        <option value="4">4th Quarter</option>
-                    </select>
-                    <div class="help-text">Quarter when this subject is taught</div>
-                </div>
-                
-                <div class="form-group" id="semester_field" style="display: none;">
-                    <label for="semester">Semester</label>
-                    <select id="semester" name="semester">
+                    <label for="semester">Semester <span class="required">*</span></label>
+                    <select id="semester" name="semester" onchange="updateQuarterInfo()">
                         <option value="">Select Semester</option>
                         <option value="1">1st Semester</option>
                         <option value="2">2nd Semester</option>
                     </select>
-                    <div class="help-text">Semester for SHS subjects (Q1-2 = Sem 1, Q3-4 = Sem 2)</div>
+                    <div class="help-text">Choose the semester for this SHS subject. 1st Semester = Q1+Q2, 2nd Semester = Q3+Q4</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Quarter Assignment</label>
+                    <div id="quarterInfo" style="background: #e8f5e8; padding: 15px; border-radius: 6px; border: 1px solid #c3e6c3;">
+                        <p style="margin: 0; color: #155724;"><strong>ℹ️ Note:</strong> Select a semester to see quarter assignments</p>
+                    </div>
                 </div>
             </div>
             
@@ -337,6 +332,8 @@
                 // Make SHS fields not required
                 document.getElementById('strand_id').required = false;
                 document.getElementById('grade_level_shs').required = false;
+                document.getElementById('semester').required = false;
+                document.getElementById('shs_subject_category').required = false;
                 jhsCoreNotice.style.display = 'block';
             } else if (subjectType === 'shs') {
                 shsFields.style.display = 'grid';
@@ -345,7 +342,7 @@
                 // Make SHS fields required
                 document.getElementById('strand_id').required = true;
                 document.getElementById('grade_level_shs').required = true;
-                document.getElementById('quarter').required = true;
+                document.getElementById('semester').required = true;
                 document.getElementById('shs_subject_category').required = true;
                 // Make JHS fields not required
                 document.getElementById('curriculum_id').required = false;
@@ -353,20 +350,19 @@
             }
         }
         
-        // Auto-set semester based on quarter for SHS
-        document.getElementById('quarter').addEventListener('change', function() {
-            const quarter = parseInt(this.value);
-            const semesterField = document.getElementById('semester_field');
-            const semester = document.getElementById('semester');
+        // Update quarter information based on semester selection
+        function updateQuarterInfo() {
+            const semester = document.getElementById('semester').value;
+            const quarterInfo = document.getElementById('quarterInfo');
             
-            if (document.getElementById('subject_type').value === 'shs') {
-                if (quarter === 1 || quarter === 2) {
-                    semester.value = '1';
-                } else if (quarter === 3 || quarter === 4) {
-                    semester.value = '2';
-                }
+            if (semester === '1') {
+                quarterInfo.innerHTML = '<p style="margin: 0; color: #155724;"><strong>✅ 1st Semester:</strong> This subject will be automatically assigned to 1st and 2nd Quarters</p>';
+            } else if (semester === '2') {
+                quarterInfo.innerHTML = '<p style="margin: 0; color: #155724;"><strong>✅ 2nd Semester:</strong> This subject will be automatically assigned to 3rd and 4th Quarters</p>';
+            } else {
+                quarterInfo.innerHTML = '<p style="margin: 0; color: #155724;"><strong>ℹ️ Note:</strong> Select a semester to see quarter assignments</p>';
             }
-        });
+        }
         
         // Form validation
         document.querySelector('form').addEventListener('submit', function(e) {
@@ -387,10 +383,10 @@
             } else if (subjectType === 'shs') {
                 const strand = document.getElementById('strand_id').value;
                 const gradeLevel = document.getElementById('grade_level_shs').value;
-                const quarter = document.getElementById('quarter').value;
+                const semester = document.getElementById('semester').value;
                 const subjectCategory = document.getElementById('shs_subject_category').value;
                 
-                if (!strand || !gradeLevel || !quarter || !subjectCategory) {
+                if (!strand || !gradeLevel || !semester || !subjectCategory) {
                     isValid = false;
                     errorMessage = 'Please fill in all required fields for SHS subject.';
                 }

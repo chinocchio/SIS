@@ -308,6 +308,33 @@
             border-bottom: 2px solid #dee2e6;
         }
 
+        .grade-section h4:contains("SHS") {
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+
+        .grade-section h4:contains("JHS") {
+            border-bottom-color: #28a745;
+            color: #28a745;
+        }
+
+        .shs-grade-section h4 {
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+
+        .jhs-grade-section h4 {
+            border-bottom-color: #28a745;
+            color: #28a745;
+        }
+
+        .semester-info {
+            font-size: 11px;
+            color: #6c757d;
+            font-style: italic;
+            margin-top: 2px;
+        }
+
         .no-subjects {
             color: #6c757d;
             font-style: italic;
@@ -412,7 +439,46 @@
             <!-- Subjects Section -->
             <div class="profile-section full-width">
                 <h3>📚 Subjects & Grades</h3>
+                
                 <?php if (!empty($student['subjects'])): ?>
+                    <?php
+                    // Calculate summary information
+                    $totalSubjects = count($student['subjects']);
+                    $gradeLevels = array_unique(array_column($student['subjects'], 'grade_level'));
+                    sort($gradeLevels);
+                    $isSHS = in_array(11, $gradeLevels) || in_array(12, $gradeLevels);
+                    $isJHS = in_array(7, $gradeLevels) || in_array(8, $gradeLevels) || in_array(9, $gradeLevels) || in_array(10, $gradeLevels);
+                    ?>
+                    
+                    <!-- Summary Information -->
+                    <div class="subjects-summary" style="background: #e8f5e8; padding: 15px; border-radius: 6px; border: 1px solid #c3e6c3; margin-bottom: 20px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div>
+                                <strong>📊 Total Subjects:</strong> <?= $totalSubjects ?>
+                            </div>
+                            <div>
+                                <strong>🎯 Grade Levels:</strong> 
+                                <?php if ($isSHS && $isJHS): ?>
+                                    JHS (<?= implode(', ', array_filter($gradeLevels, function($g) { return $g <= 10; })) ?>) + SHS (<?= implode(', ', array_filter($gradeLevels, function($g) { return $g >= 11; })) ?>)
+                                <?php elseif ($isSHS): ?>
+                                    SHS (<?= implode(', ', $gradeLevels) ?>)
+                                <?php elseif ($isJHS): ?>
+                                    JHS (<?= implode(', ', $gradeLevels) ?>)
+                                <?php else: ?>
+                                    <?= implode(', ', $gradeLevels) ?>
+                                <?php endif; ?>
+                            </div>
+                            <div>
+                                <strong>📅 Academic Structure:</strong>
+                                <?php if ($isSHS): ?>
+                                    Semester-based (Q1+Q2 = 1st Sem, Q3+Q4 = 2nd Sem)
+                                <?php else: ?>
+                                    Quarter-based (4 quarters per year)
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <?php
                     // Organize subjects by grade level and quarter
                     $organizedSubjects = [];
@@ -427,12 +493,28 @@
                     ?>
                     
                     <?php foreach ($organizedSubjects as $gradeLevel => $quarters): ?>
-                        <div class="grade-section">
-                            <h4>Grade <?= $gradeLevel ?></h4>
+                        <div class="grade-section <?= $gradeLevel >= 11 ? 'shs-grade-section' : 'jhs-grade-section' ?>">
+                            <h4>
+                                <?php if ($gradeLevel >= 11): ?>
+                                    🎓 Grade <?= $gradeLevel ?> (SHS)
+                                <?php else: ?>
+                                    📖 Grade <?= $gradeLevel ?> (JHS)
+                                <?php endif; ?>
+                            </h4>
                             <div class="quarters-grid">
                                 <?php for ($q = 1; $q <= 4; $q++): ?>
                                     <div class="quarter-section">
-                                        <h5><?= $q ?>st Quarter</h5>
+                                        <h5>
+                                            <?php if ($gradeLevel >= 11): ?>
+                                                <?php if ($q == 1 || $q == 2): ?>
+                                                    <?= $q ?>st Quarter (1st Semester)
+                                                <?php else: ?>
+                                                    <?= $q ?>st Quarter (2nd Semester)
+                                                <?php endif; ?>
+                                            <?php else: ?>
+                                                <?= $q ?>st Quarter
+                                            <?php endif; ?>
+                                        </h5>
                                         <?php if (isset($quarters[$q])): ?>
                                             <div class="subjects-list">
                                                 <?php foreach ($quarters[$q] as $subject): ?>
@@ -482,7 +564,7 @@
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <div class="no-data">No subjects assigned to this curriculum yet.</div>
+                    <div class="no-data">No subjects assigned to this curriculum/strand yet.</div>
                 <?php endif; ?>
             </div>
             
