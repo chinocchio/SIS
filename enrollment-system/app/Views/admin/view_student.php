@@ -235,9 +235,14 @@
             color: #856404;
         }
         
-        .subject-type.elective {
+        .subject-type.specialized {
             background: #d1ecf1;
             color: #0c5460;
+        }
+
+        .subject-type.applied {
+            background: #d4edda;
+            color: #155724;
         }
         
         .subject-name {
@@ -298,6 +303,305 @@
         .subjects-list {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+                 /* SHS Table Styles */
+         .shs-table-container {
+             overflow-x: auto;
+             margin-top: 15px;
+         }
+
+         .shs-subjects-table {
+             width: 100%;
+             border-collapse: collapse;
+             background: white;
+             border-radius: 8px;
+             overflow: hidden;
+             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+         }
+
+         .shs-subjects-table thead {
+             background: #667eea;
+             color: white;
+         }
+
+         .shs-subjects-table th {
+             padding: 12px 8px;
+             text-align: left;
+             font-weight: bold;
+             font-size: 14px;
+             border-bottom: 2px solid #5a6fd8;
+         }
+
+         .shs-subjects-table td {
+             padding: 12px 8px;
+             border-bottom: 1px solid #e9ecef;
+             vertical-align: middle;
+         }
+
+         .shs-subjects-table tbody tr:hover {
+             background: #f8f9fa;
+         }
+
+         .shs-subjects-table tbody tr:nth-child(even) {
+             background: #f8f9fa;
+         }
+
+         .shs-subjects-table .subject-code {
+             background: #667eea;
+             color: white;
+             padding: 4px 8px;
+             border-radius: 4px;
+             font-size: 12px;
+             font-weight: bold;
+             display: inline-block;
+         }
+
+         .shs-subjects-table .subject-name {
+             font-weight: bold;
+             color: #333;
+             margin-bottom: 4px;
+         }
+
+         .shs-subjects-table .subject-description {
+             font-size: 12px;
+             color: #666;
+             font-style: italic;
+         }
+
+         .shs-subjects-table .subject-type {
+             padding: 4px 8px;
+             border-radius: 12px;
+             font-size: 11px;
+             font-weight: bold;
+             display: inline-block;
+         }
+
+         .shs-subjects-table .subject-type.core {
+             background: #fff3cd;
+             color: #856404;
+         }
+
+         .shs-subjects-table .subject-type.specialized {
+             background: #d1ecf1;
+             color: #0c5460;
+         }
+
+         .shs-subjects-table .subject-type.applied {
+             background: #d4edda;
+             color: #155724;
+         }
+
+         .shs-subjects-table .grade-input {
+             display: flex;
+             align-items: center;
+             gap: 8px;
+         }
+
+         .shs-subjects-table .grade-field {
+             width: 70px;
+             padding: 6px;
+             border: 1px solid #ced4da;
+             border-radius: 4px;
+             text-align: center;
+             font-size: 14px;
+         }
+
+         .shs-subjects-table .save-grade-btn {
+             padding: 6px 10px;
+             font-size: 11px;
+             white-space: nowrap;
+         }
+
+         /* New styles for semester-based table */
+         .semester-grades {
+             display: flex;
+             flex-direction: column;
+             gap: 8px;
+         }
+
+         .quarter-grade {
+             display: flex;
+             align-items: center;
+             gap: 8px;
+         }
+
+         .quarter-grade label {
+             font-size: 12px;
+             font-weight: bold;
+             color: #495057;
+             min-width: 25px;
+         }
+
+         .quarter-grade .grade-field {
+             width: 60px;
+             padding: 4px 6px;
+             border: 1px solid #ced4da;
+             border-radius: 4px;
+             text-align: center;
+             font-size: 12px;
+         }
+
+         .save-buttons {
+             display: flex;
+             flex-direction: column;
+             gap: 4px;
+         }
+
+         .save-buttons .save-grade-btn {
+             padding: 4px 8px;
+             font-size: 10px;
+             margin: 0;
+         }
+
+         .shs-subjects-table .subject-units {
+             font-size: 11px;
+             color: #6c757d;
+             margin-top: 4px;
+         }
+
+         /* JHS Table Styles */
+         .jhs-table-container {
+             overflow-x: auto;
+             margin-top: 15px;
+         }
+
+         .jhs-subjects-table {
+             width: 100%;
+             border-collapse: collapse;
+             background: white;
+             border-radius: 8px;
+             overflow: hidden;
+             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+         }
+
+         .jhs-subjects-table thead {
+             background: #28a745;
+             color: white;
+         }
+
+         .jhs-subjects-table th {
+             padding: 12px 8px;
+             text-align: left;
+             font-weight: bold;
+             font-size: 14px;
+             border-bottom: 2px solid #1e7e34;
+         }
+
+         .jhs-subjects-table td {
+             padding: 12px 8px;
+             border-bottom: 1px solid #e9ecef;
+             vertical-align: middle;
+         }
+
+         .jhs-subjects-table tbody tr:hover {
+             background: #f8f9fa;
+         }
+
+         .jhs-subjects-table tbody tr:nth-child(even) {
+             background: #f8f9fa;
+         }
+
+         .jhs-subjects-table .subject-name {
+             font-weight: bold;
+             color: #333;
+             margin-bottom: 4px;
+         }
+
+         .jhs-subjects-table .subject-description {
+             font-size: 12px;
+             color: #666;
+             font-style: italic;
+         }
+
+         .jhs-subjects-table .subject-type {
+             padding: 4px 8px;
+             border-radius: 12px;
+             font-size: 11px;
+             font-weight: bold;
+             display: inline-block;
+         }
+
+         .jhs-subjects-table .subject-type.core {
+             background: #fff3cd;
+             color: #856404;
+         }
+
+         .jhs-subjects-table .subject-type.specialized {
+             background: #d1ecf1;
+             color: #0c5460;
+         }
+
+         .jhs-subjects-table .subject-type.applied {
+             background: #d4edda;
+             color: #155724;
+         }
+
+         .jhs-subjects-table .grade-field {
+             width: 60px;
+             padding: 6px;
+             border: 1px solid #ced4da;
+             border-radius: 4px;
+             text-align: center;
+             font-size: 14px;
+         }
+
+         .jhs-subjects-table .save-grade-btn {
+             padding: 4px 8px;
+             font-size: 10px;
+             margin: 2px;
+         }
+
+         .jhs-subjects-table .subject-units {
+             font-size: 11px;
+             color: #6c757d;
+             margin-top: 4px;
+         }
+
+         .jhs-subjects-table .no-grade {
+             color: #6c757d;
+             font-style: italic;
+             text-align: center;
+         }
+
+         /* Responsive table for mobile devices */
+         @media (max-width: 768px) {
+             .shs-table-container,
+             .jhs-table-container {
+                 overflow-x: auto;
+             }
+             
+             .shs-subjects-table,
+             .jhs-subjects-table {
+                 min-width: 700px;
+             }
+             
+             .shs-subjects-table th,
+             .shs-subjects-table td,
+             .jhs-subjects-table th,
+             .jhs-subjects-table td {
+                 padding: 8px 6px;
+                 font-size: 12px;
+             }
+             
+             .quarter-grade .grade-field,
+             .jhs-subjects-table .grade-field {
+                 width: 50px;
+                 padding: 3px 4px;
+                 font-size: 11px;
+             }
+             
+             .quarter-grade label {
+                 font-size: 11px;
+                 min-width: 20px;
+             }
+             
+             .save-buttons .save-grade-btn,
+             .jhs-subjects-table .save-grade-btn {
+                 padding: 3px 6px;
+                 font-size: 9px;
+             }
+         }
             gap: 15px;
         }
 
@@ -347,6 +651,9 @@
         <div class="header">
             <h1>👤 Student Profile</h1>
             <div>
+                <?php if (($student['status'] ?? '') !== 'approved'): ?>
+                    <a href="/admin/students/approve/<?= $student['id'] ?>" class="btn" style="background:#28a745; margin-right:10px;" onclick="return confirm('Approve this student?');">✅ Approve</a>
+                <?php endif; ?>
                 <a href="/admin/students/edit/<?= $student['id'] ?>" class="btn btn-warning">✏️ Edit Student</a>
                 <a href="/admin/students" class="btn btn-secondary">← Back to Students</a>
             </div>
@@ -436,6 +743,47 @@
                 </div>
             </div>
             
+            <!-- Documents Section -->
+            <div class="profile-section full-width">
+                <h3>🗂️ Submitted Documents</h3>
+                <?php if (!empty($documents)): ?>
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Type</th>
+                                <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Status</th>
+                                <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Uploaded At</th>
+                                <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">File</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($documents as $doc): ?>
+                                <tr>
+                                    <td style="padding:8px; border-bottom:1px solid #f1f1f1;"><?= esc($doc['document_type']) ?></td>
+                                    <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                        <span class="status-badge status-<?= esc(strtolower($doc['status'])) ?>"><?= esc(ucfirst($doc['status'])) ?></span>
+                                    </td>
+                                    <td style="padding:8px; border-bottom:1px solid #f1f1f1;"><?= esc($doc['uploaded_at']) ?></td>
+                                    <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                        <?php 
+                                            $fileExt = strtolower(pathinfo($doc['file_path'], PATHINFO_EXTENSION));
+                                            $streamUrl = base_url('/registrar/document/view/' . $doc['id']);
+                                        ?>
+                                        <?php if (in_array($fileExt, ['jpg','jpeg','png','gif'])): ?>
+                                            <a href="<?= $streamUrl ?>" target="_blank">View Image</a>
+                                        <?php else: ?>
+                                            <a href="<?= $streamUrl ?>" target="_blank">View Document</a>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <div class="no-data">No documents uploaded.</div>
+                <?php endif; ?>
+            </div>
+
             <!-- Subjects Section -->
             <div class="profile-section full-width">
                 <h3>📚 Subjects & Grades</h3>
@@ -476,6 +824,21 @@
                                     Quarter-based (4 quarters per year)
                                 <?php endif; ?>
                             </div>
+                            <?php if ($isSHS): ?>
+                                <?php
+                                // Calculate SHS-specific statistics
+                                $shsSubjects = array_filter($student['subjects'], function($s) { return $s['grade_level'] >= 11; });
+                                $coreSubjects = array_filter($shsSubjects, function($s) { return $s['is_core'] === 'core'; });
+                                $specializedSubjects = array_filter($shsSubjects, function($s) { return $s['is_core'] === 'specialized'; });
+                                $appliedSubjects = array_filter($shsSubjects, function($s) { return $s['is_core'] === 'applied'; });
+                                ?>
+                                <div>
+                                    <strong>📚 Subject Categories:</strong><br>
+                                    Core: <?= count($coreSubjects) ?> | 
+                                    Specialized: <?= count($specializedSubjects) ?> | 
+                                    Applied: <?= count($appliedSubjects) ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                     
@@ -501,66 +864,282 @@
                                     📖 Grade <?= $gradeLevel ?> (JHS)
                                 <?php endif; ?>
                             </h4>
-                            <div class="quarters-grid">
-                                <?php for ($q = 1; $q <= 4; $q++): ?>
-                                    <div class="quarter-section">
-                                        <h5>
-                                            <?php if ($gradeLevel >= 11): ?>
-                                                <?php if ($q == 1 || $q == 2): ?>
-                                                    <?= $q ?>st Quarter (1st Semester)
-                                                <?php else: ?>
-                                                    <?= $q ?>st Quarter (2nd Semester)
-                                                <?php endif; ?>
-                                            <?php else: ?>
-                                                <?= $q ?>st Quarter
-                                            <?php endif; ?>
-                                        </h5>
-                                        <?php if (isset($quarters[$q])): ?>
-                                            <div class="subjects-list">
-                                                <?php foreach ($quarters[$q] as $subject): ?>
-                                                    <div class="subject-item">
-                                                        <div class="subject-header">
-                                                            <span class="subject-code"><?= esc($subject['code']) ?></span>
-                                                            <span class="subject-type <?= $subject['is_core'] ? 'core' : 'elective' ?>">
-                                                                <?= $subject['is_core'] ? 'Core' : 'Elective' ?>
-                                                            </span>
-                                                        </div>
-                                                        <div class="subject-name"><?= esc($subject['name']) ?></div>
-                                                        <div class="subject-details">
-                                                            <span class="subject-units"><?= esc($subject['units']) ?> unit(s)</span>
-                                                            <?php if (!empty($subject['description'])): ?>
-                                                                <span class="subject-description"><?= esc($subject['description']) ?></span>
-                                                            <?php endif; ?>
-                                                        </div>
-                                                        <div class="grade-input">
-                                                            <label for="grade_<?= $subject['id'] ?>_<?= $q ?>">Grade:</label>
-                                                            <input type="number" 
-                                                                   id="grade_<?= $subject['id'] ?>_<?= $q ?>" 
-                                                                   name="grade_<?= $subject['id'] ?>_<?= $q ?>" 
-                                                                   min="75" 
-                                                                   max="100" 
-                                                                   placeholder="75-100"
-                                                                   class="grade-field"
-                                                                   data-subject-id="<?= $subject['id'] ?>"
-                                                                   data-quarter="<?= $q ?>"
-                                                                   data-student-id="<?= $student['id'] ?>">
-                                                            <button type="button" 
-                                                                    class="btn btn-sm btn-success save-grade-btn"
-                                                                    data-subject-id="<?= $subject['id'] ?>"
-                                                                    data-quarter="<?= $q ?>"
+                            
+                                                         <?php if ($gradeLevel >= 11): ?>
+                                 <!-- SHS Table Format -->
+                                 <div class="shs-table-container">
+                                     <table class="shs-subjects-table">
+                                         <thead>
+                                             <tr>
+                                                 <th>Type</th>
+                                                 <th>Subject Name</th>
+                                                 <th>1st Sem Grade</th>
+                                                 <th>2nd Sem Grade</th>
+                                                 <th>Action</th>
+                                             </tr>
+                                         </thead>
+                                         <tbody>
+                                             <?php 
+                                             // Group subjects by name to combine quarters into semesters
+                                             $groupedSubjects = [];
+                                             foreach ($quarters as $quarter => $quarterSubjects) {
+                                                 foreach ($quarterSubjects as $subject) {
+                                                     $subjectKey = $subject['name'] . '_' . $subject['is_core'];
+                                                     if (!isset($groupedSubjects[$subjectKey])) {
+                                                         $groupedSubjects[$subjectKey] = [
+                                                             'name' => $subject['name'],
+                                                             'type' => $subject['is_core'],
+                                                             'description' => $subject['description'],
+                                                             'units' => $subject['units'],
+                                                             'quarters' => []
+                                                         ];
+                                                     }
+                                                     $groupedSubjects[$subjectKey]['quarters'][$quarter] = $subject;
+                                                 }
+                                             }
+                                             ?>
+                                             
+                                             <?php foreach ($groupedSubjects as $subjectKey => $subjectData): ?>
+                                                 <tr>
+                                                     <td>
+                                                         <span class="subject-type <?= $subjectData['type'] === 'core' ? 'core' : (($subjectData['type'] === 'specialized' ? 'specialized' : 'applied')) ?>">
+                                                             <?= ucfirst($subjectData['type']) ?>
+                                                         </span>
+                                                     </td>
+                                                     <td>
+                                                         <div class="subject-name"><?= esc($subjectData['name']) ?></div>
+                                                         <?php if (!empty($subjectData['description'])): ?>
+                                                             <div class="subject-description"><?= esc($subjectData['description']) ?></div>
+                                                         <?php endif; ?>
+                                                         <div class="subject-units"><?= esc($subjectData['units']) ?> unit(s)</div>
+                                                     </td>
+                                                     <td>
+                                                         <!-- 1st Semester Grades (Q1 & Q2) -->
+                                                         <div class="semester-grades">
+                                                             <?php if (isset($subjectData['quarters'][1])): ?>
+                                                                 <div class="quarter-grade">
+                                                                     <label>Q1:</label>
+                                                                     <input type="number" 
+                                                                            id="grade_<?= $subjectData['quarters'][1]['id'] ?>_1" 
+                                                                            name="grade_<?= $subjectData['quarters'][1]['id'] ?>_1" 
+                                                                            min="75" 
+                                                                            max="100" 
+                                                                            placeholder="75-100"
+                                                                            class="grade-field"
+                                                                            data-subject-id="<?= $subjectData['quarters'][1]['id'] ?>"
+                                                                            data-quarter="1"
+                                                                            data-student-id="<?= $student['id'] ?>">
+                                                                 </div>
+                                                             <?php endif; ?>
+                                                             <?php if (isset($subjectData['quarters'][2])): ?>
+                                                                 <div class="quarter-grade">
+                                                                     <label>Q2:</label>
+                                                                     <input type="number" 
+                                                                            id="grade_<?= $subjectData['quarters'][2]['id'] ?>_2" 
+                                                                            name="grade_<?= $subjectData['quarters'][2]['id'] ?>_2" 
+                                                                            min="75" 
+                                                                            max="100" 
+                                                                            placeholder="75-100"
+                                                                            class="grade-field"
+                                                                            data-subject-id="<?= $subjectData['quarters'][2]['id'] ?>"
+                                                                            data-quarter="2"
+                                                                            data-student-id="<?= $student['id'] ?>">
+                                                                 </div>
+                                                             <?php endif; ?>
+                                                         </div>
+                                                     </td>
+                                                     <td>
+                                                         <!-- 2nd Semester Grades (Q3 & Q4) -->
+                                                         <div class="semester-grades">
+                                                             <?php if (isset($subjectData['quarters'][3])): ?>
+                                                                 <div class="quarter-grade">
+                                                                     <label>Q3:</label>
+                                                                     <input type="number" 
+                                                                            id="grade_<?= $subjectData['quarters'][3]['id'] ?>_3" 
+                                                                            name="grade_<?= $subjectData['quarters'][3]['id'] ?>_3" 
+                                                                            min="75" 
+                                                                            max="100" 
+                                                                            placeholder="75-100"
+                                                                            class="grade-field"
+                                                                            data-subject-id="<?= $subjectData['quarters'][3]['id'] ?>"
+                                                                            data-quarter="3"
+                                                                            data-student-id="<?= $student['id'] ?>">
+                                                                 </div>
+                                                             <?php endif; ?>
+                                                             <?php if (isset($subjectData['quarters'][4])): ?>
+                                                                 <div class="quarter-grade">
+                                                                     <label>Q4:</label>
+                                                                     <input type="number" 
+                                                                            id="grade_<?= $subjectData['quarters'][4]['id'] ?>_4" 
+                                                                            name="grade_<?= $subjectData['quarters'][4]['id'] ?>_4" 
+                                                                            min="75" 
+                                                                            max="100" 
+                                                                            placeholder="75-100"
+                                                                            class="grade-field"
+                                                                            data-subject-id="<?= $subjectData['quarters'][4]['id'] ?>"
+                                                                            data-quarter="4"
+                                                                            data-student-id="<?= $student['id'] ?>">
+                                                                 </div>
+                                                             <?php endif; ?>
+                                                         </div>
+                                                     </td>
+                                                     <td>
+                                                         <!-- Save buttons for each quarter -->
+                                                         <div class="save-buttons">
+                                                             <?php foreach ([1, 2, 3, 4] as $quarter): ?>
+                                                                 <?php if (isset($subjectData['quarters'][$quarter])): ?>
+                                                                     <button type="button" 
+                                                                             class="btn btn-sm btn-success save-grade-btn"
+                                                                             data-subject-id="<?= $subjectData['quarters'][$quarter]['id'] ?>"
+                                                                             data-quarter="<?= $quarter ?>"
+                                                                             data-student-id="<?= $student['id'] ?>">
+                                                                         Q<?= $quarter ?>
+                                                                     </button>
+                                                                 <?php endif; ?>
+                                                             <?php endforeach; ?>
+                                                         </div>
+                                                     </td>
+                                                 </tr>
+                                             <?php endforeach; ?>
+                                         </tbody>
+                                     </table>
+                                 </div>
+                                                         <?php else: ?>
+                                 <!-- JHS Table Format -->
+                                 <div class="jhs-table-container">
+                                     <table class="jhs-subjects-table">
+                                         <thead>
+                                             <tr>
+                                                 <th>Type</th>
+                                                 <th>Subject Name</th>
+                                                 <th>1st Quarter</th>
+                                                 <th>2nd Quarter</th>
+                                                 <th>3rd Quarter</th>
+                                                 <th>4th Quarter</th>
+                                                 <th>Action</th>
+                                             </tr>
+                                         </thead>
+                                         <tbody>
+                                             <?php 
+                                             // Group subjects by name to combine quarters
+                                             $groupedSubjects = [];
+                                             foreach ($quarters as $quarter => $quarterSubjects) {
+                                                 foreach ($quarterSubjects as $subject) {
+                                                     $subjectKey = $subject['name'] . '_' . $subject['is_core'];
+                                                     if (!isset($groupedSubjects[$subjectKey])) {
+                                                         $groupedSubjects[$subjectKey] = [
+                                                             'name' => $subject['name'],
+                                                             'type' => $subject['is_core'],
+                                                             'description' => $subject['description'],
+                                                             'units' => $subject['units'],
+                                                             'quarters' => []
+                                                         ];
+                                                     }
+                                                     $groupedSubjects[$subjectKey]['quarters'][$quarter] = $subject;
+                                                 }
+                                             }
+                                             ?>
+                                             
+                                             <?php foreach ($groupedSubjects as $subjectKey => $subjectData): ?>
+                                                 <tr>
+                                                     <td>
+                                                         <span class="subject-type <?= $subjectData['type'] === 'core' ? 'core' : (($subjectData['type'] === 'specialized' ? 'specialized' : 'applied')) ?>">
+                                                             <?= ucfirst($subjectData['type']) ?>
+                                                         </span>
+                                                     </td>
+                                                     <td>
+                                                         <div class="subject-name"><?= esc($subjectData['name']) ?></div>
+                                                         <?php if (!empty($subjectData['description'])): ?>
+                                                             <div class="subject-description"><?= esc($subjectData['description']) ?></div>
+                                                         <?php endif; ?>
+                                                         <div class="subject-units"><?= esc($subjectData['units']) ?> unit(s)</div>
+                                                     </td>
+                                                     <td>
+                                                         <?php if (isset($subjectData['quarters'][1])): ?>
+                                                             <input type="number" 
+                                                                    id="grade_<?= $subjectData['quarters'][1]['id'] ?>_1" 
+                                                                    name="grade_<?= $subjectData['quarters'][1]['id'] ?>_1" 
+                                                                    min="75" 
+                                                                    max="100" 
+                                                                    placeholder="75-100"
+                                                                    class="grade-field"
+                                                                    data-subject-id="<?= $subjectData['quarters'][1]['id'] ?>"
+                                                                    data-quarter="1"
                                                                     data-student-id="<?= $student['id'] ?>">
-                                                                💾 Save
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                <?php endforeach; ?>
-                                            </div>
-                                        <?php else: ?>
-                                            <div class="no-subjects">No subjects for this quarter</div>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endfor; ?>
-                            </div>
+                                                         <?php else: ?>
+                                                             <span class="no-grade">-</span>
+                                                         <?php endif; ?>
+                                                     </td>
+                                                     <td>
+                                                         <?php if (isset($subjectData['quarters'][2])): ?>
+                                                             <input type="number" 
+                                                                    id="grade_<?= $subjectData['quarters'][2]['id'] ?>_2" 
+                                                                    name="grade_<?= $subjectData['quarters'][2]['id'] ?>_2" 
+                                                                    min="75" 
+                                                                    max="100" 
+                                                                    placeholder="75-100"
+                                                                    class="grade-field"
+                                                                    data-subject-id="<?= $subjectData['quarters'][2]['id'] ?>"
+                                                                    data-quarter="2"
+                                                                    data-student-id="<?= $student['id'] ?>">
+                                                         <?php else: ?>
+                                                             <span class="no-grade">-</span>
+                                                         <?php endif; ?>
+                                                     </td>
+                                                     <td>
+                                                         <?php if (isset($subjectData['quarters'][3])): ?>
+                                                             <input type="number" 
+                                                                    id="grade_<?= $subjectData['quarters'][3]['id'] ?>_3" 
+                                                                    name="grade_<?= $subjectData['quarters'][3]['id'] ?>_3" 
+                                                                    min="75" 
+                                                                    max="100" 
+                                                                    placeholder="75-100"
+                                                                    class="grade-field"
+                                                                    data-subject-id="<?= $subjectData['quarters'][3]['id'] ?>"
+                                                                    data-quarter="3"
+                                                                    data-student-id="<?= $student['id'] ?>">
+                                                         <?php else: ?>
+                                                             <span class="no-grade">-</span>
+                                                         <?php endif; ?>
+                                                     </td>
+                                                     <td>
+                                                         <?php if (isset($subjectData['quarters'][4])): ?>
+                                                             <input type="number" 
+                                                                    id="grade_<?= $subjectData['quarters'][4]['id'] ?>_4" 
+                                                                    name="grade_<?= $subjectData['quarters'][4]['id'] ?>_4" 
+                                                                    min="75" 
+                                                                    max="100" 
+                                                                    placeholder="75-100"
+                                                                    class="grade-field"
+                                                                    data-subject-id="<?= $subjectData['quarters'][4]['id'] ?>"
+                                                                    data-quarter="4"
+                                                                    data-student-id="<?= $student['id'] ?>">
+                                                         <?php else: ?>
+                                                             <span class="no-grade">-</span>
+                                                         <?php endif; ?>
+                                                     </td>
+                                                     <td>
+                                                         <!-- Save buttons for each quarter -->
+                                                         <div class="save-buttons">
+                                                             <?php foreach ([1, 2, 3, 4] as $quarter): ?>
+                                                                 <?php if (isset($subjectData['quarters'][$quarter])): ?>
+                                                                     <button type="button" 
+                                                                             class="btn btn-sm btn-success save-grade-btn"
+                                                                             data-subject-id="<?= $subjectData['quarters'][$quarter]['id'] ?>"
+                                                                             data-quarter="<?= $quarter ?>"
+                                                                             data-student-id="<?= $student['id'] ?>">
+                                                                         Q<?= $quarter ?>
+                                                                     </button>
+                                                                 <?php endif; ?>
+                                                             <?php endforeach; ?>
+                                                         </div>
+                                                     </td>
+                                                 </tr>
+                                             <?php endforeach; ?>
+                                         </tbody>
+                                     </table>
+                                 </div>
+                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -575,8 +1154,11 @@
                     <span class="info-label">Status:</span>
                     <span class="info-value">
                         <span class="status-badge status-<?= strtolower($student['status']) ?>">
-                            <?= esc(ucfirst($student['status'])) ?>
+                            <?= esc(ucfirst($student['status'] === 'draft' ? 'pending' : $student['status'])) ?>
                         </span>
+                        <?php if (($student['status'] ?? '') === 'approved' && !empty($student['approved_by'])): ?>
+                            <span style="margin-left:8px; color:#6c757d;">Approved by: <?= esc($approvedByName ?? $student['approved_by']) ?></span>
+                        <?php endif; ?>
                     </span>
                 </div>
                 <div class="info-row">

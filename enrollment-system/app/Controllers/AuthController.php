@@ -63,9 +63,29 @@ class AuthController extends BaseController
     
     public function logout()
     {
-        $session = session();
-        $session->destroy();
-        return redirect()->to('/auth/login')->with('success', 'Successfully logged out.');
+        try {
+            $session = session();
+            
+            // Regenerate session ID for security (do this before destroying)
+            session_regenerate_id(true);
+            
+            // Clear all session data
+            $session->destroy();
+            
+            // Clear any cookies that might be set
+            if (isset($_COOKIE[session_name()])) {
+                setcookie(session_name(), '', time() - 3600, '/');
+            }
+            
+            // Additional cleanup - unset all session variables
+            $_SESSION = array();
+            
+            return redirect()->to('/auth/login')->with('success', 'Successfully logged out.');
+        } catch (\Exception $e) {
+            // If there's an error, still try to clear the session
+            session_destroy();
+            return redirect()->to('/auth/login')->with('success', 'Successfully logged out.');
+        }
     }
     
     public function changePassword()

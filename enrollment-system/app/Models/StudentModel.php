@@ -8,11 +8,13 @@ class StudentModel extends Model
 {
     protected $table = 'students';
     protected $primaryKey = 'id';
+    protected $useSoftDeletes = false;
+    protected $deletedField = 'deleted_at';
     protected $allowedFields = [
         'lrn', 'first_name', 'last_name', 'middle_name', 'full_name', 'email', 'password',
         'birth_date', 'gender', 'grade_level', 'previous_grade_level', 
         'admission_type', 'enrollment_type', 'strand_id', 'curriculum_id', 
-        'previous_school', 'status'
+        'previous_school', 'status', 'approved_by'
     ];
     
     protected $validationRules = [

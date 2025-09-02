@@ -235,12 +235,13 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Subject Type</label>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="is_core" name="is_core" value="1" <?= ($subject['is_core'] == 1) ? 'checked' : '' ?>>
-                        <label for="is_core">Core Subject (Required)</label>
-                    </div>
-                    <div class="help-text">Core subjects are mandatory for all students</div>
+                    <label for="is_core">Subject Category <span class="required">*</span></label>
+                    <select id="is_core" name="is_core" required>
+                        <option value="core" <?= ($subject['is_core'] === 'core') ? 'selected' : '' ?>>Core</option>
+                        <option value="specialized" <?= ($subject['is_core'] === 'specialized') ? 'selected' : '' ?>>Specialized</option>
+                        <option value="applied" <?= ($subject['is_core'] === 'applied') ? 'selected' : '' ?>>Applied</option>
+                    </select>
+                    <div class="help-text">Core: Required for all students, Specialized: Strand-specific, Applied: Practical skills</div>
                 </div>
             </div>
             

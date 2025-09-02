@@ -94,11 +94,18 @@ class CreateStudentsTable extends Migration
                 'null'       => true,
             ],
             'status' => [
-                'type'       => "ENUM('draft','pending','approved','rejected')",
-                'default'    => 'draft',
+                'type'       => "ENUM('pending','approved','rejected')",
+                'default'    => 'pending',
+            ],
+            'approved_by' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'unsigned'   => true,
+                'null'       => true,
             ],
             'created_at' => ['type' => 'DATETIME', 'null' => true],
             'updated_at' => ['type' => 'DATETIME', 'null' => true],
+            'deleted_at' => ['type' => 'DATETIME', 'null' => true],
         ]);
         $this->forge->addKey('id', true);
         $this->forge->addKey('lrn');

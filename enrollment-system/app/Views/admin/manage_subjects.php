@@ -258,12 +258,12 @@
                     <div class="count-label">Total Subjects</div>
                 </div>
                 <div class="count-item">
-                    <div class="count-number"><?= count(array_filter($subjects ?? [], function($s) { return $s['is_core'] == 1; })) ?></div>
+                    <div class="count-number"><?= count(array_filter($subjects ?? [], function($s) { return $s['is_core'] == 'core'; })) ?></div>
                     <div class="count-label">Core Subjects</div>
                 </div>
                 <div class="count-item">
-                    <div class="count-number"><?= count(array_filter($subjects ?? [], function($s) { return $s['is_core'] == 0; })) ?></div>
-                    <div class="count-label">Elective Subjects</div>
+                    <div class="count-number"><?= count(array_filter($subjects ?? [], function($s) { return in_array($s['is_core'], ['specialized', 'applied']); })) ?></div>
+                    <div class="count-label">Specialized/Applied Subjects</div>
                 </div>
                 <div class="count-item">
                     <div class="count-number"><?= count($curriculums ?? []) ?></div>
@@ -361,8 +361,8 @@
                             <td>Grade <?= esc($subject['grade_level'] ?? 'N/A') ?></td>
                             <td><?= esc($subject['units'] ?? 'N/A') ?> unit(s)</td>
                             <td>
-                                <span class="status-badge <?= ($subject['is_core'] ?? 0) ? 'core-badge' : 'elective-badge' ?>">
-                                    <?= ($subject['is_core'] ?? 0) ? 'Core' : 'Elective' ?>
+                                                        <span class="status-badge <?= ($subject['is_core'] ?? 'core') === 'core' ? 'core-badge' : (($subject['is_core'] ?? 'core') === 'specialized' ? 'specialized-badge' : 'applied-badge') ?>">
+                            <?= ucfirst($subject['is_core'] ?? 'core') ?>
                                 </span>
                             </td>
                             <td>

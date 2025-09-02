@@ -315,8 +315,11 @@
                             <td><?= esc(ucfirst($student['enrollment_type'] ?? 'N/A')) ?></td>
                             <td>
                                 <span class="status-badge status-<?= strtolower($student['status']) ?>">
-                                    <?= esc(ucfirst($student['status'])) ?>
+                                    <?= esc(ucfirst($student['status'] === 'draft' ? 'pending' : $student['status'])) ?>
                                 </span>
+                                <?php if (($student['status'] ?? '') === 'approved' && !empty($student['approved_by'])): ?>
+                                    <br><small>Approved by: <?= esc($student['approved_by']) ?></small>
+                                <?php endif; ?>
                             </td>
                             <td><?= esc(date('M d, Y', strtotime($student['created_at'] ?? 'now'))) ?></td>
                             <td class="actions">

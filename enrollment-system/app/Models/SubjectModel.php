@@ -21,7 +21,8 @@ class SubjectModel extends Model
         'units' => 'permit_empty|numeric|greater_than[0]|less_than[10]',
         'grade_level' => 'required|integer|greater_than[6]|less_than[13]',
         'semester' => 'permit_empty|integer|greater_than[0]|less_than[3]',
-        'quarter' => 'required|integer|greater_than[0]|less_than[5]'
+        'quarter' => 'required|integer|greater_than[0]|less_than[5]',
+        'is_core' => 'required|in_list[core,specialized,applied]'
     ];
     
     protected $validationMessages = [
@@ -63,6 +64,10 @@ class SubjectModel extends Model
             'integer' => 'Quarter must be a number',
             'greater_than' => 'Quarter must be between 1-4',
             'less_than' => 'Quarter must be between 1-4'
+        ],
+        'is_core' => [
+            'required' => 'Subject category is required',
+            'in_list' => 'Subject category must be core, specialized, or applied'
         ]
     ];
     
@@ -193,7 +198,7 @@ class SubjectModel extends Model
     public function getCoreSubjectsByCurriculum($curriculumId)
     {
         return $this->where('curriculum_id', $curriculumId)
-                    ->where('is_core', 1)
+                    ->where('is_core', 'core')
                     ->where('is_active', 1)
                     ->orderBy('code', 'ASC')
                     ->findAll();
@@ -205,7 +210,7 @@ class SubjectModel extends Model
     public function getElectiveSubjectsByCurriculum($curriculumId)
     {
         return $this->where('curriculum_id', $curriculumId)
-                    ->where('is_core', 0)
+                    ->whereIn('is_core', ['specialized', 'applied'])
                     ->where('is_active', 1)
                     ->orderBy('code', 'ASC')
                     ->findAll();

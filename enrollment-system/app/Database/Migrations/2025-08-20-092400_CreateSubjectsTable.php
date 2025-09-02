@@ -78,11 +78,10 @@ class CreateSubjectsTable extends Migration
                 'comment'    => '1,2,3,4 for both JHS and SHS',
             ],
             'is_core' => [
-                'type'       => 'TINYINT',
-                'constraint' => 1,
+                'type'       => "ENUM('core','specialized','applied')",
                 'null'       => false,
-                'default'    => 0,
-                'comment'    => '1 = Core subject, 0 = Elective subject',
+                'default'    => 'core',
+                'comment'    => 'core, specialized, or applied subject',
             ],
             'is_active' => [
                 'type'       => 'TINYINT',
@@ -158,11 +157,10 @@ class CreateSubjectsTable extends Migration
                 'default'    => 1.0,
             ],
             'is_core' => [
-                'type'       => 'TINYINT',
-                'constraint' => 1,
+                'type'       => "ENUM('core','specialized','applied')",
                 'null'       => false,
-                'default'    => 0,
-                'comment'    => '1 = Core subject, 0 = Elective subject',
+                'default'    => 'core',
+                'comment'    => 'core, specialized, or applied subject',
             ],
             'is_active' => [
                 'type'       => 'TINYINT',

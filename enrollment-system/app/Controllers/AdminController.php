@@ -13,11 +13,22 @@ use App\Models\CurriculumModel;
 use App\Models\SubjectModel;
 use App\Models\TrackModel;
 use App\Libraries\OcrService;
+use App\Models\DocumentModel;
+use App\Models\UserModel;
 
 class AdminController extends BaseController
 {
+    public function __construct()
+    {
+        // Additional security check - ensure user is logged in and is admin
+        if (!session()->get('is_logged_in') || session()->get('role') !== 'admin') {
+            return redirect()->to('/auth/login')->with('error', 'Please login as admin to access this page.');
+        }
+    }
+    
     public function index()
     {
+        
         $schoolYearModel = new SchoolYearModel();
         $admissionTimeframeModel = new AdmissionTimeframeModel();
         
@@ -691,7 +702,7 @@ class AdminController extends BaseController
                             'grade_level' => $grade,
                             'semester' => null, // No semester for JHS
                             'quarter' => $q,
-                            'is_core' => 1, // All JHS subjects are core
+                            'is_core' => 'core', // All JHS subjects are core
                             'is_active' => $isActive
                         ];
                         
@@ -717,7 +728,7 @@ class AdminController extends BaseController
                 log_message('info', 'Creating SHS subjects for semester ' . $semester);
                 
                 // Map subject category to is_core field
-                $isCore = ($shsSubjectCategory === 'core') ? 1 : 0;
+                $isCore = $shsSubjectCategory; // Use the enum value directly
                 
                 // Determine quarters based on semester
                 $quarters = ($semester == 1) ? [1, 2] : [3, 4];
@@ -795,7 +806,7 @@ class AdminController extends BaseController
             $name = $this->request->getPost('name');
             $description = $this->request->getPost('description');
             $units = $this->request->getPost('units');
-            $isCore = $this->request->getPost('is_core') ? 1 : 0;
+            $isCore = $this->request->getPost('is_core') ?? 'core';
             $isActive = $this->request->getPost('is_active') ? 1 : 0;
             
             // Check if subject code is unique within the curriculum (excluding current subject)
@@ -1083,7 +1094,7 @@ class AdminController extends BaseController
             'curriculum_id' => $this->request->getPost('curriculum_id') ?: null,
             'email' => $lrn . '@student.school.edu.ph', // Generate email from LRN
             'password' => password_hash($password, PASSWORD_DEFAULT),
-            'status' => 'draft'
+            'status' => 'pending'
         ];
         
         // Remove null values to prevent database errors
@@ -1213,11 +1224,60 @@ class AdminController extends BaseController
         $studentModel = new StudentModel();
         $student = $studentModel->getStudentWithDetails($id);
         
+        // Fetch submitted documents for this student
+        $documents = [];
+        $approvedByName = null;
+        try {
+            $documentModel = new DocumentModel();
+            $documents = $documentModel->getDocumentsByStudent((int)$id);
+            // Resolve approver name if available
+            if (!empty($student['approved_by'])) {
+                $userModel = new UserModel();
+                $approver = $userModel->find((int)$student['approved_by']);
+                if ($approver) {
+                    $approvedByName = trim(($approver['first_name'] ?? '') . ' ' . ($approver['last_name'] ?? '')) ?: ($approver['username'] ?? null);
+                }
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Error fetching documents for student ' . $id . ': ' . $e->getMessage());
+        }
+        
         if (!$student) {
             return redirect()->to('/admin/students')->with('error', 'Student not found');
         }
         
-        return view('admin/view_student', ['student' => $student]);
+        return view('admin/view_student', ['student' => $student, 'documents' => $documents, 'approvedByName' => $approvedByName]);
+    }
+
+    public function approveStudent($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin/students')->with('error', 'Student ID required');
+        }
+        
+        $studentModel = new StudentModel();
+        $student = $studentModel->find($id);
+        if (!$student) {
+            return redirect()->to('/admin/students')->with('error', 'Student not found');
+        }
+        
+        try {
+            $approvedBy = session()->get('user_id') ?? session()->get('admin_id') ?? null;
+            $updateData = ['status' => 'approved'];
+            if ($approvedBy !== null) {
+                $updateData['approved_by'] = $approvedBy; // Will be ignored if column doesn't exist
+            }
+            try {
+                $studentModel->update($id, $updateData);
+            } catch (\Exception $e) {
+                // Retry without approved_by in case column doesn't exist
+                unset($updateData['approved_by']);
+                $studentModel->update($id, $updateData);
+            }
+            return redirect()->to('/admin/students/view/' . $id)->with('success', 'Student approved successfully.');
+        } catch (\Exception $e) {
+            return redirect()->to('/admin/students/view/' . $id)->with('error', 'Failed to approve student: ' . $e->getMessage());
+        }
     }
     
     public function saveStudentGrade()
