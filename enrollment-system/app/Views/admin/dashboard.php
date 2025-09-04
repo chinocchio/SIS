@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Admin Dashboard - SIS</title>
     <style>
         body {
@@ -147,10 +150,14 @@
         <div class="nav" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
             <div>
                 <a href="/admin/dashboard" class="btn">Dashboard</a>
+                <a href="/admin/registrars" class="btn btn-info">👨‍💼 Registrars</a>
+                <a href="/admin/students" class="btn btn-success">👥 Students</a>
+                <a href="/admin/sections" class="btn btn-warning">🏫 Sections</a>
                 <a href="/admin/create-school-year" class="btn">School Years</a>
                 <a href="/admin/create-admission-timeframe" class="btn">Admission Timeframe</a>
                 <a href="/admin/strands" class="btn btn-warning">Strands & Tracks</a>
                 <a href="/admin/curriculums" class="btn">Curriculums</a>
+                <a href="/admin/subjects" class="btn btn-info">📚 Subjects</a>
                 <a href="/admin/users" class="btn">Users</a>
             </div>
             <div>
