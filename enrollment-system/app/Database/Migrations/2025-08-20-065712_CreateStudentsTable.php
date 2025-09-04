@@ -134,10 +134,6 @@ class CreateStudentsTable extends Migration
         $this->forge->addKey('section_id');
         $this->forge->addKey('previous_section_id');
         
-        // Add foreign key constraints
-        $this->forge->addForeignKey('section_id', 'sections', 'id', 'SET NULL', 'CASCADE');
-        $this->forge->addForeignKey('previous_section_id', 'sections', 'id', 'SET NULL', 'CASCADE');
-        
         $this->forge->createTable('students');
     }
 
