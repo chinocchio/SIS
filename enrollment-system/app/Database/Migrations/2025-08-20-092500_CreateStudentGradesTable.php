@@ -18,6 +18,7 @@ class CreateStudentGradesTable extends Migration
             'updated_at'    => ['type'=>'DATETIME','null'=>true],
         ]);
         $this->forge->addKey('id', true);
+        // On student delete: CASCADE (delete grades when student is deleted)
         $this->forge->addForeignKey('student_id','students','id','CASCADE','CASCADE');
         $this->forge->addForeignKey('subject_id','subjects','id','CASCADE','CASCADE');
         $this->forge->addForeignKey('school_year_id','school_years','id','CASCADE','CASCADE');

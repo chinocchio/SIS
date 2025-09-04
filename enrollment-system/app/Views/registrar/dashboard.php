@@ -229,6 +229,7 @@
     <div class="nav">
         <div>
             <a href="/registrar/dashboard">Dashboard</a>
+            <a href="/registrar/students">👥 Student Management</a>
             <a href="/registrar/enrollments/pending">Pending Enrollments</a>
             <a href="/registrar/enrollments/approved">Approved</a>
             <a href="/registrar/enrollments/rejected">Rejected</a>

@@ -40,7 +40,23 @@
     <div class="container">
         <div class="greeting">
             <h2>Welcome <?= esc($student['first_name']) ?></h2>
-            <div class="muted">Admission Status: <strong><?= esc(ucfirst($student['status'])) ?></strong></div>
+            <div class="muted">
+                <strong>LRN:</strong> <?= esc($student['lrn'] ?? 'N/A') ?> | 
+                <strong>Account Status:</strong> <?= esc(ucfirst($student['status'])) ?>
+            </div>
+            <?php if ($student['status'] === 'draft'): ?>
+                <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; color: #856404;">
+                    <strong>📋 Next Steps:</strong> Please upload all required documents to complete your account setup.
+                </div>
+            <?php elseif ($student['status'] === 'pending'): ?>
+                <div style="margin-top: 10px; padding: 10px; background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 6px; color: #0c5460;">
+                    <strong>⏳ Status Update:</strong> Your documents are under review by the registrar. Please wait for approval.
+                </div>
+            <?php elseif ($student['status'] === 'approved'): ?>
+                <div style="margin-top: 10px; padding: 10px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 6px; color: #155724;">
+                    <strong>✅ Enrollment Complete:</strong> Your enrollment has been approved! Welcome to our school.
+                </div>
+            <?php endif; ?>
         </div>
 
         <?php if (session()->getFlashdata('error')): ?>
@@ -52,22 +68,27 @@
 
         <div class="grid">
             <div class="card">
-                <h3>Upload Required Documents</h3>
+                <h3>📄 Upload Required Documents</h3>
                 <form action="/student/upload-document" method="post" enctype="multipart/form-data">
-                    <label for="document_type">Document Type</label>
+                    <label for="document_type">Document Type *</label>
                     <select name="document_type" id="document_type" required>
-                        <option value="Form 137">Form 137</option>
-                        <option value="Birth Certificate">Birth Certificate</option>
-                        <option value="Good Moral">Good Moral</option>
+                        <option value="">Select Document Type</option>
+                        <option value="Birth Certificate (PSA)">Birth Certificate (PSA)</option>
+                        <option value="Form 137 (Transcript)">Form 137 (Transcript)</option>
+                        <option value="Good Moral Certificate">Good Moral Certificate</option>
                         <option value="Report Card">Report Card</option>
-                        <option value="2x2 ID Photo">2x2 ID Photo</option>
+                        <option value="ID Photo">ID Photo</option>
+                        <option value="Other">Other</option>
                     </select>
-                    <label for="document_file">Select File</label>
+                    <label for="document_file">Select File *</label>
                     <input type="file" name="document_file" id="document_file" accept="image/*,.pdf" required>
                     <div style="margin-top:10px;">
-                        <button class="btn" type="submit">Upload</button>
+                        <button class="btn" type="submit">📤 Upload Document</button>
                     </div>
-                    <p class="muted" style="margin-top:8px; font-size:13px;">Upload clear scanned copies. Bring originals for verification. Facial data capture will be added later.</p>
+                    <p class="muted" style="margin-top:8px; font-size:13px;">
+                        📋 <strong>Required Documents:</strong> Please upload clear scanned copies of all required documents.
+                        <br><small>💡 <strong>Supported formats:</strong> JPG, PNG, PDF, BMP, TIFF</small>
+                    </p>
                 </form>
             </div>
 
