@@ -743,6 +743,61 @@
                 </div>
             </div>
             
+            <!-- Section Information -->
+            <div class="profile-section">
+                <h3>🏫 Section Information</h3>
+                <div class="info-row">
+                    <span class="info-label">Current Section:</span>
+                    <span class="info-value">
+                        <?= isset($student['section_name']) ? esc($student['section_name']) . ' (Grade ' . $student['section_grade_level'] . ')' : '<span class="no-data">Not assigned</span>' ?>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Previous Section:</span>
+                    <span class="info-value">
+                        <?= isset($student['previous_section_name']) ? esc($student['previous_section_name']) . ' (Grade ' . $student['previous_section_grade_level'] . ')' : '<span class="no-data">Not specified</span>' ?>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Previous School Year:</span>
+                    <span class="info-value">
+                        <?= $student['previous_school_year'] ? esc($student['previous_school_year']) : '<span class="no-data">Not specified</span>' ?>
+                    </span>
+                </div>
+                
+                <!-- Section Assignment Form -->
+                <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e9ecef;">
+                    <h4 style="margin-bottom: 15px; color: #495057;">Assign to Section</h4>
+                    <form method="POST" action="/admin/students/assign-section" style="display: flex; gap: 10px; align-items: end;">
+                        <input type="hidden" name="student_id" value="<?= $student['id'] ?>">
+                        <div style="flex: 1;">
+                            <label for="section_id" style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Select Section:</label>
+                            <select name="section_id" id="section_id" required style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                                <option value="">Choose a section...</option>
+                                <?php
+                                // Get available sections for this student's grade level
+                                $sectionModel = new \App\Models\SectionModel();
+                                $availableSections = $sectionModel->getAvailableSections($student['grade_level'], $student['strand_id']);
+                                foreach ($availableSections as $section):
+                                    $capacity = $sectionModel->getSectionCapacity($section['id']);
+                                    $isFull = $capacity['current'] >= $capacity['max'];
+                                    $isCurrent = $section['id'] == $student['section_id'];
+                                ?>
+                                    <option value="<?= $section['id'] ?>" <?= $isCurrent ? 'selected' : '' ?> <?= $isFull && !$isCurrent ? 'disabled' : '' ?>>
+                                        <?= $section['name'] ?> (<?= $capacity['current'] ?>/<?= $capacity['max'] ?> students)
+                                        <?= $isFull && !$isCurrent ? ' - FULL' : '' ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success" style="padding: 8px 16px;">Assign</button>
+                        <?php if ($student['section_id']): ?>
+                            <a href="/admin/students/remove-section/<?= $student['id'] ?>" class="btn btn-warning" style="padding: 8px 16px;" onclick="return confirm('Remove student from current section?')">Remove</a>
+                        <?php endif; ?>
+                    </form>
+                </div>
+            </div>
+            
             <!-- Documents Section -->
             <div class="profile-section full-width">
                 <h3>🗂️ Submitted Documents</h3>

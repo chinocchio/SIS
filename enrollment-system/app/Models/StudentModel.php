@@ -14,7 +14,8 @@ class StudentModel extends Model
         'lrn', 'first_name', 'last_name', 'middle_name', 'full_name', 'email', 'password',
         'birth_date', 'gender', 'grade_level', 'previous_grade_level', 
         'admission_type', 'enrollment_type', 'strand_id', 'curriculum_id', 
-        'previous_school', 'status', 'approved_by'
+        'previous_school', 'section_id', 'previous_section_id', 'previous_school_year',
+        'status', 'approved_by', 'rejected_by', 'rejected_at', 'rejection_reason'
     ];
     
     protected $validationRules = [
@@ -151,9 +152,13 @@ class StudentModel extends Model
         $db = \Config\Database::connect();
         
         $query = $db->table('students s')
-                    ->select('s.*, st.name as strand_name, c.name as curriculum_name')
+                    ->select('s.*, st.name as strand_name, c.name as curriculum_name, 
+                             sec.name as section_name, sec.grade_level as section_grade_level,
+                             prev_sec.name as previous_section_name, prev_sec.grade_level as previous_section_grade_level')
                     ->join('strands st', 'st.id = s.strand_id', 'left')
                     ->join('curriculums c', 'c.id = s.curriculum_id', 'left')
+                    ->join('sections sec', 'sec.id = s.section_id', 'left')
+                    ->join('sections prev_sec', 'prev_sec.id = s.previous_section_id', 'left')
                     ->where('s.id', $studentId)
                     ->get();
         

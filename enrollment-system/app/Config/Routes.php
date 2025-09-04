@@ -92,6 +92,17 @@ $routes->post('/admin/subjects/edit/(:num)', 'AdminController::editSubject/$1', 
 $routes->get('/admin/subjects/delete/(:num)', 'AdminController::deleteSubject/$1', ['filter' => 'adminauth']);
 $routes->post('/admin/subjects/get-by-curriculum', 'AdminController::getSubjectsByCurriculum', ['filter' => 'adminauth']);
 
+// Section Management Routes
+$routes->get('/admin/sections', 'AdminController::manageSections', ['filter' => 'adminauth']);
+$routes->get('/admin/sections/add', 'AdminController::showAddSectionForm', ['filter' => 'adminauth']);
+$routes->post('/admin/sections/add', 'AdminController::createSection', ['filter' => 'adminauth']);
+$routes->get('/admin/sections/edit/(:num)', 'AdminController::editSection/$1', ['filter' => 'adminauth']);
+$routes->post('/admin/sections/edit/(:num)', 'AdminController::editSection/$1', ['filter' => 'adminauth']);
+$routes->get('/admin/sections/delete/(:num)', 'AdminController::deleteSection/$1', ['filter' => 'adminauth']);
+$routes->get('/admin/sections/view/(:num)', 'AdminController::viewSection/$1', ['filter' => 'adminauth']);
+$routes->post('/admin/students/assign-section', 'AdminController::assignStudentToSection', ['filter' => 'adminauth']);
+$routes->get('/admin/students/remove-section/(:num)', 'AdminController::removeStudentFromSection/$1', ['filter' => 'adminauth']);
+
 // Track Management Routes (integrated with strands)
 $routes->post('/admin/strands/add-track', 'AdminController::addTrackFromStrands', ['filter' => 'adminauth']);
 $routes->post('/admin/strands/edit-track/(:num)', 'AdminController::editTrackFromStrands/$1', ['filter' => 'adminauth']);
@@ -101,17 +112,30 @@ $routes->get('/admin/users', 'AdminController::manageUsers', ['filter' => 'admin
 $routes->post('/admin/users', 'AdminController::manageUsers', ['filter' => 'adminauth']);
 
 // Registrar
-$routes->get('/registrar', 'RegistrarController::index');
-$routes->get('/registrar/dashboard', 'RegistrarController::dashboard');
-$routes->get('/registrar/enrollments/(:any)', 'RegistrarController::viewEnrollments/$1');
-$routes->get('/registrar/student/(:num)', 'RegistrarController::viewStudent/$1');
-$routes->get('/registrar/document/approve/(:num)', 'RegistrarController::approveDocument/$1');
-$routes->get('/registrar/document/reject/(:num)', 'RegistrarController::rejectDocument/$1');
-$routes->get('/registrar/document/view/(:num)', 'RegistrarController::viewDocument/$1');
-$routes->post('/registrar/approve/(:num)', 'RegistrarController::approveEnrollment/$1');
-$routes->post('/registrar/reject/(:num)', 'RegistrarController::rejectEnrollment/$1');
-$routes->get('/registrar/search', 'RegistrarController::searchStudents');
-$routes->get('/registrar/report', 'RegistrarController::generateReport');
+$routes->get('/registrar', 'RegistrarController::index', ['filter' => 'registrarauth']);
+$routes->get('/registrar/dashboard', 'RegistrarController::manageStudents', ['filter' => 'registrarauth']);
+$routes->get('/registrar/enrollments/(:any)', 'RegistrarController::viewEnrollments/$1', ['filter' => 'registrarauth']);
+$routes->get('/registrar/student/(:num)', 'RegistrarController::viewStudent/$1', ['filter' => 'registrarauth']);
+$routes->get('/registrar/document/approve/(:num)', 'RegistrarController::approveDocument/$1', ['filter' => 'registrarauth']);
+$routes->get('/registrar/document/reject/(:num)', 'RegistrarController::rejectDocument/$1', ['filter' => 'registrarauth']);
+$routes->get('/registrar/document/view/(:num)', 'RegistrarController::viewDocument/$1', ['filter' => 'registrarauth']);
+$routes->post('/registrar/approve/(:num)', 'RegistrarController::approveEnrollment/$1', ['filter' => 'registrarauth']);
+$routes->post('/registrar/reject/(:num)', 'RegistrarController::rejectEnrollment/$1', ['filter' => 'registrarauth']);
+$routes->get('/registrar/search', 'RegistrarController::searchStudents', ['filter' => 'registrarauth']);
+$routes->get('/registrar/report', 'RegistrarController::generateReport', ['filter' => 'registrarauth']);
+
+// Registrar Student Management Routes
+$routes->get('/registrar/students', 'RegistrarController::manageStudents', ['filter' => 'registrarauth']);
+$routes->get('/registrar/students/add', 'RegistrarController::showAddStudentForm', ['filter' => 'registrarauth']);
+$routes->post('/registrar/students/add', 'RegistrarController::createStudent', ['filter' => 'registrarauth']);
+$routes->get('/registrar/students/view/(:num)', 'RegistrarController::viewStudent/$1', ['filter' => 'registrarauth']);
+$routes->get('/registrar/students/edit/(:num)', 'RegistrarController::showEditStudentForm/$1', ['filter' => 'registrarauth']);
+$routes->post('/registrar/students/edit/(:num)', 'RegistrarController::updateStudent/$1', ['filter' => 'registrarauth']);
+$routes->get('/registrar/students/delete/(:num)', 'RegistrarController::deleteStudent/$1', ['filter' => 'registrarauth']);
+$routes->get('/registrar/students/approve/(:num)', 'RegistrarController::approveStudent/$1', ['filter' => 'registrarauth']);
+$routes->post('/registrar/students/reject/(:num)', 'RegistrarController::rejectStudent/$1', ['filter' => 'registrarauth']);
+$routes->post('/registrar/students/assign-section', 'RegistrarController::assignStudentToSection', ['filter' => 'registrarauth']);
+$routes->get('/registrar/students/remove-section/(:num)', 'RegistrarController::removeStudentFromSection/$1', ['filter' => 'registrarauth']);
 
 // Teacher
 $routes->get('/teacher', 'TeacherController::index');

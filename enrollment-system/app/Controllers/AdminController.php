@@ -1533,4 +1533,255 @@ class AdminController extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Error saving grade: ' . $e->getMessage()]);
         }
     }
+
+    // Section Management Methods
+    public function manageSections()
+    {
+        $sectionModel = new \App\Models\SectionModel();
+        $schoolYearModel = new SchoolYearModel();
+        
+        $currentSchoolYear = $schoolYearModel->getActiveSchoolYear();
+        $schoolYearId = $this->request->getGet('school_year_id') ?? ($currentSchoolYear['id'] ?? null);
+        
+        $sections = [];
+        if ($schoolYearId) {
+            $sections = $sectionModel->getSectionsSummary($schoolYearId);
+        }
+        
+        $data = [
+            'sections' => $sections,
+            'schoolYears' => $schoolYearModel->findAll(),
+            'currentSchoolYear' => $currentSchoolYear,
+            'selectedSchoolYear' => $schoolYearId,
+            'totalSections' => count($sections),
+            'totalStudents' => array_sum(array_column($sections, 'student_count'))
+        ];
+        
+        return view('admin/manage_sections', $data);
+    }
+
+    public function showAddSectionForm()
+    {
+        $schoolYearModel = new SchoolYearModel();
+        $strandModel = new StrandModel();
+        
+        $data = [
+            'schoolYears' => $schoolYearModel->findAll(),
+            'strands' => $strandModel->findAll()
+        ];
+        
+        return view('admin/add_section', $data);
+    }
+
+    public function createSection()
+    {
+        if ($this->request->getMethod() !== 'POST') {
+            return redirect()->to('/admin/sections');
+        }
+        
+        $sectionModel = new \App\Models\SectionModel();
+        
+        $data = [
+            'name' => $this->request->getPost('name'),
+            'grade_level' => $this->request->getPost('grade_level'),
+            'strand_id' => $this->request->getPost('strand_id') ?: null,
+            'school_year_id' => $this->request->getPost('school_year_id'),
+            'capacity_min' => $this->request->getPost('capacity_min') ?: 35,
+            'capacity_max' => $this->request->getPost('capacity_max') ?: 40
+        ];
+        
+        // Validate section name uniqueness in school year
+        if (!$sectionModel->isNameUniqueInSchoolYear($data['name'], $data['school_year_id'])) {
+            return redirect()->back()->withInput()->with('error', 'Section name already exists for this school year.');
+        }
+        
+        if ($sectionModel->insert($data)) {
+            return redirect()->to('/admin/sections')->with('success', 'Section created successfully.');
+        } else {
+            return redirect()->back()->withInput()->with('error', 'Failed to create section. Please check your input.');
+        }
+    }
+
+    public function editSection($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin/sections')->with('error', 'Section ID required');
+        }
+        
+        $sectionModel = new \App\Models\SectionModel();
+        $schoolYearModel = new SchoolYearModel();
+        $strandModel = new StrandModel();
+        
+        $section = $sectionModel->getSectionWithDetails($id);
+        if (!$section) {
+            return redirect()->to('/admin/sections')->with('error', 'Section not found');
+        }
+        
+        if ($this->request->getMethod() === 'POST') {
+            $updateData = [
+                'name' => $this->request->getPost('name'),
+                'grade_level' => $this->request->getPost('grade_level'),
+                'strand_id' => $this->request->getPost('strand_id') ?: null,
+                'school_year_id' => $this->request->getPost('school_year_id'),
+                'capacity_min' => $this->request->getPost('capacity_min') ?: 35,
+                'capacity_max' => $this->request->getPost('capacity_max') ?: 40
+            ];
+            
+            // Validate section name uniqueness in school year (excluding current section)
+            if (!$sectionModel->isNameUniqueInSchoolYear($updateData['name'], $updateData['school_year_id'], $id)) {
+                return redirect()->back()->withInput()->with('error', 'Section name already exists for this school year.');
+            }
+            
+            if ($sectionModel->update($id, $updateData)) {
+                return redirect()->to('/admin/sections')->with('success', 'Section updated successfully.');
+            } else {
+                return redirect()->back()->withInput()->with('error', 'Failed to update section. Please check your input.');
+            }
+        }
+        
+        $data = [
+            'section' => $section,
+            'schoolYears' => $schoolYearModel->findAll(),
+            'strands' => $strandModel->findAll()
+        ];
+        
+        return view('admin/edit_section', $data);
+    }
+
+    public function deleteSection($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin/sections')->with('error', 'Section ID required');
+        }
+        
+        $sectionModel = new \App\Models\SectionModel();
+        
+        // Check if section has students
+        $capacity = $sectionModel->getSectionCapacity($id);
+        if ($capacity['current'] > 0) {
+            return redirect()->to('/admin/sections')->with('error', 'Cannot delete section with assigned students. Please reassign students first.');
+        }
+        
+        try {
+            if ($sectionModel->delete($id)) {
+                return redirect()->to('/admin/sections')->with('success', 'Section deleted successfully.');
+            } else {
+                return redirect()->to('/admin/sections')->with('error', 'Failed to delete section.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin/sections')->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    public function viewSection($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin/sections')->with('error', 'Section ID required');
+        }
+        
+        $sectionModel = new \App\Models\SectionModel();
+        $studentModel = new StudentModel();
+        
+        $section = $sectionModel->getSectionWithDetails($id);
+        if (!$section) {
+            return redirect()->to('/admin/sections')->with('error', 'Section not found');
+        }
+        
+        // Get students in this section
+        $students = $studentModel->where('section_id', $id)
+                               ->orderBy('full_name', 'ASC')
+                               ->findAll();
+        
+        $capacity = $sectionModel->getSectionCapacity($id);
+        
+        $data = [
+            'section' => $section,
+            'students' => $students,
+            'capacity' => $capacity
+        ];
+        
+        return view('admin/view_section', $data);
+    }
+
+    public function assignStudentToSection()
+    {
+        if ($this->request->getMethod() !== 'POST') {
+            return redirect()->to('/admin/students')->with('error', 'Invalid request method');
+        }
+        
+        $studentId = $this->request->getPost('student_id');
+        $sectionId = $this->request->getPost('section_id');
+        
+        if (!$studentId || !$sectionId) {
+            return redirect()->back()->with('error', 'Student ID and Section ID are required');
+        }
+        
+        $studentModel = new StudentModel();
+        $sectionModel = new \App\Models\SectionModel();
+        
+        // Check if student exists
+        $student = $studentModel->find($studentId);
+        if (!$student) {
+            return redirect()->back()->with('error', 'Student not found');
+        }
+        
+        // Check if section exists
+        $section = $sectionModel->find($sectionId);
+        if (!$section) {
+            return redirect()->back()->with('error', 'Section not found');
+        }
+        
+        // Check if section has capacity
+        $capacity = $sectionModel->getSectionCapacity($sectionId);
+        if ($capacity['current'] >= $capacity['max']) {
+            return redirect()->back()->with('error', 'Section is at maximum capacity');
+        }
+        
+        // Check if student is already assigned to a section
+        if ($student['section_id']) {
+            // Store current section as previous section before updating
+            $updateData = [
+                'previous_section_id' => $student['section_id'],
+                'section_id' => $sectionId
+            ];
+        } else {
+            $updateData = ['section_id' => $sectionId];
+        }
+        
+        if ($studentModel->update($studentId, $updateData)) {
+            return redirect()->back()->with('success', 'Student assigned to section successfully');
+        } else {
+            return redirect()->back()->with('error', 'Failed to assign student to section');
+        }
+    }
+
+    public function removeStudentFromSection($studentId = null)
+    {
+        if (!$studentId) {
+            return redirect()->to('/admin/students')->with('error', 'Student ID required');
+        }
+        
+        $studentModel = new StudentModel();
+        
+        $student = $studentModel->find($studentId);
+        if (!$student) {
+            return redirect()->to('/admin/students')->with('error', 'Student not found');
+        }
+        
+        if (!$student['section_id']) {
+            return redirect()->back()->with('error', 'Student is not assigned to any section');
+        }
+        
+        // Store current section as previous section and remove current assignment
+        $updateData = [
+            'previous_section_id' => $student['section_id'],
+            'section_id' => null
+        ];
+        
+        if ($studentModel->update($studentId, $updateData)) {
+            return redirect()->back()->with('success', 'Student removed from section successfully');
+        } else {
+            return redirect()->back()->with('error', 'Failed to remove student from section');
+        }
+    }
 }

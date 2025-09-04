@@ -93,6 +93,26 @@ class CreateStudentsTable extends Migration
                 'unsigned'   => true,
                 'null'       => true,
             ],
+            'section_id' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'unsigned'   => true,
+                'null'       => true,
+                'comment'    => 'Current section assignment',
+            ],
+            'previous_section_id' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'unsigned'   => true,
+                'null'       => true,
+                'comment'    => 'Previous section for tracking progression',
+            ],
+            'previous_school_year' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 50,
+                'null'       => true,
+                'comment'    => 'Previous school year attended',
+            ],
             'status' => [
                 'type'       => "ENUM('pending','approved','rejected')",
                 'default'    => 'pending',
@@ -111,6 +131,12 @@ class CreateStudentsTable extends Migration
         $this->forge->addKey('lrn');
         $this->forge->addKey('strand_id');
         $this->forge->addKey('curriculum_id');
+        $this->forge->addKey('section_id');
+        $this->forge->addKey('previous_section_id');
+        
+        // Add foreign key constraints
+        $this->forge->addForeignKey('section_id', 'sections', 'id', 'SET NULL', 'CASCADE');
+        $this->forge->addForeignKey('previous_section_id', 'sections', 'id', 'SET NULL', 'CASCADE');
         
         $this->forge->createTable('students');
     }
