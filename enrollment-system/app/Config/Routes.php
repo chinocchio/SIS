@@ -54,6 +54,15 @@ $routes->get('/admin/test-add', 'AdminController::addStrand', ['filter' => 'admi
 $routes->post('/admin/editStrand/(:num)', 'AdminController::editStrand/$1', ['filter' => 'adminauth']);
 $routes->get('/admin/deleteStrand/(:num)', 'AdminController::deleteStrand/$1', ['filter' => 'adminauth']);
 
+// Registrar Management Routes
+$routes->get('/admin/registrars', 'AdminController::manageRegistrars', ['filter' => 'adminauth']);
+$routes->get('/admin/registrars/add', 'AdminController::showAddRegistrarForm', ['filter' => 'adminauth']);
+$routes->post('/admin/registrars/add', 'AdminController::createRegistrar', ['filter' => 'adminauth']);
+$routes->get('/admin/registrars/view/(:num)', 'AdminController::viewRegistrar/$1', ['filter' => 'adminauth']);
+$routes->get('/admin/registrars/edit/(:num)', 'AdminController::editRegistrar/$1', ['filter' => 'adminauth']);
+$routes->post('/admin/registrars/edit/(:num)', 'AdminController::editRegistrar/$1', ['filter' => 'adminauth']);
+$routes->get('/admin/registrars/delete/(:num)', 'AdminController::deleteRegistrar/$1', ['filter' => 'adminauth']);
+
 // Student Management Routes
 $routes->get('/admin/students', 'AdminController::manageStudents', ['filter' => 'adminauth']);
 $routes->get('/admin/students/add', 'AdminController::showAddStudentForm', ['filter' => 'adminauth']);

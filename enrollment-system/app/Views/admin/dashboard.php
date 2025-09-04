@@ -150,6 +150,7 @@
         <div class="nav" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
             <div>
                 <a href="/admin/dashboard" class="btn">Dashboard</a>
+                <a href="/admin/registrars" class="btn btn-info">👨‍💼 Registrars</a>
                 <a href="/admin/students" class="btn btn-success">👥 Students</a>
                 <a href="/admin/create-school-year" class="btn">School Years</a>
                 <a href="/admin/create-admission-timeframe" class="btn">Admission Timeframe</a>

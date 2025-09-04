@@ -881,6 +881,197 @@ class AdminController extends BaseController
         ]);
     }
     
+    // ==================== REGISTRAR MANAGEMENT METHODS ====================
+    
+    public function manageRegistrars()
+    {
+        $userModel = new UserModel();
+        $search = $this->request->getGet('search');
+        
+        if ($search) {
+            $registrars = $userModel->where('role', 'registrar')
+                                   ->like('first_name', $search)
+                                   ->orLike('last_name', $search)
+                                   ->orLike('username', $search)
+                                   ->orLike('email', $search)
+                                   ->findAll();
+        } else {
+            $registrars = $userModel->where('role', 'registrar')->findAll();
+        }
+        
+        // Get registrar counts for summary
+        $totalRegistrars = $userModel->where('role', 'registrar')->countAllResults();
+        $activeRegistrars = $userModel->where('role', 'registrar')->where('is_active', 1)->countAllResults();
+        $inactiveRegistrars = $userModel->where('role', 'registrar')->where('is_active', 0)->countAllResults();
+        
+        $data = [
+            'registrars' => $registrars,
+            'totalRegistrars' => $totalRegistrars,
+            'activeRegistrars' => $activeRegistrars,
+            'inactiveRegistrars' => $inactiveRegistrars
+        ];
+        
+        // Ensure correct content type for browsers to render HTML
+        return $this->response
+            ->setContentType('text/html')
+            ->setBody(view('admin/manage_registrars', $data));
+    }
+    
+    public function showAddRegistrarForm()
+    {
+        return view('admin/add_registrar');
+    }
+    
+    public function createRegistrar()
+    {
+        if ($this->request->getMethod() !== 'POST') {
+            return redirect()->to('/admin/registrars/add')->with('error', 'Invalid request method');
+        }
+        
+        $userModel = new UserModel();
+        
+        // Validate required fields
+        $username = $this->request->getPost('username');
+        $password = $this->request->getPost('password');
+        $first_name = $this->request->getPost('first_name');
+        $last_name = $this->request->getPost('last_name');
+        $email = $this->request->getPost('email');
+        
+        if (empty($username) || empty($password) || empty($first_name) || empty($last_name) || empty($email)) {
+            return redirect()->to('/admin/registrars/add')->with('error', 'All fields are required');
+        }
+        
+        // Check if username already exists
+        $existingUser = $userModel->where('username', $username)->first();
+        if ($existingUser) {
+            return redirect()->to('/admin/registrars/add')->with('error', 'Username already exists in the system');
+        }
+        
+        // Check if email already exists
+        $existingEmail = $userModel->where('email', $email)->first();
+        if ($existingEmail) {
+            return redirect()->to('/admin/registrars/add')->with('error', 'Email already exists in the system');
+        }
+        
+        // Create registrar record
+        $data = [
+            'username' => $username,
+            'password' => password_hash($password, PASSWORD_DEFAULT),
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'email' => $email,
+            'role' => 'registrar',
+            'is_active' => 1
+        ];
+        
+        try {
+            $registrarId = $userModel->insert($data);
+            
+            if ($registrarId) {
+                return redirect()->to('/admin/registrars')->with('success', 
+                    "Registrar account created successfully! Username: {$username}, Password: {$password}"
+                );
+            } else {
+                return redirect()->to('/admin/registrars/add')->with('error', 'Failed to create registrar account');
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Registrar creation error: ' . $e->getMessage());
+            return redirect()->to('/admin/registrars/add')->with('error', 'Error creating registrar: ' . $e->getMessage());
+        }
+    }
+    
+    public function editRegistrar($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin/registrars')->with('error', 'Registrar ID required');
+        }
+        
+        $userModel = new UserModel();
+        $registrar = $userModel->where('role', 'registrar')->find($id);
+        
+        if (!$registrar) {
+            return redirect()->to('/admin/registrars')->with('error', 'Registrar not found');
+        }
+        
+        if ($this->request->getMethod() === 'POST') {
+            $first_name = $this->request->getPost('first_name');
+            $last_name = $this->request->getPost('last_name');
+            $email = $this->request->getPost('email');
+            $password = $this->request->getPost('password');
+            $is_active = $this->request->getPost('is_active') ? 1 : 0;
+            
+            if (empty($first_name) || empty($last_name) || empty($email)) {
+                return redirect()->to('/admin/registrars/edit/' . $id)->with('error', 'First name, last name, and email are required');
+            }
+            
+            // Check if email already exists for other users
+            $existingEmail = $userModel->where('email', $email)->where('id !=', $id)->first();
+            if ($existingEmail) {
+                return redirect()->to('/admin/registrars/edit/' . $id)->with('error', 'Email already exists for another user');
+            }
+            
+            $updateData = [
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+                'email' => $email,
+                'is_active' => $is_active
+            ];
+            
+            // Only update password if provided
+            if (!empty($password)) {
+                $updateData['password'] = password_hash($password, PASSWORD_DEFAULT);
+            }
+            
+            try {
+                $userModel->update($id, $updateData);
+                return redirect()->to('/admin/registrars')->with('success', 'Registrar updated successfully');
+            } catch (\Exception $e) {
+                log_message('error', 'Registrar update error: ' . $e->getMessage());
+                return redirect()->to('/admin/registrars/edit/' . $id)->with('error', 'Error updating registrar: ' . $e->getMessage());
+            }
+        }
+        
+        return view('admin/edit_registrar', ['registrar' => $registrar]);
+    }
+    
+    public function deleteRegistrar($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin/registrars')->with('error', 'Registrar ID required');
+        }
+        
+        $userModel = new UserModel();
+        $registrar = $userModel->where('role', 'registrar')->find($id);
+        
+        if (!$registrar) {
+            return redirect()->to('/admin/registrars')->with('error', 'Registrar not found');
+        }
+        
+        try {
+            $userModel->delete($id);
+            return redirect()->to('/admin/registrars')->with('success', 'Registrar deleted successfully');
+        } catch (\Exception $e) {
+            log_message('error', 'Registrar deletion error: ' . $e->getMessage());
+            return redirect()->to('/admin/registrars')->with('error', 'Error deleting registrar: ' . $e->getMessage());
+        }
+    }
+    
+    public function viewRegistrar($id = null)
+    {
+        if (!$id) {
+            return redirect()->to('/admin/registrars')->with('error', 'Registrar ID required');
+        }
+        
+        $userModel = new UserModel();
+        $registrar = $userModel->where('role', 'registrar')->find($id);
+        
+        if (!$registrar) {
+            return redirect()->to('/admin/registrars')->with('error', 'Registrar not found');
+        }
+        
+        return view('admin/view_registrar', ['registrar' => $registrar]);
+    }
+    
     // ==================== STUDENT MANAGEMENT METHODS ====================
     
     public function manageStudents()
