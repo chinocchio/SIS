@@ -503,42 +503,175 @@
             
             <!-- Grades Section -->
             <div class="profile-section full-width">
-                <h3>📚 Grades & Academic Progress</h3>
+                <h3>📚 Subjects & Grades</h3>
                 
-                <?php if (!empty($grades)): ?>
+                <?php if (!empty($allSubjects)): ?>
                     <div class="grade-display">
                         <h4>📊 Current School Year: <?= esc($activeSchoolYear['name'] ?? 'Not Set') ?></h4>
-                        <p>You have <?= count($grades) ?> recorded grades for this school year.</p>
+                        <p>Your subjects for Grade <?= $student['grade_level'] ?> 
+                           <?php if ($student['curriculum_id']): ?>
+                               (<?= esc($student['curriculum_name'] ?? 'JHS Curriculum') ?>)
+                           <?php elseif ($student['strand_id']): ?>
+                               (<?= esc($student['strand_name'] ?? 'SHS Strand') ?>)
+                           <?php endif; ?>
+                        </p>
                     </div>
                     
-                    <table style="width:100%; border-collapse:collapse;">
-                        <thead>
-                            <tr>
-                                <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Subject</th>
-                                <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Code</th>
-                                <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Quarter</th>
-                                <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Grade</th>
-                                <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Type</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($grades as $grade): ?>
-                                <tr>
-                                    <td style="padding:8px; border-bottom:1px solid #f1f1f1;"><?= esc($grade['subject_name']) ?></td>
-                                    <td style="padding:8px; border-bottom:1px solid #f1f1f1;"><?= esc($grade['subject_code']) ?></td>
-                                    <td style="padding:8px; border-bottom:1px solid #f1f1f1;">Q<?= $grade['quarter'] ?></td>
-                                    <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
-                                        <span class="grade-value"><?= $grade['grade'] ?></span>
-                                    </td>
-                                    <td style="padding:8px; border-bottom:1px solid #f1f1f1;"><?= esc(ucfirst($grade['is_core'])) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                    <?php 
+                    // Group subjects by quarter for JHS or by semester for SHS
+                    $groupedSubjects = [];
+                    foreach ($allSubjects as $subject) {
+                        if ($student['curriculum_id']) {
+                            // JHS - group by quarter
+                            $groupedSubjects['Q' . $subject['quarter']][] = $subject;
+                        } else {
+                            // SHS - group by semester, then by quarter
+                            $semester = 'Semester ' . $subject['semester'];
+                            if (!isset($groupedSubjects[$semester])) {
+                                $groupedSubjects[$semester] = [];
+                            }
+                            $groupedSubjects[$semester]['Q' . $subject['quarter']][] = $subject;
+                        }
+                    }
+                    ?>
+                    
+                    <?php foreach ($groupedSubjects as $period => $subjects): ?>
+                        <div style="margin-bottom: 30px;">
+                            <h4 style="color: #667eea; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                                <?= esc($period) ?>
+                            </h4>
+                            
+                            <?php if ($student['curriculum_id']): ?>
+                                <!-- JHS: Direct subjects array -->
+                                <table style="width:100%; border-collapse:collapse; margin-bottom: 20px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Subject</th>
+                                            <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Code</th>
+                                            <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Units</th>
+                                            <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Type</th>
+                                            <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Grade</th>
+                                            <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($subjects as $subject): 
+                                            // Find recorded grade for this subject
+                                            $recordedGrade = null;
+                                            foreach ($grades as $grade) {
+                                                if ($grade['subject_id'] == $subject['id']) {
+                                                    $recordedGrade = $grade;
+                                                    break;
+                                                }
+                                            }
+                                        ?>
+                                            <tr>
+                                                <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                                    <strong><?= esc($subject['name']) ?></strong>
+                                                </td>
+                                                <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                                    <?= esc($subject['code']) ?>
+                                                </td>
+                                                <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                                    <?= $subject['units'] ?>
+                                                </td>
+                                                <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                                    <?= esc(ucfirst($subject['is_core'])) ?>
+                                                </td>
+                                                <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                                    <?php if ($recordedGrade): ?>
+                                                        <span class="grade-value"><?= $recordedGrade['grade'] ?></span>
+                                                    <?php else: ?>
+                                                        <span style="color: #6c757d; font-style: italic;">Not recorded</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                                    <?php if ($recordedGrade): ?>
+                                                        <span class="status-badge status-approved">Recorded</span>
+                                                    <?php else: ?>
+                                                        <span class="status-badge status-pending">Pending</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            <?php else: ?>
+                                <!-- SHS: Nested by quarters within semester -->
+                                <?php foreach ($subjects as $quarter => $quarterSubjects): ?>
+                                    <div style="margin-bottom: 20px;">
+                                        <h5 style="color: #495057; margin-bottom: 10px; padding: 8px; background: #e9ecef; border-radius: 4px;">
+                                            <?= esc($quarter) ?>
+                                        </h5>
+                                        
+                                        <table style="width:100%; border-collapse:collapse; margin-bottom: 15px;">
+                                            <thead>
+                                                <tr>
+                                                    <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Subject</th>
+                                                    <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Code</th>
+                                                    <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Units</th>
+                                                    <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Type</th>
+                                                    <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Grade</th>
+                                                    <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($quarterSubjects as $subject): 
+                                                    // Find recorded grade for this subject
+                                                    $recordedGrade = null;
+                                                    foreach ($grades as $grade) {
+                                                        if ($grade['subject_id'] == $subject['id']) {
+                                                            $recordedGrade = $grade;
+                                                            break;
+                                                        }
+                                                    }
+                                                ?>
+                                                    <tr>
+                                                        <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                                            <strong><?= esc($subject['name']) ?></strong>
+                                                        </td>
+                                                        <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                                            <?= esc($subject['code']) ?>
+                                                        </td>
+                                                        <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                                            <?= $subject['units'] ?>
+                                                        </td>
+                                                        <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                                            <?= esc(ucfirst($subject['is_core'])) ?>
+                                                        </td>
+                                                        <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                                            <?php if ($recordedGrade): ?>
+                                                                <span class="grade-value"><?= $recordedGrade['grade'] ?></span>
+                                                            <?php else: ?>
+                                                                <span style="color: #6c757d; font-style: italic;">Not recorded</span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                        <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                                            <?php if ($recordedGrade): ?>
+                                                                <span class="status-badge status-approved">Recorded</span>
+                                                            <?php else: ?>
+                                                                <span class="status-badge status-pending">Pending</span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                    
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                        <p style="margin: 0; color: #1976d2;">
+                            <strong>📝 Note:</strong> Grades marked as "Pending" will be updated by your teachers as they record them throughout the school year.
+                        </p>
+                    </div>
                 <?php else: ?>
                     <div class="no-grades">
-                        <h4>📊 No Grades Recorded Yet</h4>
-                        <p>Your grades will appear here once your teachers start recording them.</p>
+                        <h4>📊 No Subjects Found</h4>
+                        <p>No subjects are currently assigned to your curriculum/strand and grade level.</p>
                     </div>
                 <?php endif; ?>
             </div>

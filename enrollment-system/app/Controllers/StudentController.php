@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\StudentModel;
 use App\Models\DocumentModel;
 use App\Models\SchoolYearModel;
+use App\Models\SubjectModel;
 
 class StudentController extends BaseController
 {
@@ -36,11 +37,44 @@ class StudentController extends BaseController
         // Get active school year
         $activeSchoolYear = $schoolYearModel->getActiveSchoolYear();
         
-        // Get recorded grades from student_grades table
+        // Get all subjects for student's curriculum/strand and grade level
+        $subjectModel = new SubjectModel();
+        $allSubjects = [];
         $grades = [];
+        
         try {
             if ($activeSchoolYear) {
                 $db = \Config\Database::connect();
+                
+                // Get all subjects for the student's curriculum/strand and grade level
+                if ($student['curriculum_id']) {
+                    // JHS Student - get subjects by curriculum
+                    $allSubjectsQuery = $db->table('subjects s')
+                                          ->select('s.*, c.name as curriculum_name')
+                                          ->join('curriculums c', 'c.id = s.curriculum_id', 'left')
+                                          ->where('s.curriculum_id', $student['curriculum_id'])
+                                          ->where('s.grade_level', $student['grade_level'])
+                                          ->where('s.is_active', 1)
+                                          ->orderBy('s.quarter', 'ASC')
+                                          ->orderBy('s.name', 'ASC')
+                                          ->get();
+                } else if ($student['strand_id']) {
+                    // SHS Student - get subjects by strand
+                    $allSubjectsQuery = $db->table('subjects s')
+                                          ->select('s.*, st.name as strand_name')
+                                          ->join('strands st', 'st.id = s.strand_id', 'left')
+                                          ->where('s.strand_id', $student['strand_id'])
+                                          ->where('s.grade_level', $student['grade_level'])
+                                          ->where('s.is_active', 1)
+                                          ->orderBy('s.semester', 'ASC')
+                                          ->orderBy('s.quarter', 'ASC')
+                                          ->orderBy('s.name', 'ASC')
+                                          ->get();
+                }
+                
+                $allSubjects = $allSubjectsQuery ? $allSubjectsQuery->getResultArray() : [];
+                
+                // Get recorded grades from student_grades table
                 $gradesQuery = $db->table('student_grades sg')
                                 ->select('sg.*, s.name as subject_name, s.code as subject_code, s.grade_level, s.quarter, s.is_core')
                                 ->join('subjects s', 's.id = sg.subject_id')
@@ -54,13 +88,14 @@ class StudentController extends BaseController
                 $grades = $gradesQuery->getResultArray();
             }
         } catch (\Exception $e) {
-            log_message('error', 'Error fetching grades for student ' . $studentId . ': ' . $e->getMessage());
+            log_message('error', 'Error fetching subjects and grades for student ' . $studentId . ': ' . $e->getMessage());
         }
         
         $data = [
             'student' => $student,
             'documents' => $documents,
             'grades' => $grades,
+            'allSubjects' => $allSubjects,
             'activeSchoolYear' => $activeSchoolYear
         ];
         
