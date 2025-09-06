@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\UserModel;
 use App\Models\TeacherModel;
+use App\Models\StudentModel;
 
 class AuthController extends BaseController
 {
@@ -23,7 +24,7 @@ class AuthController extends BaseController
         $username = $this->request->getPost('username');
         $password = $this->request->getPost('password');
         
-        // First check users table (for admin, registrar, student)
+        // First check users table (for admin, registrar)
         $userModel = new UserModel();
         $user = $userModel->where('username', $username)
                          ->where('is_active', 1)
@@ -51,14 +52,12 @@ class AuthController extends BaseController
                     return redirect()->to('/admin/dashboard');
                 case 'registrar':
                     return redirect()->to('/registrar/dashboard');
-                case 'student':
-                    return redirect()->to('/student/dashboard');
                 default:
                     return redirect()->to('/auth/login')->with('error', 'Invalid user role.');
             }
         }
         
-        // If not found in users table, check teachers table
+        // Check teachers table
         $teacherModel = new TeacherModel();
         $teacher = $teacherModel->where('username', $username)
                                ->where('is_active', 1)
@@ -80,8 +79,40 @@ class AuthController extends BaseController
             return redirect()->to('/teacher/dashboard');
         }
         
-        // If neither found, return error
-        return redirect()->back()->with('error', 'Invalid username or password.');
+        // Check students table using LRN
+        $studentModel = new StudentModel();
+        $student = $studentModel->where('lrn', $username)->first();
+        
+        if ($student) {
+            // Check if student is approved
+            if ($student['status'] !== 'approved') {
+                return redirect()->back()->with('error', 'Your account is not yet approved. Please contact the registrar.');
+            }
+            
+            // Verify password
+            if (password_verify($password, $student['password'])) {
+                // Set session data for student
+                $session = session();
+                $session->set([
+                    'user_id' => $student['id'],
+                    'username' => $student['lrn'],
+                    'role' => 'student',
+                    'first_name' => $student['first_name'],
+                    'last_name' => $student['last_name'],
+                    'email' => $student['email'],
+                    'lrn' => $student['lrn'],
+                    'status' => $student['status'],
+                    'is_logged_in' => true
+                ]);
+                
+                return redirect()->to('/student/dashboard');
+            } else {
+                return redirect()->back()->with('error', 'Invalid password.');
+            }
+        }
+        
+        // If none found, return error
+        return redirect()->back()->with('error', 'Invalid username/LRN or password.');
     }
     
     public function logout()

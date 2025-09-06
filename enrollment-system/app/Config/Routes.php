@@ -18,9 +18,8 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');  // Landing page
 
 // Student 
-$routes->get('/student/login', 'StudentAuthController::loginForm');
-$routes->post('/student/login', 'StudentAuthController::login');
-$routes->get('/student/dashboard', 'StudentController::dashboard', ['filter' => 'studentauth']);
+$routes->get('/student/login', 'StudentController::login');
+$routes->post('/student/login', 'AuthController::authenticate');
 $routes->get('/student/profile/edit', 'StudentController::edit');
 $routes->post('/student/profile/update', 'StudentController::update');
 $routes->post('/student/upload-document', 'StudentController::uploadDocument');
@@ -160,3 +159,9 @@ $routes->get('/teacher/grades', 'TeacherController::gradeManagement', ['filter' 
 $routes->get('/teacher/reports', 'TeacherController::reports', ['filter' => 'teacherauth']);
 $routes->get('/teacher/student/(:num)/grades/(:num)', 'TeacherController::viewGrades/$1/$2', ['filter' => 'teacherauth']);
 $routes->get('/teacher/student/(:num)/report-card/(:num)', 'TeacherController::generateReportCard/$1/$2', ['filter' => 'teacherauth']);
+
+// Student
+$routes->get('/student/dashboard', 'StudentController::index', ['filter' => 'studentauth']);
+$routes->post('/student/submit-document', 'StudentController::submitDocument', ['filter' => 'studentauth']);
+$routes->get('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);
+$routes->post('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);

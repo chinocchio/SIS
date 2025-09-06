@@ -127,47 +127,111 @@ class TeacherModel extends Model
     {
         $db = \Config\Database::connect();
         
-        // Check if assignment already exists
-        $existing = $db->table('teacher_subject_assignments')
-                      ->where('teacher_id', $teacherId)
-                      ->where('subject_id', $subjectId)
-                      ->where('section_id', $sectionId)
-                      ->where('school_year_id', $schoolYearId)
-                      ->get()
-                      ->getRowArray();
-        
-        if ($existing) {
-            // Reactivate if exists but inactive
-            if (!$existing['is_active']) {
-                $db->table('teacher_subject_assignments')
-                   ->where('id', $existing['id'])
-                   ->update(['is_active' => 1, 'updated_at' => date('Y-m-d H:i:s')]);
-                return true;
-            }
-            return false; // Already active
+        // Get the subject details to find all quarters for this subject
+        $subject = $db->table('subjects')->where('id', $subjectId)->get()->getRowArray();
+        if (!$subject) {
+            return false;
         }
         
-        // Create new assignment
-        $data = [
-            'teacher_id' => $teacherId,
-            'subject_id' => $subjectId,
-            'section_id' => $sectionId,
-            'school_year_id' => $schoolYearId,
-            'is_active' => 1,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
-        ];
+        // Find all subject records for the same subject name/code and grade level
+        $allSubjectRecords = $db->table('subjects')
+                              ->where('name', $subject['name'])
+                              ->where('grade_level', $subject['grade_level'])
+                              ->where('is_active', 1)
+                              ->get()
+                              ->getResultArray();
         
-        return $db->table('teacher_subject_assignments')->insert($data);
+        $assignmentsCreated = 0;
+        $assignmentsSkipped = 0;
+        
+        // Assign teacher to all quarters of this subject
+        foreach ($allSubjectRecords as $subjectRecord) {
+            // Check if assignment already exists for this specific quarter
+            $existing = $db->table('teacher_subject_assignments')
+                          ->where('teacher_id', $teacherId)
+                          ->where('subject_id', $subjectRecord['id'])
+                          ->where('section_id', $sectionId)
+                          ->where('school_year_id', $schoolYearId)
+                          ->get()
+                          ->getRowArray();
+            
+            if ($existing) {
+                // Reactivate if exists but inactive
+                if (!$existing['is_active']) {
+                    $db->table('teacher_subject_assignments')
+                       ->where('id', $existing['id'])
+                       ->update(['is_active' => 1, 'updated_at' => date('Y-m-d H:i:s')]);
+                    $assignmentsCreated++;
+                } else {
+                    $assignmentsSkipped++;
+                }
+            } else {
+                // Create new assignment for this quarter
+                $data = [
+                    'teacher_id' => $teacherId,
+                    'subject_id' => $subjectRecord['id'],
+                    'section_id' => $sectionId,
+                    'school_year_id' => $schoolYearId,
+                    'is_active' => 1,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ];
+                
+                if ($db->table('teacher_subject_assignments')->insert($data)) {
+                    $assignmentsCreated++;
+                }
+            }
+        }
+        
+        // Return true if at least one assignment was created or reactivated
+        return $assignmentsCreated > 0;
     }
     
     public function removeSubjectAssignment($assignmentId)
     {
         $db = \Config\Database::connect();
         
-        return $db->table('teacher_subject_assignments')
-                  ->where('id', $assignmentId)
-                  ->update(['is_active' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
+        // Get the assignment details
+        $assignment = $db->table('teacher_subject_assignments')
+                        ->where('id', $assignmentId)
+                        ->get()
+                        ->getRowArray();
+        
+        if (!$assignment) {
+            return false;
+        }
+        
+        // Get the subject details to find all quarters
+        $subject = $db->table('subjects')->where('id', $assignment['subject_id'])->get()->getRowArray();
+        if (!$subject) {
+            return false;
+        }
+        
+        // Find all subject records for the same subject name/code and grade level
+        $allSubjectRecords = $db->table('subjects')
+                              ->where('name', $subject['name'])
+                              ->where('grade_level', $subject['grade_level'])
+                              ->where('is_active', 1)
+                              ->get()
+                              ->getResultArray();
+        
+        $removedCount = 0;
+        
+        // Remove teacher from all quarters of this subject
+        foreach ($allSubjectRecords as $subjectRecord) {
+            $result = $db->table('teacher_subject_assignments')
+                        ->where('teacher_id', $assignment['teacher_id'])
+                        ->where('subject_id', $subjectRecord['id'])
+                        ->where('section_id', $assignment['section_id'])
+                        ->where('school_year_id', $assignment['school_year_id'])
+                        ->update(['is_active' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
+            
+            if ($result) {
+                $removedCount++;
+            }
+        }
+        
+        return $removedCount > 0;
     }
     
     public function getTeachersBySubject($subjectId)

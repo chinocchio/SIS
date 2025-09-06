@@ -2024,9 +2024,18 @@ class AdminController extends BaseController
         try {
             $result = $teacherModel->assignSubjectToTeacher($teacherId, $subjectId, $sectionId, $schoolYearId);
             if ($result) {
-                return redirect()->back()->with('success', 'Subject assigned to teacher successfully.');
+                // Get subject details to show which quarters were assigned
+                $subjectModel = new SubjectModel();
+                $subject = $subjectModel->find($subjectId);
+                $allQuarters = $subjectModel->where('name', $subject['name'])
+                                          ->where('grade_level', $subject['grade_level'])
+                                          ->where('is_active', 1)
+                                          ->findAll();
+                
+                $quarterText = count($allQuarters) > 1 ? 'all quarters' : 'quarter';
+                return redirect()->back()->with('success', 'Subject assigned to teacher successfully for ' . $quarterText . ' (' . count($allQuarters) . ' assignments created).');
             } else {
-                return redirect()->back()->with('error', 'Subject assignment already exists.');
+                return redirect()->back()->with('error', 'Subject assignment already exists for all quarters.');
             }
         } catch (\Exception $e) {
             log_message('error', 'Subject assignment error: ' . $e->getMessage());
@@ -2045,7 +2054,7 @@ class AdminController extends BaseController
         try {
             $result = $teacherModel->removeSubjectAssignment($assignmentId);
             if ($result) {
-                return redirect()->back()->with('success', 'Subject assignment removed successfully.');
+                return redirect()->back()->with('success', 'Subject assignment removed successfully from all quarters.');
             } else {
                 return redirect()->back()->with('error', 'Failed to remove subject assignment.');
             }

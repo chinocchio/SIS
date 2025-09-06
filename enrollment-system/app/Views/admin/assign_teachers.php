@@ -352,6 +352,10 @@
                     const subjectsData = <?= json_encode($subjects ?? []) ?>;
                     const sectionsData = <?= json_encode($sections ?? []) ?>;
                     
+                    // Debug: Log the data to console
+                    console.log('Subjects Data:', subjectsData);
+                    console.log('Sections Data:', sectionsData);
+                    
                     function filterSubjectsAndSections() {
                         const gradeLevel = document.getElementById('grade_level').value;
                         const subjectSelect = document.getElementById('subject_id');
@@ -363,18 +367,31 @@
                         sectionSelect.innerHTML = '<option value="">Select Section</option>';
                         
                         if (gradeLevel) {
-                            // Filter subjects by grade level
-                            const filteredSubjects = subjectsData.filter(subject => subject.grade_level == gradeLevel);
+                            // Filter subjects by grade level (convert both to numbers for comparison)
+                            const filteredSubjects = subjectsData.filter(subject => parseInt(subject.grade_level) === parseInt(gradeLevel));
+                            
+                            // Debug: Log filtering results
+                            console.log('Grade Level Selected:', gradeLevel);
+                            console.log('Filtered Subjects for Grade ' + gradeLevel + ':', filteredSubjects);
                             
                             filteredSubjects.forEach(subject => {
                                 const option = document.createElement('option');
                                 option.value = subject.id;
-                                option.textContent = subject.name + (subject.curriculum_name ? ' (' + subject.curriculum_name + ')' : '');
+                                let displayText = subject.name;
+                                
+                                // Add curriculum name if available, otherwise indicate it's SHS
+                                if (subject.curriculum_name) {
+                                    displayText += ' (' + subject.curriculum_name + ')';
+                                } else {
+                                    displayText += ' (SHS Subject)';
+                                }
+                                
+                                option.textContent = displayText;
                                 subjectSelect.appendChild(option);
                             });
                             
-                            // Filter sections by grade level
-                            const filteredSections = sectionsData.filter(section => section.grade_level == gradeLevel);
+                            // Filter sections by grade level (convert both to numbers for comparison)
+                            const filteredSections = sectionsData.filter(section => parseInt(section.grade_level) === parseInt(gradeLevel));
                             
                             filteredSections.forEach(section => {
                                 const option = document.createElement('option');

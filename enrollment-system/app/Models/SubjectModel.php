@@ -95,8 +95,9 @@ class SubjectModel extends Model
         
         $query = $db->table('subjects s')
                     ->select('s.*, c.name as curriculum_name')
-                    ->join('curriculums c', 'c.id = s.curriculum_id')
+                    ->join('curriculums c', 'c.id = s.curriculum_id', 'left')
                     ->where('s.is_active', 1)
+                    ->orderBy('s.grade_level', 'ASC')
                     ->orderBy('c.name', 'ASC')
                     ->orderBy('s.code', 'ASC')
                     ->get();
