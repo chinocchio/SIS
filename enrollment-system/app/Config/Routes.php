@@ -111,6 +111,19 @@ $routes->get('/admin/strands/delete-track/(:num)', 'AdminController::deleteTrack
 $routes->get('/admin/users', 'AdminController::manageUsers', ['filter' => 'adminauth']);
 $routes->post('/admin/users', 'AdminController::manageUsers', ['filter' => 'adminauth']);
 
+// Teacher Management Routes
+$routes->get('/admin/teachers', 'AdminController::manageTeachers', ['filter' => 'adminauth']);
+$routes->get('/admin/teachers/assign', 'AdminController::assignTeachers', ['filter' => 'adminauth']);
+$routes->get('/admin/teachers/add', 'AdminController::showAddTeacherForm', ['filter' => 'adminauth']);
+$routes->post('/admin/teachers/add', 'AdminController::createTeacher', ['filter' => 'adminauth']);
+$routes->get('/admin/teachers/view/(:num)', 'AdminController::viewTeacher/$1', ['filter' => 'adminauth']);
+$routes->get('/admin/teachers/edit/(:num)', 'AdminController::showEditTeacherForm/$1', ['filter' => 'adminauth']);
+$routes->post('/admin/teachers/edit/(:num)', 'AdminController::updateTeacher/$1', ['filter' => 'adminauth']);
+$routes->get('/admin/teachers/delete/(:num)', 'AdminController::deleteTeacher/$1', ['filter' => 'adminauth']);
+$routes->post('/admin/teachers/assign-subject', 'AdminController::assignSubjectToTeacher', ['filter' => 'adminauth']);
+$routes->get('/admin/teachers/remove-assignment/(:num)', 'AdminController::removeSubjectAssignment/$1', ['filter' => 'adminauth']);
+$routes->post('/admin/teachers/get-subjects-by-grade', 'AdminController::getSubjectsByGradeLevel', ['filter' => 'adminauth']);
+
 // Registrar
 $routes->get('/registrar', 'RegistrarController::index', ['filter' => 'registrarauth']);
 $routes->get('/registrar/dashboard', 'RegistrarController::manageStudents', ['filter' => 'registrarauth']);
@@ -138,9 +151,12 @@ $routes->post('/registrar/students/assign-section', 'RegistrarController::assign
 $routes->get('/registrar/students/remove-section/(:num)', 'RegistrarController::removeStudentFromSection/$1', ['filter' => 'registrarauth']);
 
 // Teacher
-$routes->get('/teacher', 'TeacherController::index');
-$routes->get('/teacher/dashboard', 'TeacherController::index');
-$routes->get('/teacher/section/(:num)/students', 'TeacherController::viewStudents/$1');
-$routes->post('/teacher/input-grades', 'TeacherController::inputGrades');
-$routes->get('/teacher/student/(:num)/grades/(:num)', 'TeacherController::viewGrades/$1/$2');
-$routes->get('/teacher/student/(:num)/report-card/(:num)', 'TeacherController::generateReportCard/$1/$2');
+$routes->get('/teacher', 'TeacherController::index', ['filter' => 'teacherauth']);
+$routes->get('/teacher/dashboard', 'TeacherController::index', ['filter' => 'teacherauth']);
+$routes->get('/teacher/students/(:num)', 'TeacherController::viewStudents/$1', ['filter' => 'teacherauth']);
+$routes->get('/teacher/grades/(:num)', 'TeacherController::inputGrades/$1', ['filter' => 'teacherauth']);
+$routes->post('/teacher/save-grades', 'TeacherController::saveGrades', ['filter' => 'teacherauth']);
+$routes->get('/teacher/grades', 'TeacherController::gradeManagement', ['filter' => 'teacherauth']);
+$routes->get('/teacher/reports', 'TeacherController::reports', ['filter' => 'teacherauth']);
+$routes->get('/teacher/student/(:num)/grades/(:num)', 'TeacherController::viewGrades/$1/$2', ['filter' => 'teacherauth']);
+$routes->get('/teacher/student/(:num)/report-card/(:num)', 'TeacherController::generateReportCard/$1/$2', ['filter' => 'teacherauth']);

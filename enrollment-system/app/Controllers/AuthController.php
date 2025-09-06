@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\UserModel;
+use App\Models\TeacherModel;
 
 class AuthController extends BaseController
 {
@@ -22,6 +23,7 @@ class AuthController extends BaseController
         $username = $this->request->getPost('username');
         $password = $this->request->getPost('password');
         
+        // First check users table (for admin, registrar, student)
         $userModel = new UserModel();
         $user = $userModel->where('username', $username)
                          ->where('is_active', 1)
@@ -49,16 +51,37 @@ class AuthController extends BaseController
                     return redirect()->to('/admin/dashboard');
                 case 'registrar':
                     return redirect()->to('/registrar/dashboard');
-                case 'teacher':
-                    return redirect()->to('/teacher/dashboard');
                 case 'student':
                     return redirect()->to('/student/dashboard');
                 default:
                     return redirect()->to('/auth/login')->with('error', 'Invalid user role.');
             }
-        } else {
-            return redirect()->back()->with('error', 'Invalid username or password.');
         }
+        
+        // If not found in users table, check teachers table
+        $teacherModel = new TeacherModel();
+        $teacher = $teacherModel->where('username', $username)
+                               ->where('is_active', 1)
+                               ->first();
+        
+        if ($teacher && password_verify($password, $teacher['password'])) {
+            // Set session data for teacher
+            $session = session();
+            $session->set([
+                'user_id' => $teacher['id'],
+                'username' => $teacher['username'],
+                'role' => 'teacher',
+                'first_name' => $teacher['first_name'],
+                'last_name' => $teacher['last_name'],
+                'email' => $teacher['email'],
+                'is_logged_in' => true
+            ]);
+            
+            return redirect()->to('/teacher/dashboard');
+        }
+        
+        // If neither found, return error
+        return redirect()->back()->with('error', 'Invalid username or password.');
     }
     
     public function logout()

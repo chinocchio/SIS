@@ -105,6 +105,14 @@ class SubjectModel extends Model
     }
     
     /**
+     * Get subjects with curriculum information (alias for getAllActiveSubjectsWithCurriculum)
+     */
+    public function getSubjectsWithCurriculum()
+    {
+        return $this->getAllActiveSubjectsWithCurriculum();
+    }
+    
+    /**
      * Get all active subjects with curriculum and strand information
      */
     public function getAllActiveSubjectsWithCurriculumAndStrand()

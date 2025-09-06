@@ -974,6 +974,16 @@
                                                              <?php if (isset($subjectData['quarters'][1])): ?>
                                                                  <div class="quarter-grade">
                                                                      <label>Q1:</label>
+                                                                     <?php
+                                                                     // Find recorded grade for this subject and quarter
+                                                                     $recordedGrade = null;
+                                                                     foreach ($grades as $grade) {
+                                                                         if ($grade['subject_id'] == $subjectData['quarters'][1]['id'] && $grade['quarter'] == 1) {
+                                                                             $recordedGrade = $grade['grade'];
+                                                                             break;
+                                                                         }
+                                                                     }
+                                                                     ?>
                                                                      <input type="number" 
                                                                             id="grade_<?= $subjectData['quarters'][1]['id'] ?>_1" 
                                                                             name="grade_<?= $subjectData['quarters'][1]['id'] ?>_1" 
@@ -981,6 +991,7 @@
                                                                             max="100" 
                                                                             placeholder="75-100"
                                                                             class="grade-field"
+                                                                            value="<?= $recordedGrade ?? '' ?>"
                                                                             data-subject-id="<?= $subjectData['quarters'][1]['id'] ?>"
                                                                             data-quarter="1"
                                                                             data-student-id="<?= $student['id'] ?>">
@@ -989,6 +1000,16 @@
                                                              <?php if (isset($subjectData['quarters'][2])): ?>
                                                                  <div class="quarter-grade">
                                                                      <label>Q2:</label>
+                                                                     <?php
+                                                                     // Find recorded grade for this subject and quarter
+                                                                     $recordedGrade = null;
+                                                                     foreach ($grades as $grade) {
+                                                                         if ($grade['subject_id'] == $subjectData['quarters'][2]['id'] && $grade['quarter'] == 2) {
+                                                                             $recordedGrade = $grade['grade'];
+                                                                             break;
+                                                                         }
+                                                                     }
+                                                                     ?>
                                                                      <input type="number" 
                                                                             id="grade_<?= $subjectData['quarters'][2]['id'] ?>_2" 
                                                                             name="grade_<?= $subjectData['quarters'][2]['id'] ?>_2" 
@@ -996,6 +1017,7 @@
                                                                             max="100" 
                                                                             placeholder="75-100"
                                                                             class="grade-field"
+                                                                            value="<?= $recordedGrade ?? '' ?>"
                                                                             data-subject-id="<?= $subjectData['quarters'][2]['id'] ?>"
                                                                             data-quarter="2"
                                                                             data-student-id="<?= $student['id'] ?>">
@@ -1009,6 +1031,16 @@
                                                              <?php if (isset($subjectData['quarters'][3])): ?>
                                                                  <div class="quarter-grade">
                                                                      <label>Q3:</label>
+                                                                     <?php
+                                                                     // Find recorded grade for this subject and quarter
+                                                                     $recordedGrade = null;
+                                                                     foreach ($grades as $grade) {
+                                                                         if ($grade['subject_id'] == $subjectData['quarters'][3]['id'] && $grade['quarter'] == 3) {
+                                                                             $recordedGrade = $grade['grade'];
+                                                                             break;
+                                                                         }
+                                                                     }
+                                                                     ?>
                                                                      <input type="number" 
                                                                             id="grade_<?= $subjectData['quarters'][3]['id'] ?>_3" 
                                                                             name="grade_<?= $subjectData['quarters'][3]['id'] ?>_3" 
@@ -1016,6 +1048,7 @@
                                                                             max="100" 
                                                                             placeholder="75-100"
                                                                             class="grade-field"
+                                                                            value="<?= $recordedGrade ?? '' ?>"
                                                                             data-subject-id="<?= $subjectData['quarters'][3]['id'] ?>"
                                                                             data-quarter="3"
                                                                             data-student-id="<?= $student['id'] ?>">
@@ -1024,6 +1057,16 @@
                                                              <?php if (isset($subjectData['quarters'][4])): ?>
                                                                  <div class="quarter-grade">
                                                                      <label>Q4:</label>
+                                                                     <?php
+                                                                     // Find recorded grade for this subject and quarter
+                                                                     $recordedGrade = null;
+                                                                     foreach ($grades as $grade) {
+                                                                         if ($grade['subject_id'] == $subjectData['quarters'][4]['id'] && $grade['quarter'] == 4) {
+                                                                             $recordedGrade = $grade['grade'];
+                                                                             break;
+                                                                         }
+                                                                     }
+                                                                     ?>
                                                                      <input type="number" 
                                                                             id="grade_<?= $subjectData['quarters'][4]['id'] ?>_4" 
                                                                             name="grade_<?= $subjectData['quarters'][4]['id'] ?>_4" 
@@ -1031,6 +1074,7 @@
                                                                             max="100" 
                                                                             placeholder="75-100"
                                                                             class="grade-field"
+                                                                            value="<?= $recordedGrade ?? '' ?>"
                                                                             data-subject-id="<?= $subjectData['quarters'][4]['id'] ?>"
                                                                             data-quarter="4"
                                                                             data-student-id="<?= $student['id'] ?>">
@@ -1111,6 +1155,16 @@
                                                      </td>
                                                      <td>
                                                          <?php if (isset($subjectData['quarters'][1])): ?>
+                                                             <?php
+                                                             // Find recorded grade for this subject and quarter
+                                                             $recordedGrade = null;
+                                                             foreach ($grades as $grade) {
+                                                                 if ($grade['subject_id'] == $subjectData['quarters'][1]['id'] && $grade['quarter'] == 1) {
+                                                                     $recordedGrade = $grade['grade'];
+                                                                     break;
+                                                                 }
+                                                             }
+                                                             ?>
                                                              <input type="number" 
                                                                     id="grade_<?= $subjectData['quarters'][1]['id'] ?>_1" 
                                                                     name="grade_<?= $subjectData['quarters'][1]['id'] ?>_1" 
@@ -1118,6 +1172,7 @@
                                                                     max="100" 
                                                                     placeholder="75-100"
                                                                     class="grade-field"
+                                                                    value="<?= $recordedGrade ?? '' ?>"
                                                                     data-subject-id="<?= $subjectData['quarters'][1]['id'] ?>"
                                                                     data-quarter="1"
                                                                     data-student-id="<?= $student['id'] ?>">
@@ -1127,6 +1182,16 @@
                                                      </td>
                                                      <td>
                                                          <?php if (isset($subjectData['quarters'][2])): ?>
+                                                             <?php
+                                                             // Find recorded grade for this subject and quarter
+                                                             $recordedGrade = null;
+                                                             foreach ($grades as $grade) {
+                                                                 if ($grade['subject_id'] == $subjectData['quarters'][2]['id'] && $grade['quarter'] == 2) {
+                                                                     $recordedGrade = $grade['grade'];
+                                                                     break;
+                                                                 }
+                                                             }
+                                                             ?>
                                                              <input type="number" 
                                                                     id="grade_<?= $subjectData['quarters'][2]['id'] ?>_2" 
                                                                     name="grade_<?= $subjectData['quarters'][2]['id'] ?>_2" 
@@ -1134,6 +1199,7 @@
                                                                     max="100" 
                                                                     placeholder="75-100"
                                                                     class="grade-field"
+                                                                    value="<?= $recordedGrade ?? '' ?>"
                                                                     data-subject-id="<?= $subjectData['quarters'][2]['id'] ?>"
                                                                     data-quarter="2"
                                                                     data-student-id="<?= $student['id'] ?>">
@@ -1143,6 +1209,16 @@
                                                      </td>
                                                      <td>
                                                          <?php if (isset($subjectData['quarters'][3])): ?>
+                                                             <?php
+                                                             // Find recorded grade for this subject and quarter
+                                                             $recordedGrade = null;
+                                                             foreach ($grades as $grade) {
+                                                                 if ($grade['subject_id'] == $subjectData['quarters'][3]['id'] && $grade['quarter'] == 3) {
+                                                                     $recordedGrade = $grade['grade'];
+                                                                     break;
+                                                                 }
+                                                             }
+                                                             ?>
                                                              <input type="number" 
                                                                     id="grade_<?= $subjectData['quarters'][3]['id'] ?>_3" 
                                                                     name="grade_<?= $subjectData['quarters'][3]['id'] ?>_3" 
@@ -1150,6 +1226,7 @@
                                                                     max="100" 
                                                                     placeholder="75-100"
                                                                     class="grade-field"
+                                                                    value="<?= $recordedGrade ?? '' ?>"
                                                                     data-subject-id="<?= $subjectData['quarters'][3]['id'] ?>"
                                                                     data-quarter="3"
                                                                     data-student-id="<?= $student['id'] ?>">
@@ -1159,6 +1236,16 @@
                                                      </td>
                                                      <td>
                                                          <?php if (isset($subjectData['quarters'][4])): ?>
+                                                             <?php
+                                                             // Find recorded grade for this subject and quarter
+                                                             $recordedGrade = null;
+                                                             foreach ($grades as $grade) {
+                                                                 if ($grade['subject_id'] == $subjectData['quarters'][4]['id'] && $grade['quarter'] == 4) {
+                                                                     $recordedGrade = $grade['grade'];
+                                                                     break;
+                                                                 }
+                                                             }
+                                                             ?>
                                                              <input type="number" 
                                                                     id="grade_<?= $subjectData['quarters'][4]['id'] ?>_4" 
                                                                     name="grade_<?= $subjectData['quarters'][4]['id'] ?>_4" 
@@ -1166,6 +1253,7 @@
                                                                     max="100" 
                                                                     placeholder="75-100"
                                                                     class="grade-field"
+                                                                    value="<?= $recordedGrade ?? '' ?>"
                                                                     data-subject-id="<?= $subjectData['quarters'][4]['id'] ?>"
                                                                     data-quarter="4"
                                                                     data-student-id="<?= $student['id'] ?>">

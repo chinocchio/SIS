@@ -213,4 +213,12 @@ class StudentModel extends Model
         }
         return $this->update($studentId, ['status' => $status]);
     }
+    
+    public function getStudentsBySection($sectionId)
+    {
+        return $this->where('section_id', $sectionId)
+                    ->where('status', 'approved')
+                    ->orderBy('full_name', 'ASC')
+                    ->findAll();
+    }
 }
