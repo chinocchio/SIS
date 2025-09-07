@@ -131,6 +131,7 @@ $routes->get('/registrar/student/(:num)', 'RegistrarController::viewStudent/$1',
 $routes->get('/registrar/document/approve/(:num)', 'RegistrarController::approveDocument/$1', ['filter' => 'registrarauth']);
 $routes->get('/registrar/document/reject/(:num)', 'RegistrarController::rejectDocument/$1', ['filter' => 'registrarauth']);
 $routes->get('/registrar/document/view/(:num)', 'RegistrarController::viewDocument/$1', ['filter' => 'registrarauth']);
+$routes->get('/registrar/document/download/(:num)', 'RegistrarController::downloadDocument/$1', ['filter' => 'registrarauth']);
 $routes->post('/registrar/approve/(:num)', 'RegistrarController::approveEnrollment/$1', ['filter' => 'registrarauth']);
 $routes->post('/registrar/reject/(:num)', 'RegistrarController::rejectEnrollment/$1', ['filter' => 'registrarauth']);
 $routes->get('/registrar/search', 'RegistrarController::searchStudents', ['filter' => 'registrarauth']);
@@ -165,3 +166,5 @@ $routes->get('/student/dashboard', 'StudentController::index', ['filter' => 'stu
 $routes->post('/student/submit-document', 'StudentController::submitDocument', ['filter' => 'studentauth']);
 $routes->get('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);
 $routes->post('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);
+$routes->get('/student/document/view/(:num)', 'StudentController::viewDocument/$1', ['filter' => 'studentauth']);
+$routes->get('/student/document/download/(:num)', 'StudentController::downloadDocument/$1', ['filter' => 'studentauth']);

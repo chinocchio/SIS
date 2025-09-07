@@ -173,6 +173,67 @@ class StudentController extends BaseController
         }
     }
     
+    public function viewDocument($documentId)
+    {
+        $studentId = session()->get('user_id');
+        $documentModel = new DocumentModel();
+        $doc = $documentModel->find((int)$documentId);
+        if (!$doc || (int)$doc['student_id'] !== (int)$studentId) {
+            return redirect()->back()->with('error', 'Document not found or access denied.');
+        }
+
+        $fullPath = $this->resolveDocumentFullPath($doc['file_path']);
+        if (!$fullPath) {
+            return redirect()->back()->with('error', 'File not found on server.');
+        }
+
+        $mimeType = function_exists('mime_content_type') ? mime_content_type($fullPath) : 'application/octet-stream';
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . basename($fullPath) . '"')
+            ->setBody(file_get_contents($fullPath));
+    }
+
+    public function downloadDocument($documentId)
+    {
+        $studentId = session()->get('user_id');
+        $documentModel = new DocumentModel();
+        $doc = $documentModel->find((int)$documentId);
+        if (!$doc || (int)$doc['student_id'] !== (int)$studentId) {
+            return redirect()->back()->with('error', 'Document not found or access denied.');
+        }
+
+        $fullPath = $this->resolveDocumentFullPath($doc['file_path']);
+        if (!$fullPath) {
+            return redirect()->back()->with('error', 'File not found on server.');
+        }
+
+        return $this->response->download($fullPath, null, true);
+    }
+
+    private function resolveDocumentFullPath(string $storedPath): ?string
+    {
+        if (is_file($storedPath)) {
+            return $storedPath;
+        }
+        $trimmed = ltrim($storedPath, '/\\');
+        $candidates = [
+            ROOTPATH . $trimmed
+        ];
+        if (defined('FCPATH')) {
+            $candidates[] = rtrim(FCPATH, '/\\') . DIRECTORY_SEPARATOR . $trimmed;
+        }
+        if (defined('WRITEPATH')) {
+            $candidates[] = rtrim(WRITEPATH, '/\\') . DIRECTORY_SEPARATOR . $trimmed;
+        }
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+        return null;
+    }
+    
     public function changePassword()
     {
         if ($this->request->getMethod() === 'POST') {

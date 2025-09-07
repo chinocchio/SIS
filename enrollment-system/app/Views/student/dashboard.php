@@ -484,13 +484,12 @@
                                     <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
                                         <?php 
                                             $fileExt = strtolower(pathinfo($doc['file_path'], PATHINFO_EXTENSION));
-                                            $streamUrl = base_url('/registrar/document/view/' . $doc['id']);
+                                            $viewUrl = base_url('/student/document/view/' . $doc['id']);
+                                            $downloadUrl = base_url('/student/document/download/' . $doc['id']);
                                         ?>
-                                        <?php if (in_array($fileExt, ['jpg','jpeg','png','gif'])): ?>
-                                            <a href="<?= $streamUrl ?>" target="_blank">View Image</a>
-                                        <?php else: ?>
-                                            <a href="<?= $streamUrl ?>" target="_blank">View Document</a>
-                                        <?php endif; ?>
+                                        <a href="#" onclick="openDocModal('<?= $viewUrl ?>'); return false;">View</a>
+                                        &nbsp;|&nbsp;
+                                        <a href="<?= $downloadUrl ?>">Download</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -700,6 +699,32 @@
                     </span>
                 </div>
             </div>
+
+            <!-- Document Modal -->
+            <div id="docModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000;">
+                <div style="position: absolute; top: 5%; left: 50%; transform: translateX(-50%); width: 90%; max-width: 900px; height: 90%; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                    <div style="display:flex; justify-content: space-between; align-items:center; padding: 10px 15px; background:#f8f9fa; border-bottom:1px solid #e9ecef;">
+                        <strong>Document Viewer</strong>
+                        <button onclick="closeDocModal()" class="btn btn-secondary">Close</button>
+                    </div>
+                    <iframe id="docFrame" src="" style="width:100%; height: calc(100% - 48px); border:0;"></iframe>
+                </div>
+            </div>
+
+            <script>
+                function openDocModal(url) {
+                    var modal = document.getElementById('docModal');
+                    var iframe = document.getElementById('docFrame');
+                    iframe.src = url;
+                    modal.style.display = 'block';
+                }
+                function closeDocModal() {
+                    var modal = document.getElementById('docModal');
+                    var iframe = document.getElementById('docFrame');
+                    iframe.src = '';
+                    modal.style.display = 'none';
+                }
+            </script>
         </div>
         
         <!-- Actions Section -->

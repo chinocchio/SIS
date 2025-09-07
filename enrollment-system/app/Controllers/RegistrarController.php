@@ -515,8 +515,8 @@ class RegistrarController extends BaseController
             return redirect()->back()->with('error', 'Document not found.');
         }
 
-        $fullPath = ROOTPATH . $doc['file_path'];
-        if (!is_file($fullPath)) {
+        $fullPath = $this->resolveDocumentFullPath($doc['file_path']);
+        if (!$fullPath) {
             return redirect()->back()->with('error', 'File not found on server.');
         }
 
@@ -525,6 +525,46 @@ class RegistrarController extends BaseController
             ->setHeader('Content-Type', $mimeType)
             ->setHeader('Content-Disposition', 'inline; filename="' . basename($fullPath) . '"')
             ->setBody(file_get_contents($fullPath));
+    }
+    
+    public function downloadDocument($documentId)
+    {
+        $documentModel = new DocumentModel();
+        $doc = $documentModel->find((int) $documentId);
+        if (!$doc) {
+            return redirect()->back()->with('error', 'Document not found.');
+        }
+
+        $fullPath = $this->resolveDocumentFullPath($doc['file_path']);
+        if (!$fullPath) {
+            return redirect()->back()->with('error', 'File not found on server.');
+        }
+
+        return $this->response->download($fullPath, null, true);
+    }
+
+    private function resolveDocumentFullPath(string $storedPath): ?string
+    {
+        // If already absolute and exists
+        if (is_file($storedPath)) {
+            return $storedPath;
+        }
+        $candidates = [];
+        // Normalize leading slash
+        $trimmed = ltrim($storedPath, '/\\');
+        $candidates[] = ROOTPATH . $trimmed;
+        if (defined('FCPATH')) {
+            $candidates[] = rtrim(FCPATH, '/\\') . DIRECTORY_SEPARATOR . $trimmed;
+        }
+        if (defined('WRITEPATH')) {
+            $candidates[] = rtrim(WRITEPATH, '/\\') . DIRECTORY_SEPARATOR . $trimmed;
+        }
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+        return null;
     }
     
     public function approveEnrollment($studentId)
