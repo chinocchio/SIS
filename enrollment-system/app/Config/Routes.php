@@ -168,3 +168,7 @@ $routes->get('/student/change-password', 'StudentController::changePassword', ['
 $routes->post('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);
 $routes->get('/student/document/view/(:num)', 'StudentController::viewDocument/$1', ['filter' => 'studentauth']);
 $routes->get('/student/document/download/(:num)', 'StudentController::downloadDocument/$1', ['filter' => 'studentauth']);
+
+// API for face recognition app
+$routes->post('/api/attendance/record', 'ApiController::recordAttendance');
+$routes->get('/api/session/active', 'ApiController::getActiveSession');

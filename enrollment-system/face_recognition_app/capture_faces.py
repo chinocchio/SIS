@@ -5,8 +5,17 @@ import pickle
 import base64
 from db import get_db_connection
 
-# STEP 1: Ask for student ID
-student_id = input("Enter Student ID: ")
+# STEP 1: Ask for student LRN and resolve to ID
+lrn = input("Enter Student LRN (12 digits): ")
+conn_lookup = get_db_connection()
+cur_lookup = conn_lookup.cursor()
+cur_lookup.execute("SELECT id FROM students WHERE lrn=%s", (lrn,))
+row = cur_lookup.fetchone()
+conn_lookup.close()
+if not row:
+    print("❌ No student found with that LRN.")
+    exit(1)
+student_id = row[0]
 
 # STEP 2: Open camera
 cap = cv2.VideoCapture(0)
