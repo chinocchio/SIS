@@ -7,6 +7,7 @@ use App\Models\StudentModel;
 use App\Models\DocumentModel;
 use App\Models\SchoolYearModel;
 use App\Models\SubjectModel;
+use App\Models\AttendanceModel;
 
 class StudentController extends BaseController
 {
@@ -274,5 +275,20 @@ class StudentController extends BaseController
         }
         
         return view('student/change_password');
+    }
+    
+    public function attendance()
+    {
+        $studentId = session()->get('user_id');
+        $attendanceModel = new AttendanceModel();
+        
+        $attendance = $attendanceModel->getStudentAttendance($studentId);
+        
+        $data = [
+            'attendance' => $attendance,
+            'student' => session()->get()
+        ];
+        
+        return view('student/attendance', $data);
     }
 }

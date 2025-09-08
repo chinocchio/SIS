@@ -731,6 +731,7 @@
         <div class="actions-section full-width">
             <h3>⚡ Quick Actions</h3>
             <div class="action-buttons">
+                <a href="/student/attendance" class="btn btn-info">📋 My Attendance</a>
                 <a href="/student/change-password" class="btn btn-warning">🔒 Change Password</a>
                 <a href="/auth/logout" class="btn btn-secondary">🚪 Logout</a>
             </div>

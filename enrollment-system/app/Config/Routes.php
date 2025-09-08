@@ -158,6 +158,7 @@ $routes->get('/teacher/grades/(:num)', 'TeacherController::inputGrades/$1', ['fi
 $routes->post('/teacher/save-grades', 'TeacherController::saveGrades', ['filter' => 'teacherauth']);
 $routes->get('/teacher/grades', 'TeacherController::gradeManagement', ['filter' => 'teacherauth']);
 $routes->get('/teacher/reports', 'TeacherController::reports', ['filter' => 'teacherauth']);
+$routes->get('/teacher/attendance', 'TeacherController::attendance', ['filter' => 'teacherauth']);
 $routes->get('/teacher/student/(:num)/grades/(:num)', 'TeacherController::viewGrades/$1/$2', ['filter' => 'teacherauth']);
 $routes->get('/teacher/student/(:num)/report-card/(:num)', 'TeacherController::generateReportCard/$1/$2', ['filter' => 'teacherauth']);
 
@@ -168,6 +169,7 @@ $routes->get('/student/change-password', 'StudentController::changePassword', ['
 $routes->post('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);
 $routes->get('/student/document/view/(:num)', 'StudentController::viewDocument/$1', ['filter' => 'studentauth']);
 $routes->get('/student/document/download/(:num)', 'StudentController::downloadDocument/$1', ['filter' => 'studentauth']);
+$routes->get('/student/attendance', 'StudentController::attendance', ['filter' => 'studentauth']);
 
 // API for face recognition app
 $routes->post('/api/attendance/record', 'ApiController::recordAttendance');

@@ -31,6 +31,35 @@ class AttendanceModel extends Model
         ];
         return (bool) $this->insert($data);
     }
+
+    public function getStudentAttendance(int $studentId, int $limit = 50)
+    {
+        $db = \Config\Database::connect();
+        return $db->table('attendance_records ar')
+            ->select('ar.*, s.name as subject_name, s.code as subject_code')
+            ->join('subjects s', 's.id = ar.subject_id')
+            ->where('ar.student_id', $studentId)
+            ->orderBy('ar.recorded_at', 'DESC')
+            ->limit($limit)
+            ->get()
+            ->getResultArray();
+    }
+
+    public function getTeacherAttendance(int $teacherId, int $limit = 100)
+    {
+        $db = \Config\Database::connect();
+        return $db->table('attendance_records ar')
+            ->select('ar.*, s.name as subject_name, s.code as subject_code, st.full_name as student_name, st.lrn')
+            ->join('subjects s', 's.id = ar.subject_id')
+            ->join('students st', 'st.id = ar.student_id')
+            ->join('teacher_subject_assignments tsa', 'tsa.subject_id = ar.subject_id')
+            ->where('tsa.teacher_id', $teacherId)
+            ->where('tsa.is_active', 1)
+            ->orderBy('ar.recorded_at', 'DESC')
+            ->limit($limit)
+            ->get()
+            ->getResultArray();
+    }
 }
 
 

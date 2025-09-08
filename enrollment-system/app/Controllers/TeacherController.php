@@ -8,6 +8,7 @@ use App\Models\SubjectModel;
 use App\Models\SectionModel;
 use App\Models\SchoolYearModel;
 use App\Models\TeacherModel;
+use App\Models\AttendanceModel;
 
 class TeacherController extends BaseController
 {
@@ -322,5 +323,20 @@ class TeacherController extends BaseController
         ];
         
         return view('teacher/reports', $data);
+    }
+    
+    public function attendance()
+    {
+        $teacherId = session()->get('user_id');
+        $attendanceModel = new AttendanceModel();
+        
+        $attendance = $attendanceModel->getTeacherAttendance($teacherId);
+        
+        $data = [
+            'attendance' => $attendance,
+            'teacher' => session()->get()
+        ];
+        
+        return view('teacher/attendance', $data);
     }
 }
