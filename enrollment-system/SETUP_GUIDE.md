@@ -441,6 +441,7 @@ If you encounter issues:
 - **`QUICK_START.md`** - 5-minute setup guide
 - **`FACE_RECOGNITION_SETUP.md`** - Detailed face recognition setup
 - **`DATABASE_SCHEMA.md`** - Database structure documentation
+- **`DEPLOYMENT_GUIDE.md`** - Complete online deployment guide
 
 ---
 

@@ -63,7 +63,10 @@ python recognize_faces.py  # Start attendance
 
 ## 📚 Full Documentation
 
-See `SETUP_GUIDE.md` for detailed instructions.
+- **`SETUP_GUIDE.md`** - Detailed local setup instructions
+- **`DEPLOYMENT_GUIDE.md`** - Complete online deployment guide
+- **`FACE_RECOGNITION_SETUP.md`** - Face recognition system setup
+- **`DATABASE_SCHEMA.md`** - Database structure documentation
 
 ---
 

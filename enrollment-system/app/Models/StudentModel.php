@@ -15,7 +15,7 @@ class StudentModel extends Model
         'birth_date', 'gender', 'grade_level', 'previous_grade_level', 
         'admission_type', 'enrollment_type', 'strand_id', 'curriculum_id', 
         'previous_school', 'section_id', 'previous_section_id', 'previous_school_year',
-        'status', 'approved_by', 'rejected_by', 'rejected_at', 'rejection_reason'
+        'status', 'approved_by', 'rejected_by', 'rejected_at', 'rejection_reason', 'face_encoding'
     ];
     
     protected $validationRules = [
@@ -220,5 +220,46 @@ class StudentModel extends Model
                     ->where('status', 'approved')
                     ->orderBy('full_name', 'ASC')
                     ->findAll();
+    }
+    
+    public function getStudentsWithFaceEncodingsBySubject($subjectId)
+    {
+        $db = \Config\Database::connect();
+        
+        $query = "
+            SELECT s.id, s.full_name, s.lrn, s.face_encoding
+            FROM students s
+            WHERE s.status = 'approved'
+            AND s.section_id IN (
+                SELECT DISTINCT tsa.section_id 
+                FROM teacher_subject_assignments tsa 
+                WHERE tsa.subject_id = ? AND tsa.is_active = 1
+            )
+            ORDER BY s.full_name ASC
+        ";
+        
+        return $db->query($query, [$subjectId])->getResultArray();
+    }
+    
+    public function getStudentsByTeacher($teacherId)
+    {
+        $db = \Config\Database::connect();
+        
+        $query = "
+            SELECT DISTINCT s.id, s.full_name, s.lrn, s.face_encoding, 
+                   sec.name as section_name, sec.grade_level,
+                   GROUP_CONCAT(DISTINCT sub.name ORDER BY sub.name SEPARATOR ', ') as subjects
+            FROM students s
+            JOIN sections sec ON sec.id = s.section_id
+            JOIN teacher_subject_assignments tsa ON tsa.section_id = s.section_id
+            JOIN subjects sub ON sub.id = tsa.subject_id
+            WHERE s.status = 'approved'
+            AND tsa.teacher_id = ?
+            AND tsa.is_active = 1
+            GROUP BY s.id, s.full_name, s.lrn, s.face_encoding, sec.name, sec.grade_level
+            ORDER BY sec.grade_level ASC, s.full_name ASC
+        ";
+        
+        return $db->query($query, [$teacherId])->getResultArray();
     }
 }

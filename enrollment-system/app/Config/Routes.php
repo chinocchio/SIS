@@ -171,6 +171,16 @@ $routes->get('/student/document/view/(:num)', 'StudentController::viewDocument/$
 $routes->get('/student/document/download/(:num)', 'StudentController::downloadDocument/$1', ['filter' => 'studentauth']);
 $routes->get('/student/attendance', 'StudentController::attendance', ['filter' => 'studentauth']);
 
+// Face Recognition Routes
+$routes->get('/face-recognition', 'FaceRecognitionController::index', ['filter' => 'teacherauth']);
+$routes->get('/face-recognition/test', 'FaceRecognitionController::test', ['filter' => 'teacherauth']);
+$routes->get('/face-recognition/attendance/(:num)', 'FaceRecognitionController::takeAttendance/$1', ['filter' => 'teacherauth']);
+$routes->post('/face-recognition/process', 'FaceRecognitionController::processImage', ['filter' => 'teacherauth']);
+$routes->post('/face-recognition/record-attendance', 'FaceRecognitionController::recordAttendance', ['filter' => 'teacherauth']);
+$routes->get('/face-recognition/students/(:num)', 'FaceRecognitionController::getStudentsForSubject/$1', ['filter' => 'teacherauth']);
+$routes->get('/face-recognition/capture', 'FaceRecognitionController::captureStudentFaces', ['filter' => 'teacherauth']);
+$routes->post('/face-recognition/capture-face', 'FaceRecognitionController::captureFaceForStudent', ['filter' => 'teacherauth']);
+
 // API for face recognition app
 $routes->post('/api/attendance/record', 'ApiController::recordAttendance');
 $routes->get('/api/session/active', 'ApiController::getActiveSession');
