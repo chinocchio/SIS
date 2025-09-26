@@ -151,6 +151,8 @@
             <div>
                 <a href="/admin/dashboard" class="btn">Dashboard</a>
                 <a href="/admin/registrars" class="btn btn-info">👨‍💼 Registrars</a>
+                <a href="/admin/teachers" class="btn btn-info">👨‍🏫 Teachers</a>
+                <a href="/admin/teachers/assign" class="btn btn-warning">📋 Assign Teachers</a>
                 <a href="/admin/students" class="btn btn-success">👥 Students</a>
                 <a href="/admin/sections" class="btn btn-warning">🏫 Sections</a>
                 <a href="/admin/create-school-year" class="btn">School Years</a>

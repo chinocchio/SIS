@@ -189,6 +189,7 @@
                 <li><strong>Teacher:</strong> Record grades, view assigned subjects & students</li>
                 <li><strong>Student:</strong> Monitor grades, attendance, admission status</li>
             </ul>
+            <p><strong>Note:</strong> All users login with their unique username.</p>
         </div>
     </div>
 </body>

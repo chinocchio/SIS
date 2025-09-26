@@ -18,9 +18,8 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');  // Landing page
 
 // Student 
-$routes->get('/student/login', 'StudentAuthController::loginForm');
-$routes->post('/student/login', 'StudentAuthController::login');
-$routes->get('/student/dashboard', 'StudentController::dashboard', ['filter' => 'studentauth']);
+$routes->get('/student/login', 'StudentController::login');
+$routes->post('/student/login', 'AuthController::authenticate');
 $routes->get('/student/profile/edit', 'StudentController::edit');
 $routes->post('/student/profile/update', 'StudentController::update');
 $routes->post('/student/upload-document', 'StudentController::uploadDocument');
@@ -111,6 +110,19 @@ $routes->get('/admin/strands/delete-track/(:num)', 'AdminController::deleteTrack
 $routes->get('/admin/users', 'AdminController::manageUsers', ['filter' => 'adminauth']);
 $routes->post('/admin/users', 'AdminController::manageUsers', ['filter' => 'adminauth']);
 
+// Teacher Management Routes
+$routes->get('/admin/teachers', 'AdminController::manageTeachers', ['filter' => 'adminauth']);
+$routes->get('/admin/teachers/assign', 'AdminController::assignTeachers', ['filter' => 'adminauth']);
+$routes->get('/admin/teachers/add', 'AdminController::showAddTeacherForm', ['filter' => 'adminauth']);
+$routes->post('/admin/teachers/add', 'AdminController::createTeacher', ['filter' => 'adminauth']);
+$routes->get('/admin/teachers/view/(:num)', 'AdminController::viewTeacher/$1', ['filter' => 'adminauth']);
+$routes->get('/admin/teachers/edit/(:num)', 'AdminController::showEditTeacherForm/$1', ['filter' => 'adminauth']);
+$routes->post('/admin/teachers/edit/(:num)', 'AdminController::updateTeacher/$1', ['filter' => 'adminauth']);
+$routes->get('/admin/teachers/delete/(:num)', 'AdminController::deleteTeacher/$1', ['filter' => 'adminauth']);
+$routes->post('/admin/teachers/assign-subject', 'AdminController::assignSubjectToTeacher', ['filter' => 'adminauth']);
+$routes->get('/admin/teachers/remove-assignment/(:num)', 'AdminController::removeSubjectAssignment/$1', ['filter' => 'adminauth']);
+$routes->post('/admin/teachers/get-subjects-by-grade', 'AdminController::getSubjectsByGradeLevel', ['filter' => 'adminauth']);
+
 // Registrar
 $routes->get('/registrar', 'RegistrarController::index', ['filter' => 'registrarauth']);
 $routes->get('/registrar/dashboard', 'RegistrarController::manageStudents', ['filter' => 'registrarauth']);
@@ -119,6 +131,7 @@ $routes->get('/registrar/student/(:num)', 'RegistrarController::viewStudent/$1',
 $routes->get('/registrar/document/approve/(:num)', 'RegistrarController::approveDocument/$1', ['filter' => 'registrarauth']);
 $routes->get('/registrar/document/reject/(:num)', 'RegistrarController::rejectDocument/$1', ['filter' => 'registrarauth']);
 $routes->get('/registrar/document/view/(:num)', 'RegistrarController::viewDocument/$1', ['filter' => 'registrarauth']);
+$routes->get('/registrar/document/download/(:num)', 'RegistrarController::downloadDocument/$1', ['filter' => 'registrarauth']);
 $routes->post('/registrar/approve/(:num)', 'RegistrarController::approveEnrollment/$1', ['filter' => 'registrarauth']);
 $routes->post('/registrar/reject/(:num)', 'RegistrarController::rejectEnrollment/$1', ['filter' => 'registrarauth']);
 $routes->get('/registrar/search', 'RegistrarController::searchStudents', ['filter' => 'registrarauth']);
@@ -138,9 +151,36 @@ $routes->post('/registrar/students/assign-section', 'RegistrarController::assign
 $routes->get('/registrar/students/remove-section/(:num)', 'RegistrarController::removeStudentFromSection/$1', ['filter' => 'registrarauth']);
 
 // Teacher
-$routes->get('/teacher', 'TeacherController::index');
-$routes->get('/teacher/dashboard', 'TeacherController::index');
-$routes->get('/teacher/section/(:num)/students', 'TeacherController::viewStudents/$1');
-$routes->post('/teacher/input-grades', 'TeacherController::inputGrades');
-$routes->get('/teacher/student/(:num)/grades/(:num)', 'TeacherController::viewGrades/$1/$2');
-$routes->get('/teacher/student/(:num)/report-card/(:num)', 'TeacherController::generateReportCard/$1/$2');
+$routes->get('/teacher', 'TeacherController::index', ['filter' => 'teacherauth']);
+$routes->get('/teacher/dashboard', 'TeacherController::index', ['filter' => 'teacherauth']);
+$routes->get('/teacher/students/(:num)', 'TeacherController::viewStudents/$1', ['filter' => 'teacherauth']);
+$routes->get('/teacher/grades/(:num)', 'TeacherController::inputGrades/$1', ['filter' => 'teacherauth']);
+$routes->post('/teacher/save-grades', 'TeacherController::saveGrades', ['filter' => 'teacherauth']);
+$routes->get('/teacher/grades', 'TeacherController::gradeManagement', ['filter' => 'teacherauth']);
+$routes->get('/teacher/reports', 'TeacherController::reports', ['filter' => 'teacherauth']);
+$routes->get('/teacher/attendance', 'TeacherController::attendance', ['filter' => 'teacherauth']);
+$routes->get('/teacher/student/(:num)/grades/(:num)', 'TeacherController::viewGrades/$1/$2', ['filter' => 'teacherauth']);
+$routes->get('/teacher/student/(:num)/report-card/(:num)', 'TeacherController::generateReportCard/$1/$2', ['filter' => 'teacherauth']);
+
+// Student
+$routes->get('/student/dashboard', 'StudentController::index', ['filter' => 'studentauth']);
+$routes->post('/student/submit-document', 'StudentController::submitDocument', ['filter' => 'studentauth']);
+$routes->get('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);
+$routes->post('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);
+$routes->get('/student/document/view/(:num)', 'StudentController::viewDocument/$1', ['filter' => 'studentauth']);
+$routes->get('/student/document/download/(:num)', 'StudentController::downloadDocument/$1', ['filter' => 'studentauth']);
+$routes->get('/student/attendance', 'StudentController::attendance', ['filter' => 'studentauth']);
+
+// Face Recognition Routes
+$routes->get('/face-recognition', 'FaceRecognitionController::index', ['filter' => 'teacherauth']);
+$routes->get('/face-recognition/test', 'FaceRecognitionController::test', ['filter' => 'teacherauth']);
+$routes->get('/face-recognition/attendance/(:num)', 'FaceRecognitionController::takeAttendance/$1', ['filter' => 'teacherauth']);
+$routes->post('/face-recognition/process', 'FaceRecognitionController::processImage', ['filter' => 'teacherauth']);
+$routes->post('/face-recognition/record-attendance', 'FaceRecognitionController::recordAttendance', ['filter' => 'teacherauth']);
+$routes->get('/face-recognition/students/(:num)', 'FaceRecognitionController::getStudentsForSubject/$1', ['filter' => 'teacherauth']);
+$routes->get('/face-recognition/capture', 'FaceRecognitionController::captureStudentFaces', ['filter' => 'teacherauth']);
+$routes->post('/face-recognition/capture-face', 'FaceRecognitionController::captureFaceForStudent', ['filter' => 'teacherauth']);
+
+// API for face recognition app
+$routes->post('/api/attendance/record', 'ApiController::recordAttendance');
+$routes->get('/api/session/active', 'ApiController::getActiveSession');

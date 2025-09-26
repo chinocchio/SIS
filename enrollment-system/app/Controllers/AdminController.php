@@ -12,6 +12,8 @@ use App\Models\StrandModel;
 use App\Models\CurriculumModel;
 use App\Models\SubjectModel;
 use App\Models\TrackModel;
+use App\Models\TeacherModel;
+use App\Models\SectionModel;
 use App\Libraries\OcrService;
 use App\Models\DocumentModel;
 use App\Models\UserModel;
@@ -1418,9 +1420,12 @@ class AdminController extends BaseController
         // Fetch submitted documents for this student
         $documents = [];
         $approvedByName = null;
+        $grades = [];
+        
         try {
             $documentModel = new DocumentModel();
             $documents = $documentModel->getDocumentsByStudent((int)$id);
+            
             // Resolve approver name if available
             if (!empty($student['approved_by'])) {
                 $userModel = new UserModel();
@@ -1429,15 +1434,37 @@ class AdminController extends BaseController
                     $approvedByName = trim(($approver['first_name'] ?? '') . ' ' . ($approver['last_name'] ?? '')) ?: ($approver['username'] ?? null);
                 }
             }
+            
+            // Fetch recorded grades from student_grades table
+            $schoolYearModel = new SchoolYearModel();
+            $activeSchoolYear = $schoolYearModel->getActiveSchoolYear();
+            
+            if ($activeSchoolYear) {
+                $db = \Config\Database::connect();
+                $gradesQuery = $db->table('student_grades sg')
+                                ->select('sg.*, s.name as subject_name, s.code as subject_code, s.grade_level, s.quarter, s.is_core')
+                                ->join('subjects s', 's.id = sg.subject_id')
+                                ->where('sg.student_id', $id)
+                                ->where('sg.school_year_id', $activeSchoolYear['id'])
+                                ->get();
+                
+                $grades = $gradesQuery->getResultArray();
+            }
+            
         } catch (\Exception $e) {
-            log_message('error', 'Error fetching documents for student ' . $id . ': ' . $e->getMessage());
+            log_message('error', 'Error fetching data for student ' . $id . ': ' . $e->getMessage());
         }
         
         if (!$student) {
             return redirect()->to('/admin/students')->with('error', 'Student not found');
         }
         
-        return view('admin/view_student', ['student' => $student, 'documents' => $documents, 'approvedByName' => $approvedByName]);
+        return view('admin/view_student', [
+            'student' => $student, 
+            'documents' => $documents, 
+            'approvedByName' => $approvedByName,
+            'grades' => $grades
+        ]);
     }
 
     public function approveStudent($id = null)
@@ -1783,5 +1810,319 @@ class AdminController extends BaseController
         } else {
             return redirect()->back()->with('error', 'Failed to remove student from section');
         }
+    }
+    
+    // Teacher Management Methods
+    public function manageTeachers()
+    {
+        $teacherModel = new TeacherModel();
+        $teachers = $teacherModel->getTeachersWithAssignments();
+        
+        $data = [
+            'teachers' => $teachers
+        ];
+        
+        return view('admin/manage_teachers', $data);
+    }
+    
+    public function showAddTeacherForm()
+    {
+        return view('admin/add_teacher');
+    }
+    
+    public function createTeacher()
+    {
+        if ($this->request->getMethod() !== 'POST') {
+            return redirect()->to('/admin/teachers/add')->with('error', 'Invalid request method');
+        }
+        
+        $teacherModel = new TeacherModel();
+        
+        // Get form data
+        $data = [
+            'first_name' => $this->request->getPost('first_name'),
+            'last_name' => $this->request->getPost('last_name'),
+            'username' => $this->request->getPost('username'),
+            'email' => $this->request->getPost('email'),
+            'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+            'is_active' => 1
+        ];
+        
+        // Validate required fields
+        if (empty($data['first_name']) || empty($data['last_name']) || empty($data['username']) || empty($data['email']) || empty($this->request->getPost('password'))) {
+            return redirect()->to('/admin/teachers/add')->with('error', 'First Name, Last Name, Username, Email, and Password are required');
+        }
+        
+        // Check if username already exists
+        if ($teacherModel->where('username', $data['username'])->first()) {
+            return redirect()->to('/admin/teachers/add')->with('error', 'Username already exists in the system');
+        }
+        
+        // Check if email already exists
+        if ($teacherModel->where('email', $data['email'])->first()) {
+            return redirect()->to('/admin/teachers/add')->with('error', 'Email already exists in the system');
+        }
+        
+        try {
+            if ($teacherModel->insert($data)) {
+                return redirect()->to('/admin/teachers')->with('success', 'Teacher created successfully!');
+            } else {
+                return redirect()->to('/admin/teachers/add')->with('error', 'Failed to create teacher. Please check your input.');
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Teacher creation error: ' . $e->getMessage());
+            return redirect()->to('/admin/teachers/add')->with('error', 'Error creating teacher: ' . $e->getMessage());
+        }
+    }
+    
+    public function viewTeacher($teacherId)
+    {
+        if (!$teacherId) {
+            return redirect()->to('/admin/teachers')->with('error', 'Teacher ID required');
+        }
+        
+        $teacherModel = new TeacherModel();
+        $teacher = $teacherModel->getTeacherWithAssignments($teacherId);
+        
+        if (!$teacher) {
+            return redirect()->to('/admin/teachers')->with('error', 'Teacher not found');
+        }
+        
+        // Get available subjects and sections for assignment
+        $subjectModel = new SubjectModel();
+        $sectionModel = new SectionModel();
+        $schoolYearModel = new SchoolYearModel();
+        
+        $availableSubjects = $teacherModel->getAvailableSubjects($teacherId);
+        $sections = $sectionModel->getSectionsSummary();
+        $activeSchoolYear = $schoolYearModel->getActiveSchoolYear();
+        
+        $data = [
+            'teacher' => $teacher,
+            'availableSubjects' => $availableSubjects,
+            'sections' => $sections,
+            'activeSchoolYear' => $activeSchoolYear
+        ];
+        
+        return view('admin/view_teacher', $data);
+    }
+    
+    public function showEditTeacherForm($teacherId)
+    {
+        if (!$teacherId) {
+            return redirect()->to('/admin/teachers')->with('error', 'Teacher ID required');
+        }
+        
+        $teacherModel = new TeacherModel();
+        $teacher = $teacherModel->find($teacherId);
+        
+        if (!$teacher) {
+            return redirect()->to('/admin/teachers')->with('error', 'Teacher not found');
+        }
+        
+        return view('admin/edit_teacher', ['teacher' => $teacher]);
+    }
+    
+    public function updateTeacher($teacherId)
+    {
+        if ($this->request->getMethod() !== 'POST') {
+            return redirect()->to('/admin/teachers/edit/' . $teacherId)->with('error', 'Invalid request method');
+        }
+        
+        if (!$teacherId) {
+            return redirect()->to('/admin/teachers')->with('error', 'Teacher ID required');
+        }
+        
+        $teacherModel = new TeacherModel();
+        $teacher = $teacherModel->find($teacherId);
+        
+        if (!$teacher) {
+            return redirect()->to('/admin/teachers')->with('error', 'Teacher not found');
+        }
+        
+        // Get form data
+        $data = [
+            'first_name' => $this->request->getPost('first_name'),
+            'last_name' => $this->request->getPost('last_name'),
+            'username' => $this->request->getPost('username'),
+            'email' => $this->request->getPost('email'),
+            'is_active' => $this->request->getPost('is_active') ? 1 : 0
+        ];
+        
+        // Validate required fields
+        if (empty($data['first_name']) || empty($data['last_name']) || empty($data['username']) || empty($data['email'])) {
+            return redirect()->to('/admin/teachers/edit/' . $teacherId)->with('error', 'First Name, Last Name, Username, and Email are required');
+        }
+        
+        // Check if username already exists (excluding current teacher)
+        $existingTeacher = $teacherModel->where('username', $data['username'])->where('id !=', $teacherId)->first();
+        if ($existingTeacher) {
+            return redirect()->to('/admin/teachers/edit/' . $teacherId)->with('error', 'Username already exists in the system');
+        }
+        
+        // Check if email already exists (excluding current teacher)
+        $existingTeacher = $teacherModel->where('email', $data['email'])->where('id !=', $teacherId)->first();
+        if ($existingTeacher) {
+            return redirect()->to('/admin/teachers/edit/' . $teacherId)->with('error', 'Email already exists in the system');
+        }
+        
+        // Update password if provided
+        $newPassword = $this->request->getPost('password');
+        if (!empty($newPassword)) {
+            $data['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
+        }
+        
+        try {
+            if ($teacherModel->update($teacherId, $data)) {
+                return redirect()->to('/admin/teachers')->with('success', 'Teacher updated successfully!');
+            } else {
+                return redirect()->to('/admin/teachers/edit/' . $teacherId)->with('error', 'Failed to update teacher. Please check your input.');
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Teacher update error: ' . $e->getMessage());
+            return redirect()->to('/admin/teachers/edit/' . $teacherId)->with('error', 'Error updating teacher: ' . $e->getMessage());
+        }
+    }
+    
+    public function deleteTeacher($teacherId)
+    {
+        if (!$teacherId) {
+            return redirect()->to('/admin/teachers')->with('error', 'Teacher ID required');
+        }
+        
+        $teacherModel = new TeacherModel();
+        
+        try {
+            $result = $teacherModel->delete($teacherId);
+            if ($result) {
+                return redirect()->to('/admin/teachers')->with('success', 'Teacher deleted successfully');
+            } else {
+                return redirect()->to('/admin/teachers')->with('error', 'Failed to delete teacher');
+            }
+        } catch (\Exception $e) {
+            return redirect()->to('/admin/teachers')->with('error', 'Error deleting teacher: ' . $e->getMessage());
+        }
+    }
+    
+    public function assignSubjectToTeacher()
+    {
+        if ($this->request->getMethod() !== 'POST') {
+            return redirect()->back()->with('error', 'Invalid request method.');
+        }
+        
+        $teacherId = $this->request->getPost('teacher_id');
+        $subjectId = $this->request->getPost('subject_id');
+        $sectionId = $this->request->getPost('section_id');
+        $schoolYearId = $this->request->getPost('school_year_id');
+        
+        if (!$teacherId || !$subjectId || !$sectionId || !$schoolYearId) {
+            return redirect()->back()->with('error', 'All fields are required.');
+        }
+        
+        $teacherModel = new TeacherModel();
+        
+        try {
+            $result = $teacherModel->assignSubjectToTeacher($teacherId, $subjectId, $sectionId, $schoolYearId);
+            if ($result) {
+                // Get subject details to show which quarters were assigned
+                $subjectModel = new SubjectModel();
+                $subject = $subjectModel->find($subjectId);
+                $allQuarters = $subjectModel->where('name', $subject['name'])
+                                          ->where('grade_level', $subject['grade_level'])
+                                          ->where('is_active', 1)
+                                          ->findAll();
+                
+                $quarterText = count($allQuarters) > 1 ? 'all quarters' : 'quarter';
+                return redirect()->back()->with('success', 'Subject assigned to teacher successfully for ' . $quarterText . ' (' . count($allQuarters) . ' assignments created).');
+            } else {
+                return redirect()->back()->with('error', 'Subject assignment already exists for all quarters.');
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Subject assignment error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to assign subject to teacher.');
+        }
+    }
+    
+    public function removeSubjectAssignment($assignmentId)
+    {
+        if (!$assignmentId) {
+            return redirect()->back()->with('error', 'Assignment ID required');
+        }
+        
+        $teacherModel = new TeacherModel();
+        
+        try {
+            $result = $teacherModel->removeSubjectAssignment($assignmentId);
+            if ($result) {
+                return redirect()->back()->with('success', 'Subject assignment removed successfully from all quarters.');
+            } else {
+                return redirect()->back()->with('error', 'Failed to remove subject assignment.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error removing assignment: ' . $e->getMessage());
+        }
+    }
+    
+    public function assignTeachers()
+    {
+        $teacherModel = new TeacherModel();
+        $subjectModel = new SubjectModel();
+        $sectionModel = new SectionModel();
+        $schoolYearModel = new SchoolYearModel();
+        
+        // Get all data needed for the assignment page
+        $teachers = $teacherModel->where('is_active', 1)->findAll() ?? [];
+        $subjects = $subjectModel->getSubjectsWithCurriculum() ?? [];
+        $sections = $sectionModel->getSectionsSummary() ?? [];
+        $activeSchoolYear = $schoolYearModel->getActiveSchoolYear();
+        
+        // Get all current assignments
+        $assignments = $teacherModel->getAllAssignments() ?? [];
+        
+        // Calculate statistics
+        $totalTeachers = count($teachers);
+        $totalAssignments = count($assignments);
+        $totalSubjects = count($subjects);
+        $totalSections = count($sections);
+        
+        $data = [
+            'teachers' => $teachers,
+            'subjects' => $subjects,
+            'sections' => $sections,
+            'activeSchoolYear' => $activeSchoolYear,
+            'assignments' => $assignments,
+            'totalTeachers' => $totalTeachers,
+            'totalAssignments' => $totalAssignments,
+            'totalSubjects' => $totalSubjects,
+            'totalSections' => $totalSections
+        ];
+        
+        return view('admin/assign_teachers', $data);
+    }
+    
+    public function getSubjectsByGradeLevel()
+    {
+        if ($this->request->getMethod() !== 'POST') {
+            return $this->response->setJSON(['error' => 'Invalid request method']);
+        }
+        
+        $gradeLevel = $this->request->getPost('grade_level');
+        
+        if (!$gradeLevel) {
+            return $this->response->setJSON(['error' => 'Grade level required']);
+        }
+        
+        $subjectModel = new SubjectModel();
+        $subjects = $subjectModel->getSubjectsWithCurriculum();
+        
+        // Filter subjects by grade level
+        $filteredSubjects = array_filter($subjects, function($subject) use ($gradeLevel) {
+            return $subject['grade_level'] == $gradeLevel;
+        });
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'subjects' => array_values($filteredSubjects)
+        ]);
     }
 }

@@ -7,12 +7,21 @@ from db import get_db_connection
 
 # === CONFIG ===
 API_ATTENDANCE = "http://localhost:8080/api/attendance/record"
-API_ACTIVE_SESSION = "http://localhost:8080/api/session/active"
 
-def load_known_faces():
+def load_known_faces_for_subject(subject_id: int):
+    """Load encodings only for students enrolled in sections that have this subject assigned."""
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT id, name, face_encoding FROM students WHERE face_encoding IS NOT NULL")
+    query = (
+        "SELECT s.id, s.full_name AS name, s.face_encoding "
+        "FROM students s "
+        "WHERE s.face_encoding IS NOT NULL "
+        "AND s.section_id IN ("
+        "  SELECT DISTINCT tsa.section_id FROM teacher_subject_assignments tsa "
+        "  WHERE tsa.subject_id = %s AND tsa.is_active = 1"
+        ")"
+    )
+    cursor.execute(query, (subject_id,))
     students = cursor.fetchall()
     conn.close()
 
@@ -28,27 +37,31 @@ def load_known_faces():
     return known_encodings, known_ids, known_names
 
 
-def get_active_subject():
-    """Ask CI4 API what subject is active"""
-    try:
-        resp = requests.get(API_ACTIVE_SESSION)
-        print(f"[DEBUG] API response: {resp.text}")  # 👈 log full response
-        if resp.status_code == 200:
-            data = resp.json()
-            return data.get("subject_id")
-        else:
-            print(f"[API ❌] Active session not found ({resp.status_code})")
-            return None
-    except Exception as e:
-        print(f"[API Error] {e}")
-        return None
+def get_subject_id_by_code(subject_code: str):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM subjects WHERE code=%s", (subject_code,))
+    row = cursor.fetchone()
+    conn.close()
+    return int(row[0]) if row else None
 
+
+seen_today = set()
 
 def record_attendance(student_id, subject_id):
     try:
+        key = (student_id, subject_id)
+        if key in seen_today:
+            print("[SKIP] Already recorded this student today (cached).")
+            return
         resp = requests.post(API_ATTENDANCE, json={"student_id": student_id, "subject_id": subject_id})
         if resp.status_code == 200:
-            print(f"[API ✅] {resp.json()}")
+            data = resp.json()
+            if data.get('status') == 'exists':
+                print("[INFO] Already recorded today (server).")
+            else:
+                seen_today.add(key)
+                print(f"[API ✅] {data}")
         else:
             print(f"[API ❌] Status {resp.status_code}: {resp.text}")
     except Exception as e:
@@ -56,19 +69,20 @@ def record_attendance(student_id, subject_id):
 
 
 def main():
-    known_encodings, known_ids, known_names = load_known_faces()
-    if not known_encodings:
-        print("❌ No face data found in DB. Run capture_faces.py first.")
+    # Ask for subject code (e.g., ENG7-01)
+    subject_code = input("Enter Subject Code (e.g., ENG7-01): ")
+    subject_id = get_subject_id_by_code(subject_code)
+    if not subject_id:
+        print("❌ Subject code not found.")
         return
 
-    # 🔑 Get subject dynamically
-    subject_id = get_active_subject()
-    if not subject_id:
-        print("⚠️ No active session found. Start one in CI4 first.")
+    known_encodings, known_ids, known_names = load_known_faces_for_subject(subject_id)
+    if not known_encodings:
+        print("❌ No face data found for students in this subject's sections. Run capture_faces.py first.")
         return
 
     cap = cv2.VideoCapture(0)
-    print(f"📷 Starting camera... (Subject {subject_id}) Press 'q' to quit.")
+    print(f"📷 Starting camera... (Subject {subject_code}) Press 'q' to quit.")
 
     while True:
         ret, frame = cap.read()

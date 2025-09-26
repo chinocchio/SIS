@@ -3,94 +3,292 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use CodeIgniter\HTTP\ResponseInterface;
-
 use App\Models\StudentModel;
 use App\Models\DocumentModel;
-use CodeIgniter\Exceptions\PageNotFoundException;
+use App\Models\SchoolYearModel;
+use App\Models\SubjectModel;
+use App\Models\AttendanceModel;
 
 class StudentController extends BaseController
 {
-    public function dashboard()
+    public function login()
     {
+        return view('student/login');
+    }
+    
+    public function index()
+    {
+        $studentId = session()->get('user_id');
         $studentModel = new StudentModel();
-        $student = $studentModel->find(session()->get('student_id'));
         $documentModel = new DocumentModel();
-        $documents = [];
-        if ($student) {
-            $documents = $documentModel->getDocumentsByStudent($student['id']);
+        $schoolYearModel = new SchoolYearModel();
+        
+        // Get student details with all related information
+        $student = $studentModel->getStudentWithDetails($studentId);
+        
+        if (!$student) {
+            return redirect()->to('/auth/login')->with('error', 'Student not found.');
         }
-        return view('student/dashboard', ['student'=>$student, 'documents' => $documents]);
-    }
+        
+        // Get student documents
+        $documents = $documentModel->where('student_id', $studentId)
+                                  ->orderBy('uploaded_at', 'DESC')
+                                  ->findAll();
+        
+        // Get active school year
+        $activeSchoolYear = $schoolYearModel->getActiveSchoolYear();
+        
+        // Get all subjects for student's curriculum/strand and grade level
+        $subjectModel = new SubjectModel();
+        $allSubjects = [];
+        $grades = [];
+        
+        try {
+            if ($activeSchoolYear) {
+                $db = \Config\Database::connect();
+                
+                // Get all subjects for the student's curriculum/strand and grade level
+                if ($student['curriculum_id']) {
+                    // JHS Student - get subjects by curriculum
+                    $allSubjectsQuery = $db->table('subjects s')
+                                          ->select('s.*, c.name as curriculum_name')
+                                          ->join('curriculums c', 'c.id = s.curriculum_id', 'left')
+                                          ->where('s.curriculum_id', $student['curriculum_id'])
+                                          ->where('s.grade_level', $student['grade_level'])
+                                          ->where('s.is_active', 1)
+                                          ->orderBy('s.quarter', 'ASC')
+                                          ->orderBy('s.name', 'ASC')
+                                          ->get();
+                } else if ($student['strand_id']) {
+                    // SHS Student - get subjects by strand
+                    $allSubjectsQuery = $db->table('subjects s')
+                                          ->select('s.*, st.name as strand_name')
+                                          ->join('strands st', 'st.id = s.strand_id', 'left')
+                                          ->where('s.strand_id', $student['strand_id'])
+                                          ->where('s.grade_level', $student['grade_level'])
+                                          ->where('s.is_active', 1)
+                                          ->orderBy('s.semester', 'ASC')
+                                          ->orderBy('s.quarter', 'ASC')
+                                          ->orderBy('s.name', 'ASC')
+                                          ->get();
+                }
+                
+                $allSubjects = $allSubjectsQuery ? $allSubjectsQuery->getResultArray() : [];
+                
+                // Get recorded grades from student_grades table
+                $gradesQuery = $db->table('student_grades sg')
+                                ->select('sg.*, s.name as subject_name, s.code as subject_code, s.grade_level, s.quarter, s.is_core')
+                                ->join('subjects s', 's.id = sg.subject_id')
+                                ->where('sg.student_id', $studentId)
+                                ->where('sg.school_year_id', $activeSchoolYear['id'])
+                                ->orderBy('s.grade_level', 'ASC')
+                                ->orderBy('s.quarter', 'ASC')
+                                ->orderBy('s.name', 'ASC')
+                                ->get();
 
-    public function edit()
-    {
-        $studentModel = new StudentModel();
-        $student = $studentModel->find(session()->get('student_id'));
-        return view('student/edit_profile', ['student'=>$student]);
-    }
-
-    public function update()
-    {
-        $studentModel = new StudentModel();
-        $studentModel->update(session()->get('student_id'), [
-            'first_name'=>$this->request->getPost('first_name'),
-            'last_name'=>$this->request->getPost('last_name'),
-            'email'=>$this->request->getPost('email')
-        ]);
-        return redirect()->to('/student/dashboard')->with('success','Profile updated');
-    }
-
-    public function uploadDocument()
-    {
-        $studentId = session()->get('student_id');
-        if (!$studentId) {
-            return redirect()->to('/student/login');
+                $grades = $gradesQuery->getResultArray();
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Error fetching subjects and grades for student ' . $studentId . ': ' . $e->getMessage());
         }
-
+        
+        $data = [
+            'student' => $student,
+            'documents' => $documents,
+            'grades' => $grades,
+            'allSubjects' => $allSubjects,
+            'activeSchoolYear' => $activeSchoolYear
+        ];
+        
+        return view('student/dashboard', $data);
+    }
+    
+    public function submitDocument()
+    {
+        if ($this->request->getMethod() !== 'POST') {
+            return redirect()->back()->with('error', 'Invalid request method.');
+        }
+        
+        $studentId = session()->get('user_id');
+        $documentType = $this->request->getPost('document_type');
+        $description = $this->request->getPost('description');
+        
+        // Validate document type
+        $allowedTypes = ['birth_certificate', 'report_card', 'good_moral', 'form_137', 'id_picture', 'other'];
+        if (!in_array($documentType, $allowedTypes)) {
+            return redirect()->back()->with('error', 'Invalid document type.');
+        }
+        
+        // Handle file upload
         $file = $this->request->getFile('document_file');
-        $docType = $this->request->getPost('document_type');
-
-        if (!$file || !$file->isValid()) {
+        
+        if (!$file->isValid()) {
             return redirect()->back()->with('error', 'Please select a valid file.');
         }
-
-        $newName = $file->getRandomName();
-        $uploadPath = WRITEPATH . 'uploads/documents';
-        if (!is_dir($uploadPath)) {
-            mkdir($uploadPath, 0777, true);
+        
+        // Validate file size (max 5MB)
+        if ($file->getSize() > 5 * 1024 * 1024) {
+            return redirect()->back()->with('error', 'File size must be less than 5MB.');
         }
-        $file->move($uploadPath, $newName);
-
-        $documentModel = new DocumentModel();
-        $documentModel->insert([
-            'student_id' => $studentId,
-            'document_type' => $docType,
-            'file_path' => 'writable/uploads/documents/' . $newName,
-            'status' => 'pending',
-            'uploaded_at' => date('Y-m-d H:i:s')
-        ]);
-
-        return redirect()->to('/student/dashboard')->with('success', 'Document uploaded successfully.');
+        
+        // Validate file type
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
+        $extension = strtolower($file->getExtension());
+        if (!in_array($extension, $allowedExtensions)) {
+            return redirect()->back()->with('error', 'Only JPG, PNG, and PDF files are allowed.');
+        }
+        
+        // Generate unique filename
+        $newName = $file->getRandomName();
+        $uploadPath = 'uploads/documents/';
+        
+        // Create directory if it doesn't exist
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0755, true);
+        }
+        
+        // Move file to upload directory
+        if ($file->move($uploadPath, $newName)) {
+            // Save document record to database
+            $documentModel = new DocumentModel();
+            $documentData = [
+                'student_id' => $studentId,
+                'document_type' => $documentType,
+                'file_path' => $uploadPath . $newName,
+                'original_filename' => $file->getClientName(),
+                'file_size' => $file->getSize(),
+                'description' => $description,
+                'status' => 'pending',
+                'uploaded_at' => date('Y-m-d H:i:s')
+            ];
+            
+            if ($documentModel->insert($documentData)) {
+                return redirect()->back()->with('success', 'Document uploaded successfully! It will be reviewed by the registrar.');
+            } else {
+                // Delete uploaded file if database insert fails
+                unlink($uploadPath . $newName);
+                return redirect()->back()->with('error', 'Failed to save document record.');
+            }
+        } else {
+            return redirect()->back()->with('error', 'Failed to upload file.');
+        }
     }
-
+    
     public function viewDocument($documentId)
     {
+        $studentId = session()->get('user_id');
         $documentModel = new DocumentModel();
         $doc = $documentModel->find((int)$documentId);
-        if (!$doc) {
-            throw PageNotFoundException::forPageNotFound();
+        if (!$doc || (int)$doc['student_id'] !== (int)$studentId) {
+            return redirect()->back()->with('error', 'Document not found or access denied.');
         }
-        $fullPath = ROOTPATH . $doc['file_path'];
-        if (!is_file($fullPath)) {
-            throw PageNotFoundException::forPageNotFound();
+
+        $fullPath = $this->resolveDocumentFullPath($doc['file_path']);
+        if (!$fullPath) {
+            return redirect()->back()->with('error', 'File not found on server.');
         }
-        return $this->response->download($fullPath, null);
+
+        $mimeType = function_exists('mime_content_type') ? mime_content_type($fullPath) : 'application/octet-stream';
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . basename($fullPath) . '"')
+            ->setBody(file_get_contents($fullPath));
     }
 
-    public function logout()
+    public function downloadDocument($documentId)
     {
-        session()->destroy();
-        return redirect()->to('/student/login')->with('message', 'Logged out successfully');
+        $studentId = session()->get('user_id');
+        $documentModel = new DocumentModel();
+        $doc = $documentModel->find((int)$documentId);
+        if (!$doc || (int)$doc['student_id'] !== (int)$studentId) {
+            return redirect()->back()->with('error', 'Document not found or access denied.');
+        }
+
+        $fullPath = $this->resolveDocumentFullPath($doc['file_path']);
+        if (!$fullPath) {
+            return redirect()->back()->with('error', 'File not found on server.');
+        }
+
+        return $this->response->download($fullPath, null, true);
+    }
+
+    private function resolveDocumentFullPath(string $storedPath): ?string
+    {
+        if (is_file($storedPath)) {
+            return $storedPath;
+        }
+        $trimmed = ltrim($storedPath, '/\\');
+        $candidates = [
+            ROOTPATH . $trimmed
+        ];
+        if (defined('FCPATH')) {
+            $candidates[] = rtrim(FCPATH, '/\\') . DIRECTORY_SEPARATOR . $trimmed;
+        }
+        if (defined('WRITEPATH')) {
+            $candidates[] = rtrim(WRITEPATH, '/\\') . DIRECTORY_SEPARATOR . $trimmed;
+        }
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+        return null;
+    }
+    
+    public function changePassword()
+    {
+        if ($this->request->getMethod() === 'POST') {
+            $studentId = session()->get('user_id');
+            $currentPassword = $this->request->getPost('current_password');
+            $newPassword = $this->request->getPost('new_password');
+            $confirmPassword = $this->request->getPost('confirm_password');
+            
+            // Validate passwords
+            if ($newPassword !== $confirmPassword) {
+                return redirect()->back()->with('error', 'New passwords do not match.');
+            }
+            
+            if (strlen($newPassword) < 6) {
+                return redirect()->back()->with('error', 'New password must be at least 6 characters long.');
+            }
+            
+            // Get current student data
+            $studentModel = new StudentModel();
+            $student = $studentModel->find($studentId);
+            
+            if (!$student) {
+                return redirect()->back()->with('error', 'Student not found.');
+            }
+            
+            // Verify current password
+            if (!password_verify($currentPassword, $student['password'])) {
+                return redirect()->back()->with('error', 'Current password is incorrect.');
+            }
+            
+            // Update password
+            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+            if ($studentModel->update($studentId, ['password' => $hashedPassword])) {
+                return redirect()->back()->with('success', 'Password changed successfully!');
+            } else {
+                return redirect()->back()->with('error', 'Failed to update password.');
+            }
+        }
+        
+        return view('student/change_password');
+    }
+    
+    public function attendance()
+    {
+        $studentId = session()->get('user_id');
+        $attendanceModel = new AttendanceModel();
+        
+        $attendance = $attendanceModel->getStudentAttendance($studentId);
+        
+        $data = [
+            'attendance' => $attendance,
+            'student' => session()->get()
+        ];
+        
+        return view('student/attendance', $data);
     }
 }

@@ -35,7 +35,7 @@
         }
         .form-group { margin-bottom: 16px; }
         label { display: block; margin-bottom: 6px; color: #333; font-weight: bold; }
-        input[type="email"], input[type="password"] {
+        input[type="text"], input[type="password"] {
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
@@ -78,22 +78,36 @@
             <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
         <?php endif; ?>
 
-        <form method="post" action="/student/login">
+        <form method="post" action="/auth/authenticate">
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                <label for="lrn">LRN (Learner Reference Number)</label>
+                <input type="text" id="lrn" name="username" placeholder="Enter your 12-digit LRN" required maxlength="12" pattern="[0-9]{12}">
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" placeholder="Your password" required>
             </div>
-            <button class="btn" type="submit">Login</button>
+            <button class="btn" type="submit">🔐 Login</button>
         </form>
 
         <div class="links">
             <a href="/">Home</a>
             <a href="/admission/enroll">Apply for Admission</a>
         </div>
+        
+        <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; margin-top: 16px; font-size: 13px;">
+            <p style="margin: 0 0 8px 0; font-weight: bold; color: #1976d2;">📋 Student Login Info:</p>
+            <p style="margin: 0; color: #666;">• Use your 12-digit LRN (Learner Reference Number)</p>
+            <p style="margin: 0; color: #666;">• Your LRN can be found on your report card or school records</p>
+            <p style="margin: 0; color: #666;">• Contact your registrar if you don't have your LRN</p>
+        </div>
     </div>
+    
+    <script>
+        // Simple LRN validation - only allow digits
+        document.getElementById('lrn').addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, ''); // Remove non-digits
+        });
+    </script>
 </body>
 </html>
