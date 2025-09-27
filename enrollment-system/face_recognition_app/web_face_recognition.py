@@ -77,8 +77,9 @@ def process_image_for_faces(image_path, subject_id):
         # Convert BGR to RGB
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         
-        # Find face locations
-        face_locations = face_recognition.face_locations(rgb_image)
+        # Find face locations with better detection
+        # Use HOG model for better accuracy (slower but more accurate)
+        face_locations = face_recognition.face_locations(rgb_image, model='hog')
         
         if not face_locations:
             return {
@@ -94,26 +95,31 @@ def process_image_for_faces(image_path, subject_id):
         recognized_faces = []
         
         for i, face_encoding in enumerate(face_encodings):
-            # Compare with known faces
-            matches = face_recognition.compare_faces(known_encodings, face_encoding, tolerance=0.6)
+            # Calculate face distances for all known faces
+            face_distances = face_recognition.face_distance(known_encodings, face_encoding)
             
-            if True in matches:
-                # Find the best match
-                match_index = matches.index(True)
-                student_id = known_ids[match_index]
-                student_name = known_names[match_index]
+            # Find the best match (lowest distance)
+            best_match_index = face_distances.argmin()
+            best_distance = face_distances[best_match_index]
+            
+            # Use dynamic tolerance based on distance
+            # Lower tolerance = more strict matching
+            tolerance = 0.5  # More strict than 0.6
+            
+            if best_distance <= tolerance:
+                student_id = known_ids[best_match_index]
+                student_name = known_names[best_match_index]
+                confidence = 1 - best_distance
                 
-                # Calculate face distance for confidence
-                face_distances = face_recognition.face_distance(known_encodings, face_encoding)
-                confidence = 1 - face_distances[match_index]
-                
-                recognized_faces.append({
-                    'student_id': student_id,
-                    'name': student_name,
-                    'confidence': round(confidence, 3),
-                    'face_location': face_locations[i],
-                    'timestamp': None  # Will be set by PHP
-                })
+                # Only add if confidence is above threshold
+                if confidence >= 0.7:  # 70% confidence minimum
+                    recognized_faces.append({
+                        'student_id': student_id,
+                        'name': student_name,
+                        'confidence': round(confidence, 3),
+                        'face_location': face_locations[i],
+                        'timestamp': None  # Will be set by PHP
+                    })
         
         return {
             'success': True,
