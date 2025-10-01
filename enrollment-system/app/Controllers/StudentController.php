@@ -140,7 +140,7 @@ class StudentController extends BaseController
         
         // Generate unique filename
         $newName = $file->getRandomName();
-        $uploadPath = 'uploads/documents/';
+        $uploadPath = WRITEPATH . 'uploads/documents/';
         
         // Create directory if it doesn't exist
         if (!is_dir($uploadPath)) {
@@ -154,7 +154,7 @@ class StudentController extends BaseController
             $documentData = [
                 'student_id' => $studentId,
                 'document_type' => $documentType,
-                'file_path' => $uploadPath . $newName,
+                'file_path' => 'uploads/documents/' . $newName,
                 'original_filename' => $file->getClientName(),
                 'file_size' => $file->getSize(),
                 'description' => $description,
