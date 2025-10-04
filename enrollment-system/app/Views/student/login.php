@@ -92,7 +92,7 @@
 
         <div class="links">
             <a href="/">Home</a>
-            <a href="/admission/enroll">Apply for Admission</a>
+            <!-- <a href="/admission/enroll">Apply for Admission</a> -->
         </div>
         
         <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; margin-top: 16px; font-size: 13px;">

@@ -181,11 +181,11 @@
     <div class="nav">
         <div>
             <a href="/registrar/students">👥 Student Management</a>
-            <a href="/registrar/enrollments/pending">Pending Enrollments</a>
+            <!-- <a href="/registrar/enrollments/pending">Pending Enrollments</a>
             <a href="/registrar/enrollments/approved">Approved</a>
             <a href="/registrar/enrollments/rejected">Rejected</a>
             <a href="/registrar/search">Search Students</a>
-            <a href="/registrar/report">Generate Report</a>
+            <a href="/registrar/report">Generate Report</a> -->
         </div>
     </div>
     
