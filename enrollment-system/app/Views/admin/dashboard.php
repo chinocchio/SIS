@@ -156,20 +156,20 @@
                 <a href="/admin/students" class="btn btn-success">👥 Students</a>
                 <a href="/admin/sections" class="btn btn-warning">🏫 Sections</a>
                 <a href="/admin/create-school-year" class="btn">School Years</a>
-                <a href="/admin/create-admission-timeframe" class="btn">Admission Timeframe</a>
+                <!-- <a href="/admin/create-admission-timeframe" class="btn">Admission Timeframe</a> -->
                 <a href="/admin/strands" class="btn btn-warning">Strands & Tracks</a>
                 <a href="/admin/curriculums" class="btn">Curriculums</a>
                 <a href="/admin/subjects" class="btn btn-info">📚 Subjects</a>
-                <a href="/admin/users" class="btn">Users</a>
+                <!-- <a href="/admin/users" class="btn">Users</a> -->
             </div>
             <div>
-                <a href="/auth/change-password" class="btn">Change Password</a>
+                <!-- <a href="/auth/change-password" class="btn">Change Password</a> -->
                 <a href="/auth/logout" class="btn" style="background-color:#dc3545;">Logout</a>
             </div>
         </div>
         <div class="header">
             <h1>Admin Dashboard</h1>
-            <p>Manage School Years, Admission Timeframes, and Student Promotions</p>
+            <p>Manage School Years, and Student Promotions</p>
         </div>
         
         <?php if (session()->getFlashdata('success')): ?>
@@ -205,7 +205,7 @@
             </div>
             
             <!-- Admission Timeframe -->
-            <div class="card">
+            <!-- <div class="card">
                 <h3>Admission Timeframe</h3>
                 <?php if (isset($admissionTimeframe)): ?>
                     <p><strong>Start Date:</strong> <?= date('M d, Y', strtotime($admissionTimeframe['start_date'])) ?></p>
@@ -226,7 +226,7 @@
                 <div style="margin-top: 20px;">
                     <a href="/admin/create-admission-timeframe" class="btn">Set Timeframe</a>
                 </div>
-            </div>
+            </div> -->
             
             <!-- Student Management -->
             <div class="card">
@@ -293,7 +293,7 @@
         </div>
         
         <!-- Admission Timeframes List -->
-        <div class="card">
+        <!-- <div class="card">
             <h3>All Admission Timeframes</h3>
             <table class="table">
                 <thead>
@@ -338,7 +338,7 @@
                     <?php endif; ?>
                 </tbody>
             </table>
-        </div>
+        </div> -->
     </div>
 </body>
 </html>
