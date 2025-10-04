@@ -212,6 +212,37 @@ class StudentController extends BaseController
         return $this->response->download($fullPath, null, true);
     }
 
+    public function deleteDocument($documentId)
+    {
+        $studentId = session()->get('user_id');
+        $documentModel = new DocumentModel();
+        $doc = $documentModel->find((int)$documentId);
+        
+        // Check if document exists and belongs to the student
+        if (!$doc || (int)$doc['student_id'] !== (int)$studentId) {
+            return redirect()->back()->with('error', 'Document not found or access denied.');
+        }
+        
+        // Check if document can be deleted (only draft or pending status)
+        if (!in_array($doc['status'], ['draft', 'pending'])) {
+            return redirect()->back()->with('error', 'Cannot delete documents that have been reviewed.');
+        }
+        
+        // Get full file path
+        $fullPath = $this->resolveDocumentFullPath($doc['file_path']);
+        
+        // Delete the document record from database
+        if ($documentModel->delete($documentId)) {
+            // If database deletion successful, try to delete the physical file
+            if ($fullPath && is_file($fullPath)) {
+                unlink($fullPath);
+            }
+            return redirect()->back()->with('success', 'Document deleted successfully.');
+        } else {
+            return redirect()->back()->with('error', 'Failed to delete document.');
+        }
+    }
+
     private function resolveDocumentFullPath(string $storedPath): ?string
     {
         if (is_file($storedPath)) {

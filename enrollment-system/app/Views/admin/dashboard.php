@@ -237,7 +237,7 @@
                     <a href="/admin/promote-students" class="btn btn-success" onclick="return confirm('This will promote all eligible students to the next grade level. Continue?')">
                         Promote Students
                     </a>
-                    <a href="/admin/strands" class="btn btn-warning">Manage Strands</a>
+                    <!-- <a href="/admin/strands" class="btn btn-warning">Manage Strands</a> -->
                 </div>
             </div>
         </div>
