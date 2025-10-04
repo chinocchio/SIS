@@ -107,32 +107,6 @@
             color: #1976d2;
         }
         
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            color: #6c757d;
-            font-size: 14px;
-        }
         
         .assignments-section {
             margin-bottom: 30px;
@@ -251,10 +225,6 @@
             .assignments-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
         }
     </style>
 </head>
@@ -292,25 +262,6 @@
             <?php endif; ?>
         </div>
         
-        <!-- Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number"><?= $totalAssignments ?></div>
-                <div class="stat-label">Subject Assignments</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?= $totalStudents ?></div>
-                <div class="stat-label">Total Students</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?= count($sectionsWithStudents) ?></div>
-                <div class="stat-label">Sections</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?= $activeSchoolYear ? 'Active' : 'None' ?></div>
-                <div class="stat-label">School Year Status</div>
-            </div>
-        </div>
         
         <!-- Assignments Section -->
         <div class="assignments-section">
@@ -327,12 +278,12 @@
                             <div class="assignment-header">
                                 <h4><?= esc($assignment['subject_name']) ?></h4>
                                 <p><?= esc($assignment['section_name']) ?> - Grade <?= $assignment['section_grade_level'] ?></p>
+                                <p>👥 <?= $studentCount ?> students enrolled</p>
                             </div>
                             
                             <div class="assignment-content">
                                 <p><strong>Subject Code:</strong> <?= esc($assignment['subject_code']) ?></p>
                                 <p><strong>School Year:</strong> <?= esc($assignment['school_year']) ?></p>
-                                <p><strong>Students:</strong> <?= $studentCount ?> enrolled</p>
                                 
                                 <?php if (!empty($students)): ?>
                                     <div class="students-list">
@@ -380,7 +331,7 @@
                 <a href="/face-recognition" class="btn btn-warning">📷 Face Recognition</a>
                 <a href="/face-recognition/capture" class="btn btn-primary">📸 Capture Faces</a>
                 <a href="/teacher/attendance" class="btn btn-info">📋 Attendance</a>
-                <a href="/teacher/reports" class="btn btn-secondary">📋 Generate Reports</a>
+                <!-- <a href="/teacher/reports" class="btn btn-secondary">📋 Generate Reports</a> -->
                 <a href="/auth/change-password" class="btn btn-secondary">🔒 Change Password</a>
             </div>
         </div>

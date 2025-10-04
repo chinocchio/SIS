@@ -471,6 +471,7 @@
                                 <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Status</th>
                                 <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Uploaded At</th>
                                 <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">File</th>
+                                <th style="text-align:left; padding:8px; border-bottom:1px solid #eee;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -487,9 +488,21 @@
                                             $viewUrl = base_url('/student/document/view/' . $doc['id']);
                                             $downloadUrl = base_url('/student/document/download/' . $doc['id']);
                                         ?>
-                                        <a href="#" onclick="openDocModal('<?= $viewUrl ?>'); return false;">View</a>
+                                        <a href="#" onclick="openDocModal('<?= $viewUrl ?>'); return false;">👁️ View</a>
                                         &nbsp;|&nbsp;
-                                        <a href="<?= $downloadUrl ?>">Download</a>
+                                        <a href="<?= $downloadUrl ?>">📥 Download</a>
+                                    </td>
+                                    <td style="padding:8px; border-bottom:1px solid #f1f1f1;">
+                                        <?php if ($doc['status'] === 'draft' || $doc['status'] === 'pending'): ?>
+                                            <a href="/student/document/delete/<?= $doc['id'] ?>" 
+                                               class="btn btn-danger" 
+                                               style="padding: 4px 8px; font-size: 12px; margin: 0;"
+                                               onclick="return confirm('Are you sure you want to delete this document? This action cannot be undone.')">
+                                                🗑️ Delete
+                                            </a>
+                                        <?php else: ?>
+                                            <span style="color: #6c757d; font-style: italic; font-size: 12px;">Cannot delete approved documents</span>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

@@ -169,6 +169,7 @@ $routes->get('/student/change-password', 'StudentController::changePassword', ['
 $routes->post('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);
 $routes->get('/student/document/view/(:num)', 'StudentController::viewDocument/$1', ['filter' => 'studentauth']);
 $routes->get('/student/document/download/(:num)', 'StudentController::downloadDocument/$1', ['filter' => 'studentauth']);
+$routes->get('/student/document/delete/(:num)', 'StudentController::deleteDocument/$1', ['filter' => 'studentauth']);
 $routes->get('/student/attendance', 'StudentController::attendance', ['filter' => 'studentauth']);
 
 // Face Recognition Routes
