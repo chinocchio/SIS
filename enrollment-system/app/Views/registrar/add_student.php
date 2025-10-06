@@ -204,8 +204,8 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="lrn">LRN <span class="required">*</span></label>
-                    <input type="text" id="lrn" name="lrn" value="<?= old('lrn') ?>" required>
-                    <div class="help-text">Learner Reference Number</div>
+                    <input type="text" id="lrn" name="lrn" value="<?= old('lrn') ?>" required maxlength="12" pattern="[0-9]{12}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <div class="help-text">Learner Reference Number - Must be exactly 12 digits</div>
                 </div>
                 
                 <div class="form-group">
@@ -214,21 +214,10 @@
                 </div>
             </div>
             
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="first_name">First Name <span class="required">*</span></label>
-                    <input type="text" id="first_name" name="first_name" value="<?= old('first_name') ?>" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="middle_name">Middle Name</label>
-                    <input type="text" id="middle_name" name="middle_name" value="<?= old('middle_name') ?>">
-                </div>
-            </div>
-            
             <div class="form-group">
-                <label for="last_name">Last Name <span class="required">*</span></label>
-                <input type="text" id="last_name" name="last_name" value="<?= old('last_name') ?>" required>
+                <label for="full_name">Full Name <span class="required">*</span></label>
+                <input type="text" id="full_name" name="full_name" value="<?= old('full_name') ?>" required>
+                <div class="help-text">Enter the complete name (First Name Middle Name Last Name)</div>
             </div>
             
             <div class="form-row">
@@ -247,32 +236,17 @@
                 </div>
             </div>
             
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="grade_level">Grade Level <span class="required">*</span></label>
-                    <select id="grade_level" name="grade_level" required>
-                        <option value="">Select Grade Level</option>
-                        <option value="7" <?= old('grade_level') == '7' ? 'selected' : '' ?>>Grade 7</option>
-                        <option value="8" <?= old('grade_level') == '8' ? 'selected' : '' ?>>Grade 8</option>
-                        <option value="9" <?= old('grade_level') == '9' ? 'selected' : '' ?>>Grade 9</option>
-                        <option value="10" <?= old('grade_level') == '10' ? 'selected' : '' ?>>Grade 10</option>
-                        <option value="11" <?= old('grade_level') == '11' ? 'selected' : '' ?>>Grade 11</option>
-                        <option value="12" <?= old('grade_level') == '12' ? 'selected' : '' ?>>Grade 12</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="previous_grade_level">Previous Grade Level</label>
-                    <select id="previous_grade_level" name="previous_grade_level">
-                        <option value="">Select Previous Grade</option>
-                        <option value="6" <?= old('previous_grade_level') == '6' ? 'selected' : '' ?>>Grade 6</option>
-                        <option value="7" <?= old('previous_grade_level') == '7' ? 'selected' : '' ?>>Grade 7</option>
-                        <option value="8" <?= old('previous_grade_level') == '8' ? 'selected' : '' ?>>Grade 8</option>
-                        <option value="9" <?= old('previous_grade_level') == '9' ? 'selected' : '' ?>>Grade 9</option>
-                        <option value="10" <?= old('previous_grade_level') == '10' ? 'selected' : '' ?>>Grade 10</option>
-                        <option value="11" <?= old('previous_grade_level') == '11' ? 'selected' : '' ?>>Grade 11</option>
-                    </select>
-                </div>
+            <div class="form-group">
+                <label for="grade_level">Grade Level <span class="required">*</span></label>
+                <select id="grade_level" name="grade_level" required>
+                    <option value="">Select Grade Level</option>
+                    <option value="7" <?= old('grade_level') == '7' ? 'selected' : '' ?>>Grade 7</option>
+                    <option value="8" <?= old('grade_level') == '8' ? 'selected' : '' ?>>Grade 8</option>
+                    <option value="9" <?= old('grade_level') == '9' ? 'selected' : '' ?>>Grade 9</option>
+                    <option value="10" <?= old('grade_level') == '10' ? 'selected' : '' ?>>Grade 10</option>
+                    <option value="11" <?= old('grade_level') == '11' ? 'selected' : '' ?>>Grade 11</option>
+                    <option value="12" <?= old('grade_level') == '12' ? 'selected' : '' ?>>Grade 12</option>
+                </select>
             </div>
             
             <div class="form-row">
@@ -281,7 +255,8 @@
                     <select id="admission_type" name="admission_type">
                         <option value="regular" <?= old('admission_type') == 'regular' ? 'selected' : '' ?>>Regular</option>
                         <option value="transferee" <?= old('admission_type') == 'transferee' ? 'selected' : '' ?>>Transferee</option>
-                        <option value="returnee" <?= old('admission_type') == 'returnee' ? 'selected' : '' ?>>Returnee</option>
+                        <option value="re-enroll" <?= old('admission_type') == 're-enroll' ? 'selected' : '' ?>>Re-enroll</option>
+                        <option value="promoted" <?= old('admission_type') == 'promoted' ? 'selected' : '' ?>>Promoted</option>
                     </select>
                 </div>
                 
@@ -289,7 +264,8 @@
                     <label for="enrollment_type">Enrollment Type</label>
                     <select id="enrollment_type" name="enrollment_type">
                         <option value="new" <?= old('enrollment_type') == 'new' ? 'selected' : '' ?>>New</option>
-                        <option value="old" <?= old('enrollment_type') == 'old' ? 'selected' : '' ?>>Old</option>
+                        <option value="transferee" <?= old('enrollment_type') == 'transferee' ? 'selected' : '' ?>>Transferee</option>
+                        <option value="returning" <?= old('enrollment_type') == 'returning' ? 'selected' : '' ?>>Returning</option>
                     </select>
                 </div>
             </div>
@@ -306,8 +282,8 @@
                 </select>
             </div>
             
-            <div class="form-group">
-                <label for="curriculum_id">Curriculum</label>
+            <div class="form-group" id="curriculum_group">
+                <label for="curriculum_id">Curriculum (JHS Only)</label>
                 <select id="curriculum_id" name="curriculum_id">
                     <option value="">Select Curriculum</option>
                     <?php foreach ($curriculums as $curriculum): ?>
@@ -316,11 +292,6 @@
                         </option>
                     <?php endforeach; ?>
                 </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="previous_school">Previous School</label>
-                <input type="text" id="previous_school" name="previous_school" value="<?= old('previous_school') ?>">
             </div>
             
             <div class="form-group">
@@ -337,16 +308,30 @@
     </div>
     
     <script>
-        // Show/hide strand field based on grade level
+        // Show/hide strand and curriculum fields based on grade level
         document.getElementById('grade_level').addEventListener('change', function() {
-            const gradeLevel = this.value;
+            const gradeLevel = parseInt(this.value);
             const strandGroup = document.getElementById('strand_group');
+            const curriculumGroup = document.getElementById('curriculum_group');
             
-            if (gradeLevel >= 11) {
+            // SHS (Grades 11-12): Show strand, hide curriculum
+            if (gradeLevel >= 11 && gradeLevel <= 12) {
                 strandGroup.style.display = 'block';
-            } else {
+                curriculumGroup.style.display = 'none';
+                document.getElementById('curriculum_id').value = '';
+            }
+            // JHS (Grades 7-10): Show curriculum, hide strand
+            else if (gradeLevel >= 7 && gradeLevel <= 10) {
                 strandGroup.style.display = 'none';
+                curriculumGroup.style.display = 'block';
                 document.getElementById('strand_id').value = '';
+            }
+            // Other grades: Hide both
+            else {
+                strandGroup.style.display = 'none';
+                curriculumGroup.style.display = 'none';
+                document.getElementById('strand_id').value = '';
+                document.getElementById('curriculum_id').value = '';
             }
         });
         
