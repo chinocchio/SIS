@@ -86,4 +86,12 @@ class UserModel extends Model
         
         return $user;
     }
+    
+    public function updatePassword($id, $newPassword)
+    {
+        // Hash the new password
+        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+        
+        return $this->update($id, ['password' => $hashedPassword]);
+    }
 }
