@@ -352,8 +352,8 @@
                     <div class="count-label">Total Students</div>
                 </div>
                 <div class="count-item">
-                    <div class="count-number"><?= $draftStudents ?? 0 ?></div>
-                    <div class="count-label">Draft Status</div>
+                    <div class="count-number"><?= $rejectedStudents ?? 0 ?></div>
+                    <div class="count-label">Rejected</div>
                 </div>
                 <div class="count-item">
                     <div class="count-number"><?= $pendingStudents ?? 0 ?></div>

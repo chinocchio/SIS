@@ -84,9 +84,9 @@ class AuthController extends BaseController
         $student = $studentModel->where('lrn', $username)->first();
         
         if ($student) {
-            // Check if student is approved
-            if ($student['status'] !== 'approved') {
-                return redirect()->back()->with('error', 'Your account is not yet approved. Please contact the registrar.');
+            // Check if student is rejected (only block rejected students)
+            if ($student['status'] === 'rejected') {
+                return redirect()->back()->with('error', 'Your account has been rejected. Please contact the registrar.');
             }
             
             // Verify password

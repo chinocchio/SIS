@@ -119,7 +119,7 @@ class RegistrarController extends BaseController
          
          // Calculate summary statistics
          $totalStudents = $studentModel->countAllResults();
-         $draftStudents = $studentModel->where('status', 'draft')->countAllResults();
+         $rejectedStudents = $studentModel->where('status', 'rejected')->countAllResults();
          $pendingStudents = $studentModel->where('status', 'pending')->countAllResults();
          $approvedStudents = $studentModel->where('status', 'approved')->countAllResults();
          
@@ -132,7 +132,7 @@ class RegistrarController extends BaseController
              'enrollment_filter' => $enrollment_filter,
              'admission_filter' => $admission_filter,
              'totalStudents' => $totalStudents,
-             'draftStudents' => $draftStudents,
+             'rejectedStudents' => $rejectedStudents,
              'pendingStudents' => $pendingStudents,
              'approvedStudents' => $approvedStudents
          ];
