@@ -107,7 +107,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎓 Student Information System</h1>
+        <h1>🎓 RNTVS Enrollment System</h1>
         <p class="description">
             Welcome to our comprehensive Student Information System. 
             Access your academic records, manage documents, and track your progress.
