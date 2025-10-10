@@ -339,4 +339,45 @@ class TeacherController extends BaseController
         
         return view('teacher/attendance', $data);
     }
+    
+    public function changePassword()
+    {
+        if ($this->request->getMethod() === 'POST') {
+            $teacherId = session()->get('user_id');
+            $currentPassword = $this->request->getPost('current_password');
+            $newPassword = $this->request->getPost('new_password');
+            $confirmPassword = $this->request->getPost('confirm_password');
+            
+            // Validate passwords
+            if ($newPassword !== $confirmPassword) {
+                return redirect()->back()->with('error', 'New passwords do not match.');
+            }
+            
+            if (strlen($newPassword) < 6) {
+                return redirect()->back()->with('error', 'New password must be at least 6 characters long.');
+            }
+            
+            // Get current teacher data
+            $teacherModel = new TeacherModel();
+            $teacher = $teacherModel->find($teacherId);
+            
+            if (!$teacher) {
+                return redirect()->back()->with('error', 'Teacher not found.');
+            }
+            
+            // Verify current password
+            if (!password_verify($currentPassword, $teacher['password'])) {
+                return redirect()->back()->with('error', 'Current password is incorrect.');
+            }
+            
+            // Update password
+            if ($teacherModel->updatePassword($teacherId, $newPassword)) {
+                return redirect()->back()->with('success', 'Password changed successfully!');
+            } else {
+                return redirect()->back()->with('error', 'Failed to update password.');
+            }
+        }
+        
+        return view('teacher/change_password');
+    }
 }

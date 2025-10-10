@@ -332,7 +332,7 @@
                 <a href="/face-recognition/capture" class="btn btn-primary">📸 Capture Faces</a>
                 <a href="/teacher/attendance" class="btn btn-info">📋 Attendance</a>
                 <!-- <a href="/teacher/reports" class="btn btn-secondary">📋 Generate Reports</a> -->
-                <a href="/auth/change-password" class="btn btn-secondary">🔒 Change Password</a>
+                <a href="/index.php/teacher/change-password" class="btn btn-secondary">🔒 Change Password</a>
             </div>
         </div>
     </div>

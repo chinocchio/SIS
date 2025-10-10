@@ -9,13 +9,7 @@ use App\Models\DocumentModel;
 
 class RegistrarController extends BaseController
 {
-    public function __construct()
-    {
-        // Check if user is logged in and is a registrar
-        if (!session()->get('is_logged_in') || session()->get('role') !== 'registrar') {
-            return redirect()->to('/auth/login');
-        }
-    }
+    // Auth for registrar is enforced via the 'registrarauth' route filter
     
     public function index()
     {
@@ -125,7 +119,7 @@ class RegistrarController extends BaseController
          
          // Calculate summary statistics
          $totalStudents = $studentModel->countAllResults();
-         $draftStudents = $studentModel->where('status', 'draft')->countAllResults();
+         $rejectedStudents = $studentModel->where('status', 'rejected')->countAllResults();
          $pendingStudents = $studentModel->where('status', 'pending')->countAllResults();
          $approvedStudents = $studentModel->where('status', 'approved')->countAllResults();
          
@@ -138,7 +132,7 @@ class RegistrarController extends BaseController
              'enrollment_filter' => $enrollment_filter,
              'admission_filter' => $admission_filter,
              'totalStudents' => $totalStudents,
-             'draftStudents' => $draftStudents,
+             'rejectedStudents' => $rejectedStudents,
              'pendingStudents' => $pendingStudents,
              'approvedStudents' => $approvedStudents
          ];
@@ -730,7 +724,48 @@ class RegistrarController extends BaseController
              ]);
          }
          
-         fclose($output);
-         exit;
-     }
+        fclose($output);
+        exit;
+    }
+    
+    public function changePassword()
+    {
+        if ($this->request->getMethod() === 'POST') {
+            $userId = session()->get('user_id');
+            $currentPassword = $this->request->getPost('current_password');
+            $newPassword = $this->request->getPost('new_password');
+            $confirmPassword = $this->request->getPost('confirm_password');
+            
+            // Validate passwords
+            if ($newPassword !== $confirmPassword) {
+                return redirect()->back()->with('error', 'New passwords do not match.');
+            }
+            
+            if (strlen($newPassword) < 6) {
+                return redirect()->back()->with('error', 'New password must be at least 6 characters long.');
+            }
+            
+            // Get current user data
+            $userModel = new UserModel();
+            $user = $userModel->find($userId);
+            
+            if (!$user) {
+                return redirect()->back()->with('error', 'User not found.');
+            }
+            
+            // Verify current password
+            if (!password_verify($currentPassword, $user['password'])) {
+                return redirect()->back()->with('error', 'Current password is incorrect.');
+            }
+            
+            // Update password
+            if ($userModel->updatePassword($userId, $newPassword)) {
+                return redirect()->back()->with('success', 'Password changed successfully!');
+            } else {
+                return redirect()->back()->with('error', 'Failed to update password.');
+            }
+        }
+        
+        return view('registrar/change_password');
+    }
 }

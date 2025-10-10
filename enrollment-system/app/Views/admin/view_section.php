@@ -266,7 +266,7 @@
                 <a href="/admin/students" class="btn btn-success">👥 Students</a>
                 <a href="/admin/sections" class="btn btn-warning">🏫 Sections</a>
                 <a href="/admin/create-school-year" class="btn">School Years</a>
-                <a href="/admin/create-admission-timeframe" class="btn">Admission Timeframe</a>
+                <!-- <a href="/admin/create-admission-timeframe" class="btn">Admission Timeframe</a> -->
                 <a href="/admin/strands" class="btn btn-warning">Strands & Tracks</a>
                 <a href="/admin/curriculums" class="btn">Curriculums</a>
                 <a href="/admin/subjects" class="btn btn-info">📚 Subjects</a>

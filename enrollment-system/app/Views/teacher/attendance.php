@@ -159,41 +159,74 @@
         
         <!-- Attendance Table -->
         <div>
-            <h3>📋 Recent Attendance Records</h3>
+            <h3>📋 Attendance Records</h3>
             
             <?php if (!empty($attendance)): ?>
-                <table class="attendance-table">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>LRN</th>
-                            <th>Subject</th>
-                            <th>Date & Time</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($attendance as $record): ?>
+                <?php
+                    // Group attendance by student
+                    $studentAttendance = [];
+                    $allDates = [];
+                    
+                    foreach ($attendance as $record) {
+                        $studentKey = $record['student_id'];
+                        $date = date('Y-m-d', strtotime($record['recorded_at']));
+                        
+                        if (!isset($studentAttendance[$studentKey])) {
+                            $studentAttendance[$studentKey] = [
+                                'name' => $record['student_name'],
+                                'lrn' => $record['lrn'],
+                                'dates' => []
+                            ];
+                        }
+                        
+                        $studentAttendance[$studentKey]['dates'][$date] = 'Present';
+                        
+                        if (!in_array($date, $allDates)) {
+                            $allDates[] = $date;
+                        }
+                    }
+                    
+                    // Sort dates
+                    sort($allDates);
+                ?>
+                
+                <div style="overflow-x: auto;">
+                    <table class="attendance-table">
+                        <thead>
                             <tr>
-                                <td>
-                                    <strong><?= esc($record['student_name']) ?></strong>
-                                </td>
-                                <td><?= esc($record['lrn']) ?></td>
-                                <td>
-                                    <strong><?= esc($record['subject_name']) ?></strong>
-                                    <br><small><?= esc($record['subject_code']) ?></small>
-                                </td>
-                                <td>
-                                    <?= date('M d, Y', strtotime($record['recorded_at'])) ?>
-                                    <br><small><?= date('g:i A', strtotime($record['recorded_at'])) ?></small>
-                                </td>
-                                <td>
-                                    <span class="status-badge status-present">Present</span>
-                                </td>
+                                <th style="position: sticky; left: 0; background: #f8f9fa; z-index: 10;">Student Name</th>
+                                <th style="position: sticky; left: 200px; background: #f8f9fa; z-index: 10;">LRN</th>
+                                <?php foreach ($allDates as $date): ?>
+                                    <th style="text-align: center; min-width: 100px;">
+                                        <?= date('M d', strtotime($date)) ?><br>
+                                        <small><?= date('Y', strtotime($date)) ?></small>
+                                    </th>
+                                <?php endforeach; ?>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($studentAttendance as $student): ?>
+                                <tr>
+                                    <td style="position: sticky; left: 0; background: white; z-index: 5;">
+                                        <strong><?= esc($student['name']) ?></strong>
+                                    </td>
+                                    <td style="position: sticky; left: 200px; background: white; z-index: 5;">
+                                        <?= esc($student['lrn']) ?>
+                                    </td>
+                                    <?php foreach ($allDates as $date): ?>
+                                        <td style="text-align: center;">
+                                            <?php if (isset($student['dates'][$date])): ?>
+                                                <span class="status-badge status-present">✓</span>
+                                            <?php else: ?>
+                                                <span style="color: #dc3545;">—</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    <?php endforeach; ?>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             <?php else: ?>
                 <div class="no-data">
                     <h4>📊 No Attendance Records</h4>
