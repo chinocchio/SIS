@@ -268,9 +268,11 @@
             font-size: 12px;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>Manage Strands & Tracks</h1>
             <p>Add, edit, and manage tracks and their associated strands</p>
@@ -454,6 +456,7 @@
         <div style="text-align: center; margin-top: 30px;">
             <a href="/admin" class="btn btn-secondary">Back to Dashboard</a>
         </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
     
     <script>

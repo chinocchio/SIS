@@ -186,9 +186,11 @@
             flex-wrap: wrap;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>👨‍💼 Registrar Profile</h1>
             <div>
@@ -271,6 +273,7 @@
                 <a href="/admin/dashboard" class="btn btn-secondary">🏠 Back to Dashboard</a>
             </div>
         </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
 </body>
 </html>

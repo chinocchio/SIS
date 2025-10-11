@@ -248,9 +248,11 @@
             }
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>👨‍🏫 Assign Teachers to Subjects</h1>
             <div>
@@ -580,6 +582,8 @@
                 </div>
             <?php endif; ?>
         </div>
+    </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
     
     <script>

@@ -202,21 +202,12 @@
             color: #856404;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
-        <div class="nav">
-            <div>
-                <a href="/admin" class="btn">← Back to Dashboard</a>
-            </div>
-            <div>
-                <h2>Curriculum Management</h2>
-            </div>
-            <div>
-                <a href="/admin/subjects" class="btn btn-info">📚 Manage Subjects</a>
-                <a href="/auth/logout" class="btn btn-danger">Logout</a>
-            </div>
-        </div>
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
+        
         
         <div class="header">
             <h1>Manage Curriculums</h1>
@@ -337,6 +328,8 @@
                 </form>
             </div>
         </div>
+    </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
     
          <script>

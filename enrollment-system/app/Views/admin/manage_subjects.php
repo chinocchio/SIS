@@ -125,6 +125,10 @@
             border-collapse: collapse;
             margin-top: 20px;
         }
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
         
         th, td {
             padding: 12px;
@@ -236,9 +240,11 @@
             min-width: 200px;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <h1>📚 Subject Management</h1>
         
         <?php if (session()->getFlashdata('error')): ?>
@@ -332,6 +338,7 @@
             <div style="margin-bottom: 20px; padding: 10px; background: #e8f5e8; border-radius: 6px; border: 1px solid #c3e6c3;">
                 <strong>📊 Found <?= count($subjects) ?> subjects</strong>
             </div>
+            <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
@@ -378,6 +385,7 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         <?php else: ?>
             <div class="no-subjects">
                 <h3>📚 No Subjects Found</h3>
@@ -385,6 +393,7 @@
                 <a href="/admin/subjects/add" class="btn btn-success">➕ Add First Subject</a>
             </div>
         <?php endif; ?>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
     
     <script>

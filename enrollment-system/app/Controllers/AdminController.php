@@ -200,7 +200,10 @@ class AdminController extends BaseController
 
         try {
             $data['strands'] = $strandModel->findAll();
-            $data['tracks'] = $trackModel->getAllActiveTracks();
+            // Include both active and inactive tracks in display
+            $data['tracks'] = $trackModel->orderBy('level', 'ASC')
+                                         ->orderBy('name', 'ASC')
+                                         ->findAll();
         } catch (\Exception $e) {
             $data['strands'] = [];
             $data['tracks'] = [];

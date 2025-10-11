@@ -100,9 +100,11 @@
             color: #0056b3;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>Create Admission Timeframe</h1>
             <p>Set the period when students can apply for admission</p>
@@ -141,6 +143,8 @@
                 <a href="/admin" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
+    </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
     
     <script>

@@ -117,9 +117,11 @@
             border: 1px solid #f5c6cb;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>Edit Admission Timeframe</h1>
             <p>Modify the admission timeframe for <?= esc($timeframe['school_year_name'] ?? 'Unknown School Year') ?></p>
@@ -172,6 +174,7 @@
         <div style="text-align: center; margin-top: 30px;">
             <a href="/admin" class="btn btn-secondary">Back to Dashboard</a>
         </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
 </body>
 </html>

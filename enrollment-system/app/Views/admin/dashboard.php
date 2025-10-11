@@ -181,27 +181,12 @@
             margin-left: 0;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
         <div class="layout">
-            <aside class="sidebar">
-                <div class="nav">
-                    <a href="/admin/dashboard" class="btn">Dashboard</a>
-                    <a href="/admin/registrars" class="btn btn-info">👨‍💼 Registrars</a>
-                    <a href="/admin/teachers" class="btn btn-info">👨‍🏫 Teachers</a>
-                    <a href="/admin/teachers/assign" class="btn btn-warning">📋 Assign Teachers</a>
-                    <a href="/admin/students" class="btn btn-success">👥 Students</a>
-                    <a href="/admin/sections" class="btn btn-warning">🏫 Sections</a>
-                    <a href="/admin/create-school-year" class="btn">School Years</a>
-                    <!-- <a href="/admin/create-admission-timeframe" class="btn">Admission Timeframe</a> -->
-                    <a href="/admin/strands" class="btn btn-warning">Strands & Tracks</a>
-                    <a href="/admin/curriculums" class="btn">Curriculums</a>
-                    <a href="/admin/subjects" class="btn btn-info">📚 Subjects</a>
-                    <!-- <a href="/admin/users" class="btn">Users</a> -->
-                    <a href="/auth/logout" class="btn" style="background-color:#dc3545;margin-top:8px;">Logout</a>
-                </div>
-            </aside>
+            <?php include __DIR__ . '/partials/sidebar.php'; ?>
             <main class="main-content">
                 <div class="header">
                     <h1>Admin Dashboard</h1>

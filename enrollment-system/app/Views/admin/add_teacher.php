@@ -148,9 +148,11 @@
             }
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>👨‍🏫 Add New Teacher</h1>
             <div>
@@ -206,6 +208,7 @@
                 <a href="/admin/teachers" class="btn btn-secondary">❌ Cancel</a>
             </div>
         </form>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
 </body>
 </html>

@@ -243,9 +243,11 @@
             text-transform: uppercase;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <h1>👥 Student Management</h1>
         
         <?php if (session()->getFlashdata('error')): ?>
@@ -345,6 +347,7 @@
                 <a href="/admin/students/add" class="btn btn-success">➕ Add First Student</a>
             </div>
         <?php endif; ?>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
     
     <script>

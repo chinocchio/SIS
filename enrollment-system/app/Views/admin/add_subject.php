@@ -157,9 +157,11 @@
             margin-top: 5px;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header-actions">
             <h1>📚 Add New Subject</h1>
             <a href="/admin/subjects" class="btn btn-secondary">← Back to Subjects</a>
@@ -300,6 +302,8 @@
                 <a href="/admin/subjects" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
+    </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
     
     <script>
