@@ -109,6 +109,11 @@
             margin-top: 20px;
         }
         
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
         th, td {
             padding: 12px;
             text-align: left;
@@ -209,9 +214,11 @@
             white-space: nowrap;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>👨‍🏫 Teacher Management</h1>
             <div>
@@ -233,6 +240,7 @@
         <?php endif; ?>
         
         <?php if (!empty($teachers)): ?>
+            <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
@@ -285,6 +293,7 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         <?php else: ?>
             <div class="no-teachers">
                 <h3>👨‍🏫 No Teachers Found</h3>
@@ -292,6 +301,7 @@
                 <a href="/admin/teachers/add" class="btn btn-success">➕ Add First Teacher</a>
             </div>
         <?php endif; ?>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
 </body>
 </html>

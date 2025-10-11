@@ -112,9 +112,11 @@
             margin-top: 5px;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <h1>👨‍💼 Add New Registrar</h1>
         
         <?php if (session()->getFlashdata('error')): ?>
@@ -155,6 +157,7 @@
                 <a href="/admin/registrars" class="btn btn-secondary">← Back to Registrars</a>
             </div>
         </form>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
 </body>
 </html>
