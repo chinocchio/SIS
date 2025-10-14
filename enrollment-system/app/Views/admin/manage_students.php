@@ -13,17 +13,27 @@
         }
         
         .container {
-            max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
         
-        h1 {
-            color: #333;
-            text-align: center;
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            margin: 0;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
         
@@ -248,7 +258,10 @@
 <body>
     <div class="container">
         <?php include __DIR__ . '/partials/layout_start.php'; ?>
-        <h1>👥 Student Management</h1>
+        <div class="header">
+            <h1>👥 Student Management</h1>
+            <p>Manage student enrollment and academic records</p>
+        </div>
         
         <?php if (session()->getFlashdata('error')): ?>
             <div class="alert alert-error"><?= session()->getFlashdata('error') ?></div>
@@ -259,7 +272,8 @@
         <?php endif; ?>
         
         <!-- Student Count Summary -->
-        <div class="student-count">
+        <div class="card">
+            <div class="student-count">
             <h3>📊 Student Summary</h3>
             <div class="count-grid">
                 <div class="count-item">
@@ -280,6 +294,7 @@
                 </div>
             </div>
         </div>
+        </div>
         
         <div class="header-actions">
             <div>
@@ -293,8 +308,9 @@
             </div>
         </div>
         
-        <?php if (!empty($students)): ?>
-            <table>
+        <div class="card">
+            <?php if (!empty($students)): ?>
+                <table>
                 <thead>
                     <tr>
                         <th>LRN</th>
@@ -339,14 +355,15 @@
                 <div class="pagination">
                     <?= $pager->links() ?>
                 </div>
+                <?php endif; ?>
+            <?php else: ?>
+                <div class="no-students">
+                    <h3>📚 No Students Found</h3>
+                    <p>There are no students in the system yet. Start by adding a student via SF9 upload.</p>
+                    <a href="/admin/students/add" class="btn btn-success">➕ Add First Student</a>
+                </div>
             <?php endif; ?>
-        <?php else: ?>
-            <div class="no-students">
-                <h3>📚 No Students Found</h3>
-                <p>There are no students in the system yet. Start by adding a student via SF9 upload.</p>
-                <a href="/admin/students/add" class="btn btn-success">➕ Add First Student</a>
-            </div>
-        <?php endif; ?>
+        </div>
         <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
     

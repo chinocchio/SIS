@@ -558,37 +558,39 @@ class AdminController extends BaseController
             $allSubjects = $subjectModel->findAll();
             log_message('info', 'Total subjects in database: ' . count($allSubjects));
             
-            // Try the JOIN method first
-            try {
-                $subjects = $subjectModel->getAllActiveSubjectsWithCurriculumAndStrand();
-                log_message('info', 'Subjects after JOIN query: ' . count($subjects));
-            } catch (\Exception $joinError) {
-                log_message('error', 'JOIN query failed: ' . $joinError->getMessage());
-                $subjects = [];
-            }
+            // Get all subjects (both active and inactive)
+            $subjects = $subjectModel->orderBy('grade_level', 'ASC')
+                                    ->orderBy('code', 'ASC')
+                                    ->findAll();
+            log_message('info', 'All subjects found: ' . count($subjects));
             
-            // If JOIN query returns no results or fails, try fallback method
-            if (empty($subjects)) {
-                log_message('info', 'JOIN query returned no results, trying fallback method');
-                $subjects = $subjectModel->getAllActiveSubjectsSimple();
-                log_message('info', 'Subjects from fallback method: ' . count($subjects));
-                
-                // Manually populate curriculum and strand names
-                if (!empty($subjects)) {
-                    foreach ($subjects as &$subject) {
-                        if (!empty($subject['curriculum_id'])) {
-                            $curriculum = $curriculumModel->find($subject['curriculum_id']);
-                            $subject['curriculum_name'] = $curriculum ? $curriculum['name'] : 'Unknown';
-                        } else {
-                            $subject['curriculum_name'] = null;
-                        }
-                        
-                        if (!empty($subject['strand_id'])) {
-                            $strand = $strandModel->find($subject['strand_id']);
-                            $subject['strand_name'] = $strand ? $strand['name'] : 'Unknown';
-                        } else {
-                            $subject['strand_name'] = null;
-                        }
+            // Debug: Log subject status distribution
+            $activeCount = 0;
+            $inactiveCount = 0;
+            foreach ($subjects as $subject) {
+                if ($subject['is_active'] == 1) {
+                    $activeCount++;
+                } else {
+                    $inactiveCount++;
+                }
+            }
+            log_message('info', 'Active subjects: ' . $activeCount . ', Inactive subjects: ' . $inactiveCount);
+            
+            // Manually populate curriculum and strand names
+            if (!empty($subjects)) {
+                foreach ($subjects as &$subject) {
+                    if (!empty($subject['curriculum_id'])) {
+                        $curriculum = $curriculumModel->find($subject['curriculum_id']);
+                        $subject['curriculum_name'] = $curriculum ? $curriculum['name'] : 'Unknown';
+                    } else {
+                        $subject['curriculum_name'] = null;
+                    }
+                    
+                    if (!empty($subject['strand_id'])) {
+                        $strand = $strandModel->find($subject['strand_id']);
+                        $subject['strand_name'] = $strand ? $strand['name'] : 'Unknown';
+                    } else {
+                        $subject['strand_name'] = null;
                     }
                 }
             }
@@ -599,6 +601,7 @@ class AdminController extends BaseController
             $strands = $strandModel->getActiveStrandsWithTracks();
             log_message('info', 'Strands found: ' . count($strands));
             
+            // No pagination - show all subjects
             $data['subjects'] = $subjects;
             $data['curriculums'] = $curriculums;
             $data['strands'] = $strands;

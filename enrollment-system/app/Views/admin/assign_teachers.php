@@ -13,26 +13,28 @@
         }
         
         .container {
-            max-width: 1400px;
+            width: 100%;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
         
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
             margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e9ecef;
         }
         
         .header h1 {
-            color: #333;
             margin: 0;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
         
         .btn {
@@ -255,7 +257,8 @@
         <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>👨‍🏫 Assign Teachers to Subjects</h1>
-            <div>
+            <p>Assign teachers to subjects and sections for the current school year</p>
+            <div style="margin-top: 15px;">
                 <a href="/admin/teachers" class="btn btn-secondary">← Back to Teachers</a>
                 <a href="/admin/dashboard" class="btn">Dashboard</a>
             </div>
@@ -274,7 +277,8 @@
         <?php endif; ?>
         
         <!-- Statistics -->
-        <div class="stats-grid">
+        <div class="card">
+            <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number"><?= $totalTeachers ?></div>
                 <div class="stat-label">Total Teachers</div>
@@ -292,9 +296,11 @@
                 <div class="stat-label">Available Sections</div>
             </div>
         </div>
+        </div>
         
         <!-- Assignment Form -->
-        <div class="assignment-form">
+        <div class="card">
+            <div class="assignment-form">
             <h4>➕ Assign Teacher to Subject</h4>
             <?php if ($activeSchoolYear): ?>
                 <form method="POST" action="/admin/teachers/assign-subject">
@@ -439,10 +445,12 @@
                     <a href="/admin/create-school-year" class="btn btn-warning">Create School Year</a>
                 </div>
             <?php endif; ?>
+            </div>
         </div>
         
         <!-- Current Assignments -->
-        <div class="filters-section">
+        <div class="card">
+            <div class="filters-section">
             <h3>📋 Current Teacher Assignments</h3>
             
             <!-- Filter Controls -->
@@ -581,6 +589,7 @@
                     <p>No teacher assignments found.</p>
                 </div>
             <?php endif; ?>
+            </div>
         </div>
     </div>
         <?php include __DIR__ . '/partials/layout_end.php'; ?>

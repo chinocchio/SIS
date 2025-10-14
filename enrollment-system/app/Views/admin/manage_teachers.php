@@ -13,26 +13,28 @@
         }
         
         .container {
-            max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
         
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
             margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e9ecef;
         }
         
         .header h1 {
-            color: #333;
             margin: 0;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
         
         .btn {
@@ -213,6 +215,32 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 10px;
+        }
+        
+        .pagination a {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #667eea;
+            border-radius: 4px;
+        }
+        
+        .pagination a:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .pagination .active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
     </style>
     <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
@@ -221,7 +249,8 @@
         <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>👨‍🏫 Teacher Management</h1>
-            <div>
+            <p>Manage teacher accounts and subject assignments</p>
+            <div style="margin-top: 15px;">
                 <a href="/admin/teachers/add" class="btn btn-success">➕ Add Teacher</a>
                 <a href="/admin/dashboard" class="btn">🏠 Dashboard</a>
             </div>
@@ -239,9 +268,10 @@
             </div>
         <?php endif; ?>
         
-        <?php if (!empty($teachers)): ?>
-            <div class="table-responsive">
-            <table>
+        <div class="card">
+            <?php if (!empty($teachers)): ?>
+                <div class="table-responsive">
+                <table>
                 <thead>
                     <tr>
                         <th>Teacher</th>
@@ -293,14 +323,22 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
-            </div>
-        <?php else: ?>
-            <div class="no-teachers">
-                <h3>👨‍🏫 No Teachers Found</h3>
-                <p>There are no teachers in the system yet. Start by adding a teacher.</p>
-                <a href="/admin/teachers/add" class="btn btn-success">➕ Add First Teacher</a>
-            </div>
-        <?php endif; ?>
+                </div>
+                
+                <!-- Pagination -->
+                <?php if (isset($pager)): ?>
+                    <div class="pagination">
+                        <?= $pager->links() ?>
+                    </div>
+                <?php endif; ?>
+            <?php else: ?>
+                <div class="no-teachers">
+                    <h3>👨‍🏫 No Teachers Found</h3>
+                    <p>There are no teachers in the system yet. Start by adding a teacher.</p>
+                    <a href="/admin/teachers/add" class="btn btn-success">➕ Add First Teacher</a>
+                </div>
+            <?php endif; ?>
+        </div>
         <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
 </body>
