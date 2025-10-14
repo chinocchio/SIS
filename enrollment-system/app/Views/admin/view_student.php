@@ -13,7 +13,7 @@
         }
         
         .container {
-            max-width: 1000px;
+            width: 100%;
             margin: 0 auto;
             background: white;
             padding: 30px;

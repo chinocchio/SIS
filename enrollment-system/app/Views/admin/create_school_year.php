@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create School Year - Admin</title>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,9 +13,17 @@
             background-color: #f5f5f5;
         }
         
+        /* Override layout gap for this view only */
+        .layout {
+            gap: 2px !important;
+        }
+        
         .container {
-            max-width: 600px;
+            width: 100%;
             margin: 0 auto;
+        }
+        
+        .form-container {
             background: white;
             padding: 30px;
             border-radius: 8px;
@@ -57,6 +66,11 @@
             box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
         }
         
+        .form-group small {
+            color: #666;
+            font-size: 14px;
+        }
+        
         .btn {
             background-color: #007bff;
             color: white;
@@ -66,6 +80,8 @@
             cursor: pointer;
             font-size: 16px;
             margin-right: 10px;
+            text-decoration: none;
+            display: inline-block;
         }
         
         .btn:hover {
@@ -88,6 +104,8 @@
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
+        <div class="form-container">
         <div class="header">
             <h1>Create New School Year</h1>
             <p>Set up a new academic year for the school</p>
@@ -128,5 +146,7 @@
             document.getElementById('end_date').min = this.value;
         });
     </script>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
+    </div>
 </body>
 </html>

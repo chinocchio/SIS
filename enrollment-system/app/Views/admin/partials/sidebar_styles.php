@@ -1,12 +1,12 @@
 <style>
     /* Normalize container and layout across admin views */
     .container {
-        max-width: 1200px;
+        width: 100%;
         margin: 0 auto;
     }
     .layout {
         display: flex;
-        gap: 12px;
+        gap: 6px;
         align-items: flex-start;
     }
     .sidebar {
