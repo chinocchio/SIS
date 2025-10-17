@@ -7,37 +7,50 @@
     <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            background-color: #f8f9fc;
+            color: #5a5c69;
         }
         
-        /* Override layout gap for this view only */
-        .layout {
-            gap: 2px !important;
+        .page-heading {
+            margin-bottom: 1.5rem;
         }
         
-        .container {
-            width: 100%;
-            margin: 0 auto;
+        .page-heading h1 {
+            font-size: 1.75rem;
+            font-weight: 400;
+            color: #5a5c69;
+            margin: 0;
         }
         
         .form-container {
             background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 2rem;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            border-left: 0.25rem solid #4e73df;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e3e6f0;
         }
         
         .header h1 {
-            color: #007bff;
-            margin-bottom: 10px;
+            color: #4e73df;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 400;
+        }
+        
+        .header p {
+            color: #858796;
+            margin: 0;
+            font-size: 0.9rem;
         }
         
         .form-group {
@@ -46,59 +59,47 @@
         
         .form-group label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #333;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #5a5c69;
+            font-size: 0.875rem;
         }
         
         .form-group input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+            padding: 0.625rem 0.75rem;
+            border: 1px solid #d1d3e2;
+            border-radius: 0.35rem;
+            font-size: 0.875rem;
+            color: #6e707e;
+            background-color: #fff;
             box-sizing: border-box;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         }
         
         .form-group input:focus {
             outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+            border-color: #bac8f3;
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+            background-color: #fff;
         }
         
         .form-group small {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .btn {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-right: 10px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        
-        .btn:hover {
-            background-color: #0056b3;
-        }
-        
-        .btn-secondary {
-            background-color: #6c757d;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #545b62;
+            color: #858796;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            display: block;
         }
         
         .actions {
             text-align: center;
-            margin-top: 30px;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e3e6f0;
+        }
+        
+        .actions .btn {
+            margin: 0 0.5rem;
         }
     </style>
 </head>

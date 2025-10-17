@@ -9,10 +9,11 @@
     <title>Admin Dashboard - SIS</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            background-color: #f8f9fc;
+            color: #5a5c69;
         }
         
         .container {
@@ -184,6 +185,7 @@
     <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
+    <?php include __DIR__ . '/partials/header.php'; ?>
     <div class="container">
         <div class="layout">
             <?php include __DIR__ . '/partials/sidebar.php'; ?>
