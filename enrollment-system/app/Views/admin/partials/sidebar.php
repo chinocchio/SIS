@@ -19,7 +19,7 @@
         <a href="/admin/curriculums" class="btn<?= $isActive('/admin/curriculums') ? ' active' : '' ?>">Curriculums</a>
         <a href="/admin/subjects" class="btn btn-info<?= $isActive('/admin/subjects') ? ' active' : '' ?>">📚 Subjects</a>
         <!-- <a href="/admin/users" class="btn">Users</a> -->
-        <a href="/auth/logout" class="btn" style="background-color:#dc3545;margin-top:8px;">Logout</a>
+        <!-- <a href="/auth/logout" class="btn" style="background-color:#dc3545;margin-top:8px;">Logout</a> -->
     </div>
 </aside>
 

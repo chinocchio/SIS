@@ -6,15 +6,21 @@
     <title>Add Section - Admin Dashboard</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            background-color: #f8f9fc;
+            color: #5a5c69;
         }
         
-        .container {
+        .page-container {
             width: 100%;
             margin: 0 auto;
+        }
+        
+        .main-content {
+            padding: 1.5rem;
+            min-height: 100vh;
         }
         
         .header {
@@ -142,9 +148,8 @@
     <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
-    <div class="container">
-        <?php include __DIR__ . '/partials/layout_start.php'; ?>
-        
+    <?php include __DIR__ . '/partials/layout_start.php'; ?>
+        <div class="page-container">
         <div class="header">
             <h1>➕ Add New Section</h1>
             <p>Create a new class section for students</p>
@@ -224,8 +229,8 @@
                 </div>
             </form>
         </div>
-        <?php include __DIR__ . '/partials/layout_end.php'; ?>
-    </div>
+        </div>
+    <?php include __DIR__ . '/partials/layout_end.php'; ?>
     
     <script>
         document.getElementById('grade_level').addEventListener('change', function() {
