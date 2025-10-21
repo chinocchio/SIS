@@ -95,23 +95,39 @@ class TeacherController extends BaseController
         $teacherModel = new TeacherModel();
         $schoolYearModel = new SchoolYearModel();
         
-        // Verify teacher is assigned to this section
+        // Get all subjects assigned to teacher for this section
         $teacherAssignments = $teacherModel->getTeacherWithAssignments($teacherId);
-        $isAssigned = false;
-        $subjectInfo = null;
+        $assignedSubjects = [];
         
         if (!empty($teacherAssignments['assignments'])) {
             foreach ($teacherAssignments['assignments'] as $assignment) {
                 if ($assignment['section_id'] == $sectionId) {
-                    $isAssigned = true;
-                    $subjectInfo = $assignment;
+                    $assignedSubjects[] = $assignment;
+                }
+            }
+        }
+        
+        if (empty($assignedSubjects)) {
+            return redirect()->to('/teacher/dashboard')->with('error', 'You are not assigned to this section.');
+        }
+        
+        // Get selected subject from URL parameter or default to first subject
+        $selectedSubjectId = $this->request->getGet('subject_id');
+        $subjectInfo = null;
+        
+        if ($selectedSubjectId) {
+            // Find the selected subject
+            foreach ($assignedSubjects as $subject) {
+                if ($subject['subject_id'] == $selectedSubjectId) {
+                    $subjectInfo = $subject;
                     break;
                 }
             }
         }
         
-        if (!$isAssigned) {
-            return redirect()->to('/teacher/dashboard')->with('error', 'You are not assigned to this section.');
+        // If no valid subject selected, use the first one
+        if (!$subjectInfo) {
+            $subjectInfo = $assignedSubjects[0];
         }
         
         $section = $sectionModel->find($sectionId);
@@ -139,6 +155,7 @@ class TeacherController extends BaseController
             'section' => $section,
             'students' => $students,
             'subjectInfo' => $subjectInfo,
+            'assignedSubjects' => $assignedSubjects,
             'activeSchoolYear' => $activeSchoolYear,
             'gradesLookup' => $gradesLookup
         ];
@@ -329,11 +346,62 @@ class TeacherController extends BaseController
     {
         $teacherId = session()->get('user_id');
         $attendanceModel = new AttendanceModel();
+        $teacherModel = new TeacherModel();
+        $studentModel = new StudentModel();
+        $schoolYearModel = new SchoolYearModel();
         
-        $attendance = $attendanceModel->getTeacherAttendance($teacherId);
+        // Get teacher's assigned subjects and sections
+        $assignments = $teacherModel->getTeacherWithAssignments($teacherId);
+        $activeSchoolYear = $schoolYearModel->getActiveSchoolYear();
+        
+        // Get all students enrolled in teacher's assigned sections
+        $allStudents = [];
+        $attendanceData = [];
+        
+        if (!empty($assignments['assignments'])) {
+            foreach ($assignments['assignments'] as $assignment) {
+                $sectionId = $assignment['section_id'];
+                $subjectId = $assignment['subject_id'];
+                
+                // Get students for this section
+                $students = $studentModel->getStudentsBySection($sectionId);
+                
+                // Get attendance records for this subject
+                $attendanceRecords = $attendanceModel->where('subject_id', $subjectId)->findAll();
+                
+                // Create attendance lookup by student_id and date
+                $attendanceLookup = [];
+                foreach ($attendanceRecords as $record) {
+                    $date = date('Y-m-d', strtotime($record['recorded_at']));
+                    $attendanceLookup[$record['student_id']][$date] = true;
+                }
+                
+                // Get all unique dates from attendance records
+                $allDates = [];
+                foreach ($attendanceRecords as $record) {
+                    $date = date('Y-m-d', strtotime($record['recorded_at']));
+                    if (!in_array($date, $allDates)) {
+                        $allDates[] = $date;
+                    }
+                }
+                rsort($allDates); // Sort dates descending (newest first)
+                
+                // Build attendance data for this subject
+                $subjectAttendanceData = [
+                    'subject' => $assignment,
+                    'students' => $students,
+                    'dates' => $allDates,
+                    'attendance_lookup' => $attendanceLookup
+                ];
+                
+                $attendanceData[] = $subjectAttendanceData;
+            }
+        }
         
         $data = [
-            'attendance' => $attendance,
+            'assignments' => $assignments['assignments'] ?? [],
+            'attendanceData' => $attendanceData,
+            'activeSchoolYear' => $activeSchoolYear,
             'teacher' => session()->get()
         ];
         

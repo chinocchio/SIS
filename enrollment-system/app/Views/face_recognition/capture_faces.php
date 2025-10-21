@@ -4,11 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= esc($title) ?> - SIS</title>
+    <?php include __DIR__ . '/../teacher/partials/sidebar_styles.php'; ?>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="container-fluid">
+    <?php include __DIR__ . '/../teacher/partials/layout_start.php'; ?>
+        <div class="page-header">
+            <h1><i class="fas fa-camera"></i> Capture Student Faces</h1>
+        </div>
+        
+        <div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -26,37 +32,41 @@
                     <div class="row">
                         <!-- Student List -->
                         <div class="col-md-6">
-                            <h5><i class="fas fa-users"></i> Students</h5>
-                            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                                <table class="table table-striped table-hover">
-                                    <thead class="thead-dark sticky-top">
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>LRN</th>
-                                            <th>Section</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0"><i class="fas fa-users"></i> Students</h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                                        <table class="table table-hover mb-0">
+                                            <thead class="thead-light sticky-top">
+                                                <tr>
+                                                    <th class="border-0">Name</th>
+                                                    <th class="border-0">LRN</th>
+                                                    <th class="border-0">Section</th>
+                                                    <th class="border-0">Status</th>
+                                                    <th class="border-0">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
                                         <?php if (!empty($students)): ?>
                                             <?php foreach ($students as $student): ?>
-                                                <tr>
-                                                    <td><?= esc($student['full_name']) ?></td>
-                                                    <td><?= esc($student['lrn']) ?></td>
+                                                <tr class="align-middle">
+                                                    <td class="fw-bold"><?= esc($student['full_name']) ?></td>
+                                                    <td class="text-muted"><?= esc($student['lrn']) ?></td>
                                                     <td>
-                                                        <span class="badge badge-info">
+                                                        <span class="badge bg-info text-dark">
                                                             Grade <?= $student['grade_level'] ?> - <?= esc($student['section_name']) ?>
                                                         </span>
                                                     </td>
                                                     <td>
                                                         <?php if (!empty($student['face_encoding'])): ?>
-                                                            <span class="badge badge-success">
-                                                                <i class="fas fa-check"></i> Captured
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-check-circle"></i> Captured
                                                             </span>
                                                         <?php else: ?>
-                                                            <span class="badge badge-warning">
-                                                                <i class="fas fa-times"></i> Not Captured
+                                                            <span class="badge bg-warning text-dark">
+                                                                <i class="fas fa-exclamation-circle"></i> Not Captured
                                                             </span>
                                                         <?php endif; ?>
                                                     </td>
@@ -64,18 +74,19 @@
                                                         <button class="btn btn-primary btn-sm capture-face-btn" 
                                                                 data-student-id="<?= $student['id'] ?>"
                                                                 data-student-name="<?= esc($student['full_name']) ?>"
-                                                                data-student-lrn="<?= esc($student['lrn']) ?>"
-                                                                <?= !empty($student['face_encoding']) ? 'disabled' : '' ?>>
+                                                                data-student-lrn="<?= esc($student['lrn']) ?>">
                                                             <i class="fas fa-camera"></i> 
                                                             <?= !empty($student['face_encoding']) ? 'Recapture' : 'Capture' ?>
                                                         </button>
-                                                    </td>
+                                                    </td>   
                                                 </tr>
                                             <?php endforeach; ?>
                                         <?php else: ?>
                                             <tr>
-                                                <td colspan="5" class="text-center text-muted">
-                                                    <i class="fas fa-info-circle"></i> No students assigned to you
+                                                <td colspan="5" class="text-center text-muted py-4">
+                                                    <i class="fas fa-info-circle fa-2x mb-2"></i><br>
+                                                    <strong>No students assigned to you</strong><br>
+                                                    <small>Contact your administrator to get student assignments.</small>
                                                 </td>
                                             </tr>
                                         <?php endif; ?>
@@ -83,11 +94,18 @@
                                 </table>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
                         
                         <!-- Camera Interface -->
                         <div class="col-md-6">
-                            <h5><i class="fas fa-video"></i> Camera</h5>
-                            <div class="camera-container">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0"><i class="fas fa-video"></i> Camera</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="camera-container">
                                 <div id="camera-preview" class="text-center" style="display: none;">
                                     <video id="video" width="320" height="240" autoplay></video>
                                     <br><br>
@@ -118,7 +136,7 @@
             </div>
         </div>
     </div>
-</div>
+    <?php include __DIR__ . '/../teacher/partials/layout_end.php'; ?>
 
 <!-- Hidden canvas for image capture -->
 <canvas id="canvas" style="display: none;"></canvas>
@@ -291,21 +309,37 @@ window.addEventListener('beforeunload', stopCamera);
     border-radius: 8px;
     padding: 20px;
     min-height: 300px;
+    background: #f8f9fa;
 }
 
 #video {
     border-radius: 8px;
-    border: 2px solid #007bff;
+    border: 2px solid #28a745;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .table th {
-    background-color: #343a40;
-    color: white;
+    background-color: #f8f9fa;
+    color: #495057;
     border: none;
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 
 .table td {
     vertical-align: middle;
+    padding: 12px 8px;
+}
+
+.capture-face-btn {
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.capture-face-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .capture-face-btn:disabled {
@@ -317,6 +351,20 @@ window.addEventListener('beforeunload', stopCamera);
     position: sticky;
     top: 0;
     z-index: 10;
+}
+
+.badge {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0,0,0,0.125);
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: none;
 }
 </style>
 

@@ -4,35 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Face Recognition - SIS</title>
+    <?php include __DIR__ . '/../teacher/partials/sidebar_styles.php'; ?>
     <style>
+        /* Override body padding for teacher layout */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background: #f5f6fb;
         }
         
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        /* Remove container styling since we're using teacher layout */
+        .main-content {
+            padding: 20px;
         }
         
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .page-header {
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 2px solid #e9ecef;
         }
         
-        .header h1 {
+        .page-header h1 {
             color: #333;
             margin: 0;
+        }
+        
+        .teacher-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .teacher-info h2 {
+            color: #333;
+            margin: 0 0 10px 0;
+        }
+        
+        .teacher-info p {
+            color: #666;
+            margin: 0;
+        }
+        
+        .subjects-section {
+            margin-top: 20px;
+        }
+        
+        .subjects-section h3 {
+            color: #333;
+            margin-bottom: 20px;
         }
         
         .btn {
@@ -178,13 +200,9 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <?php include __DIR__ . '/../teacher/partials/layout_start.php'; ?>
+        <div class="page-header">
             <h1>📷 Face Recognition Attendance</h1>
-            <div>
-                <a href="/teacher/dashboard" class="btn btn-secondary">🏠 Dashboard</a>
-                <a href="/auth/logout" class="btn btn-secondary">🚪 Logout</a>
-            </div>
         </div>
         
         <?php if (session()->getFlashdata('success')): ?>
@@ -219,9 +237,9 @@
                                 <a href="/face-recognition/attendance/<?= $subject['id'] ?>" class="btn btn-success">
                                     📷 Start Attendance
                                 </a>
-                                <a href="/face-recognition/students/<?= $subject['id'] ?>" class="btn btn-warning" onclick="showStudents(<?= $subject['id'] ?>)">
+                                <!-- <a href="/face-recognition/students/<?= $subject['id'] ?>" class="btn btn-warning" onclick="showStudents(<?= $subject['id'] ?>)">
                                     👥 View Students
-                                </a>
+                                </a> -->
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -240,13 +258,13 @@
             <h3>⚡ Quick Actions</h3>
             <div class="action-buttons">
                 <a href="/face-recognition/test" class="btn btn-warning">🧪 Test Camera</a>
-                <a href="/teacher/dashboard" class="btn btn-secondary">🏠 Teacher Dashboard</a>
+                <!-- <a href="/teacher/dashboard" class="btn btn-secondary">🏠 Teacher Dashboard</a>
                 <a href="/teacher/attendance" class="btn btn-secondary">📋 View Attendance Records</a>
                 <a href="/teacher/grades" class="btn btn-secondary">📊 Grade Management</a>
-                <a href="/auth/change-password" class="btn btn-secondary">🔒 Change Password</a>
+                <a href="/auth/change-password" class="btn btn-secondary">🔒 Change Password</a> -->
             </div>
         </div>
-    </div>
+    <?php include __DIR__ . '/../teacher/partials/layout_end.php'; ?>
 
     <script>
         function showStudents(subjectId) {

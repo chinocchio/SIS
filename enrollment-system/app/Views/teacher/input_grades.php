@@ -8,64 +8,35 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: #f5f6fb;
+            padding: 0;
+            background: #f8f9fc;
         }
         
         .container {
-            max-width: 1000px;
+            width: 100%;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 0;
         }
         
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e9ecef;
+            padding: 2rem;
+            background: white;
+            border-bottom: 1px solid #e3e6f0;
         }
         
         .header h1 {
             color: #333;
             margin: 0;
+            font-size: 2rem;
         }
         
-        .btn {
-            background: #667eea;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            margin-left: 10px;
+        .header p {
+            color: #6c757d;
+            margin: 0.5rem 0 0 0;
         }
         
-        .btn:hover {
-            background: #5a6fd8;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-        
-        .btn-success {
-            background: #28a745;
-        }
-        
-        .btn-success:hover {
-            background: #218838;
+        .content {
+            padding: 2rem;
         }
         
         .alert {
@@ -260,6 +231,38 @@
             color: #856404;
         }
         
+        .subject-selector {
+            margin-bottom: 20px;
+        }
+        
+        .subject-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .subject-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        
+        .subject-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        .subject-selector select:hover {
+            border-color: #5a6fd8;
+        }
+        
         @media (max-width: 768px) {
             .info-grid {
                 grid-template-columns: 1fr;
@@ -270,15 +273,17 @@
             }
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>📝 Input Grades - <?= esc($section['name']) ?></h1>
-            <div>
-                <a href="/teacher/students/<?= $section['id'] ?>" class="btn btn-secondary">← Back to Students</a>
-            </div>
+            <p>Enter grades for students in this section</p>
         </div>
+        
+        <div class="content">
         
         <?php if (session()->getFlashdata('success')): ?>
             <div class="alert alert-success">
@@ -290,6 +295,23 @@
             <div class="alert alert-error">
                 <?= session()->getFlashdata('error') ?>
             </div>
+        <?php endif; ?>
+        
+        <!-- Subject Selection -->
+        <?php if (count($assignedSubjects) > 1): ?>
+        <div class="subject-info">
+            <h2>📚 Select Subject for Grade Input</h2>
+            <div class="subject-selector">
+                <label for="subject-select">Choose Subject:</label>
+                <select id="subject-select" onchange="changeSubject()">
+                    <?php foreach ($assignedSubjects as $subject): ?>
+                        <option value="<?= $subject['subject_id'] ?>" <?= $subject['subject_id'] == $subjectInfo['subject_id'] ? 'selected' : '' ?>>
+                            <?= esc($subject['subject_name']) ?> (<?= esc($subject['subject_code']) ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
         <?php endif; ?>
         
         <!-- Subject Information -->
@@ -402,11 +424,24 @@
                 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-success">💾 Save All Grades</button>
-                    <a href="/teacher/students/<?= $section['id'] ?>" class="btn btn-secondary">← Back to Students</a>
-                    <a href="/teacher/dashboard" class="btn btn-secondary">🏠 Dashboard</a>
+                    <!-- <a href="/teacher/students/<?= $section['id'] ?>" class="btn btn-secondary">← Back to Students</a>
+                    <a href="/teacher/dashboard" class="btn btn-secondary">🏠 Dashboard</a> -->
                 </div>
             </form>
         </div>
+        </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
+    
+    <script>
+        function changeSubject() {
+            const subjectSelect = document.getElementById('subject-select');
+            const selectedSubjectId = subjectSelect.value;
+            const currentUrl = window.location.pathname;
+            
+            // Redirect to the same page with the selected subject_id parameter
+            window.location.href = currentUrl + '?subject_id=' + selectedSubjectId;
+        }
+    </script>
 </body>
 </html>
