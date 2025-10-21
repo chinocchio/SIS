@@ -8,53 +8,37 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: #f5f6fb;
+            padding: 0;
+            background: #f8f9fc;
         }
         
         .container {
-            max-width: 500px;
+            width: 100%;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 0;
         }
         
         .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e9ecef;
+            padding: 2rem;
+            background: white;
+            border-bottom: 1px solid #e3e6f0;
         }
         
         .header h1 {
             color: #333;
             margin: 0;
+            font-size: 2rem;
         }
         
-        .btn {
-            background: #28a745;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
+        .header p {
+            color: #6c757d;
+            margin: 0.5rem 0 0 0;
         }
         
-        .btn:hover {
-            background: #218838;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
+        .content {
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
         }
         
         .alert {
@@ -75,6 +59,13 @@
             border: 1px solid #f5c6cb;
         }
         
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
         .form-group {
             margin-bottom: 20px;
         }
@@ -88,10 +79,10 @@
         
         .form-group input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ced4da;
+            padding: 12px;
+            border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 16px;
             box-sizing: border-box;
         }
         
@@ -101,95 +92,96 @@
             box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
         }
         
+        .btn {
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .btn:hover {
+            background: #218838;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
         .form-actions {
+            margin-top: 20px;
             display: flex;
             gap: 10px;
-            justify-content: center;
         }
         
-        .form-actions .btn {
-            margin: 0;
-        }
-        
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-        
-        .back-link a {
-            color: #28a745;
-            text-decoration: none;
-        }
-        
-        .back-link a:hover {
-            text-decoration: underline;
+        @media (max-width: 768px) {
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>🔒 Change Password</h1>
+            <p>Update your account password</p>
         </div>
         
-        <?php if (session()->getFlashdata('success')): ?>
-            <div class="alert alert-success">
-                <?= session()->getFlashdata('success') ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if (session()->getFlashdata('error')): ?>
-            <div class="alert alert-error">
-                <?= session()->getFlashdata('error') ?>
-            </div>
-        <?php endif; ?>
-        
-        <form method="POST" action="/index.php/teacher/change-password">
-            <div class="form-group">
-                <label for="current_password">Current Password:</label>
-                <input type="password" name="current_password" id="current_password" required>
-            </div>
+        <div class="content">
+            <?php if (session()->getFlashdata('success')): ?>
+                <div class="alert alert-success">
+                    <?= session()->getFlashdata('success') ?>
+                </div>
+            <?php endif; ?>
             
-            <div class="form-group">
-                <label for="new_password">New Password:</label>
-                <input type="password" name="new_password" id="new_password" required minlength="6">
-            </div>
+            <?php if (session()->getFlashdata('error')): ?>
+                <div class="alert alert-error">
+                    <?= session()->getFlashdata('error') ?>
+                </div>
+            <?php endif; ?>
             
-            <div class="form-group">
-                <label for="confirm_password">Confirm New Password:</label>
-                <input type="password" name="confirm_password" id="confirm_password" required minlength="6">
+            <div class="form-container">
+                <form method="POST" action="/index.php/teacher/change-password">
+                    <div class="form-group">
+                        <label for="current_password">Current Password</label>
+                        <input type="password" id="current_password" name="current_password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new_password">New Password</label>
+                        <input type="password" id="new_password" name="new_password" required minlength="6">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm New Password</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required minlength="6">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn">Update Password</button>
+                        <a href="/teacher/dashboard" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
             </div>
-            
-            <div class="form-actions">
-                <button type="submit" class="btn">🔒 Change Password</button>
-                <a href="/index.php/teacher/dashboard" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
-        
-        <div class="back-link">
-            <a href="/index.php/teacher/dashboard">← Back to Dashboard</a>
         </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
-    
-    <script>
-        // Validate password confirmation
-        document.getElementById('confirm_password').addEventListener('input', function() {
-            const newPassword = document.getElementById('new_password').value;
-            const confirmPassword = this.value;
-            
-            if (newPassword !== confirmPassword) {
-                this.setCustomValidity('Passwords do not match');
-            } else {
-                this.setCustomValidity('');
-            }
-        });
-        
-        document.getElementById('new_password').addEventListener('input', function() {
-            const confirmPassword = document.getElementById('confirm_password');
-            if (confirmPassword.value) {
-                confirmPassword.dispatchEvent(new Event('input'));
-            }
-        });
-    </script>
 </body>
 </html>
