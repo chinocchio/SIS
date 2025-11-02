@@ -322,4 +322,105 @@ class StudentController extends BaseController
         
         return view('student/attendance', $data);
     }
+    
+    public function grades()
+    {
+        $studentId = session()->get('user_id');
+        $studentModel = new StudentModel();
+        $schoolYearModel = new SchoolYearModel();
+        
+        // Get student details
+        $student = $studentModel->getStudentWithDetails($studentId);
+        
+        if (!$student) {
+            return redirect()->to('/auth/login')->with('error', 'Student not found.');
+        }
+        
+        // Get active school year
+        $activeSchoolYear = $schoolYearModel->getActiveSchoolYear();
+        
+        // Get all subjects for student's curriculum/strand and grade level
+        $subjectModel = new SubjectModel();
+        $allSubjects = [];
+        $grades = [];
+        
+        try {
+            if ($activeSchoolYear) {
+                $db = \Config\Database::connect();
+                
+                // Get all subjects for the student's curriculum/strand and grade level
+                if ($student['curriculum_id']) {
+                    // JHS - get subjects by curriculum and grade level
+                    $allSubjects = $db->table('subjects s')
+                        ->select('s.*')
+                        ->where('s.curriculum_id', $student['curriculum_id'])
+                        ->where('s.grade_level', $student['grade_level'])
+                        ->orderBy('s.quarter', 'ASC')
+                        ->orderBy('s.name', 'ASC')
+                        ->get()
+                        ->getResultArray();
+                } elseif ($student['strand_id']) {
+                    // SHS - get subjects by strand and grade level
+                    $allSubjects = $db->table('subjects s')
+                        ->select('s.*')
+                        ->where('s.strand_id', $student['strand_id'])
+                        ->where('s.grade_level', $student['grade_level'])
+                        ->orderBy('s.semester', 'ASC')
+                        ->orderBy('s.quarter', 'ASC')
+                        ->orderBy('s.name', 'ASC')
+                        ->get()
+                        ->getResultArray();
+                }
+                
+                // Get recorded grades for this student
+                if (!empty($allSubjects)) {
+                    $subjectIds = array_column($allSubjects, 'id');
+                    $grades = $db->table('student_grades sg')
+                        ->select('sg.*')
+                        ->where('sg.student_id', $studentId)
+                        ->whereIn('sg.subject_id', $subjectIds)
+                        ->where('sg.school_year_id', $activeSchoolYear['id'])
+                        ->get()
+                        ->getResultArray();
+                }
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Error fetching student grades: ' . $e->getMessage());
+        }
+        
+        $data = [
+            'student' => $student,
+            'allSubjects' => $allSubjects,
+            'grades' => $grades,
+            'activeSchoolYear' => $activeSchoolYear
+        ];
+        
+        return view('student/grades', $data);
+    }
+    
+    public function documents()
+    {
+        $studentId = session()->get('user_id');
+        $studentModel = new StudentModel();
+        $documentModel = new DocumentModel();
+        
+        // Get student details
+        $student = $studentModel->getStudentWithDetails($studentId);
+        
+        if (!$student) {
+            return redirect()->to('/auth/login')->with('error', 'Student not found.');
+        }
+        
+        // Get student documents
+        $documents = $documentModel->where('student_id', $studentId)
+                                  ->orderBy('uploaded_at', 'DESC')
+                                  ->findAll();
+        
+        $data = [
+            'student' => $student,
+            'documents' => $documents
+        ];
+        
+        return view('student/documents', $data);
+    }
 }

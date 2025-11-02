@@ -168,6 +168,8 @@ $routes->post('/teacher/change-password', 'TeacherController::changePassword', [
 
 // Student
 $routes->get('/student/dashboard', 'StudentController::index', ['filter' => 'studentauth']);
+$routes->get('/student/grades', 'StudentController::grades', ['filter' => 'studentauth']);
+$routes->get('/student/documents', 'StudentController::documents', ['filter' => 'studentauth']);
 $routes->post('/student/submit-document', 'StudentController::submitDocument', ['filter' => 'studentauth']);
 $routes->get('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);
 $routes->post('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);
