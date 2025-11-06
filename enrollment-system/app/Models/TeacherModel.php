@@ -83,6 +83,8 @@ class TeacherModel extends Model
         // Get subject assignments
         $assignments = $db->table('teacher_subject_assignments tsa')
                          ->select('tsa.*, s.name as subject_name, s.code as subject_code,
+                                  s.grade_level as subject_grade_level, s.semester as subject_semester,
+                                  s.quarter as subject_quarter, s.curriculum_id, s.strand_id,
                                   sec.name as section_name, sec.grade_level as section_grade_level,
                                   sy.name as school_year')
                          ->join('subjects s', 's.id = tsa.subject_id')

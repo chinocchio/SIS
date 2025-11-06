@@ -212,36 +212,90 @@
                 
                 <?php if (!empty($assignments)): ?>
                     <div class="assignments-grid">
-                        <?php foreach ($assignments as $assignment): ?>
+                        <?php foreach ($assignments as $assignment): 
+                            $base = $assignment['base_assignment'];
+                            $isJHS = $assignment['is_jhs'];
+                            $isSHS = $assignment['is_shs'];
+                            $gradeLevel = $assignment['grade_level'];
+                            $groupedSubjects = $assignment['grouped_subjects'];
+                        ?>
                             <div class="assignment-card">
                                 <div class="assignment-header">
-                                    <h4><?= esc($assignment['subject_name']) ?></h4>
-                                    <p><?= esc($assignment['section_name']) ?> - Grade <?= $assignment['section_grade_level'] ?></p>
+                                    <h4><?= esc($base['subject_name']) ?></h4>
+                                    <p><?= esc($base['section_name']) ?> - Grade <?= $base['section_grade_level'] ?>
+                                        <?php if ($isJHS): ?>
+                                            <span style="color: #1cc88a; font-weight: bold;">(JHS)</span>
+                                        <?php elseif ($isSHS): ?>
+                                            <span style="color: #4e73df; font-weight: bold;">(SHS)</span>
+                                        <?php endif; ?>
+                                    </p>
                                 </div>
                                 
                                 <div class="assignment-content">
                                     <div class="assignment-stats">
                                         <div class="stat-item">
-                                            <div class="stat-number"><?= esc($assignment['subject_code']) ?></div>
+                                            <div class="stat-number"><?= esc($base['subject_code']) ?></div>
                                             <div class="stat-label">Subject Code</div>
                                         </div>
                                         <div class="stat-item">
-                                            <div class="stat-number"><?= esc($assignment['school_year']) ?></div>
+                                            <div class="stat-number"><?= esc($base['school_year']) ?></div>
                                             <div class="stat-label">School Year</div>
                                         </div>
                                     </div>
                                     
-                                    <div class="action-buttons">
-                                        <a href="/teacher/grades/<?= $assignment['section_id'] ?>?subject_id=<?= $assignment['subject_id'] ?>" class="btn btn-success">
-                                            📝 Input Grades
-                                        </a>
-                                        <!-- <a href="/teacher/students/<?= $assignment['section_id'] ?>" class="btn btn-info">
-                                            👥 View Students
-                                        </a>
-                                        <a href="/teacher/reports/<?= $assignment['section_id'] ?>" class="btn btn-secondary">
-                                            📋 Reports
-                                        </a> -->
-                                    </div>
+                                    <?php if ($isJHS): ?>
+                                        <!-- JHS: Display Quarters 1-4 -->
+                                        <div style="margin-top: 20px;">
+                                            <h5 style="margin-bottom: 15px; color: #495057; font-size: 14px; font-weight: bold;">Quarters:</h5>
+                                            <div class="action-buttons">
+                                                <?php for ($q = 1; $q <= 4; $q++): 
+                                                    $quarterKey = 'quarter_' . $q;
+                                                    if (isset($groupedSubjects[$quarterKey])) {
+                                                        $quarterSubject = $groupedSubjects[$quarterKey]['subjects'][0]; // Get first subject for this quarter
+                                                ?>
+                                                    <a href="/teacher/grades/<?= $base['section_id'] ?>?subject_id=<?= $quarterSubject['id'] ?>" 
+                                                       class="btn btn-success" 
+                                                       style="flex: 1; min-width: 80px;">
+                                                        📝 Q<?= $q ?>
+                                                    </a>
+                                                <?php } else { ?>
+                                                    <div class="btn btn-secondary" style="flex: 1; min-width: 80px; opacity: 0.5; cursor: not-allowed;">
+                                                        Q<?= $q ?>
+                                                    </div>
+                                                <?php } ?>
+                                                <?php endfor; ?>
+                                            </div>
+                                        </div>
+                                    <?php elseif ($isSHS): ?>
+                                        <!-- SHS: Display by Semester and Quarter -->
+                                        <div style="margin-top: 20px;">
+                                            <?php for ($sem = 1; $sem <= 2; $sem++): ?>
+                                                <h5 style="margin: 15px 0 10px 0; color: #495057; font-size: 14px; font-weight: bold;">
+                                                    Semester <?= $sem ?>:
+                                                </h5>
+                                                <div class="action-buttons" style="margin-bottom: 10px;">
+                                                    <?php 
+                                                    $quarters = $sem === 1 ? [1, 2] : [3, 4];
+                                                    foreach ($quarters as $q): 
+                                                        $quarterKey = 'semester_' . $sem . '_quarter_' . $q;
+                                                        if (isset($groupedSubjects[$quarterKey])) {
+                                                            $quarterSubject = $groupedSubjects[$quarterKey]['subjects'][0]; // Get first subject for this quarter
+                                                    ?>
+                                                        <a href="/teacher/grades/<?= $base['section_id'] ?>?subject_id=<?= $quarterSubject['id'] ?>" 
+                                                           class="btn btn-success" 
+                                                           style="flex: 1; min-width: 80px;">
+                                                            📝Input grade S<?= $sem ?> Q<?= $q ?>
+                                                        </a>
+                                                    <?php } else { ?>
+                                                        <div class="btn btn-secondary" style="flex: 1; min-width: 80px; opacity: 0.5; cursor: not-allowed;">
+                                                            S<?= $sem ?> Q<?= $q ?>
+                                                        </div>
+                                                    <?php } ?>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            <?php endfor; ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         <?php endforeach; ?>

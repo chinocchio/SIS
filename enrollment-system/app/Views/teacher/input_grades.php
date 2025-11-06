@@ -298,7 +298,7 @@
         <?php endif; ?>
         
         <!-- Subject Selection -->
-        <?php if (count($assignedSubjects) > 1): ?>
+        <!-- <?php if (count($assignedSubjects) > 1): ?>
         <div class="subject-info">
             <h2>📚 Select Subject for Grade Input</h2>
             <div class="subject-selector">
@@ -312,7 +312,7 @@
                 </select>
             </div>
         </div>
-        <?php endif; ?>
+        <?php endif; ?> -->
         
         <!-- Subject Information -->
         <div class="subject-info">

@@ -817,8 +817,13 @@ class AdminController extends BaseController
             $isCore = $this->request->getPost('is_core') ?? 'core';
             $isActive = $this->request->getPost('is_active') ? 1 : 0;
             
+            // Get existing subject values for validation
+            $gradeLevel = $subject['grade_level'] ?? 7;
+            $semester = $subject['semester'] ?? null;
+            $quarter = $subject['quarter'] ?? 1;
+            
             // Check if subject code is unique within the curriculum (excluding current subject)
-            if (!$subjectModel->isCodeUniqueInCurriculum($code, $curriculumId, $id)) {
+            if (!$subjectModel->isCodeUniqueInCurriculum($code, $curriculumId, $gradeLevel, $semester, $quarter, $id)) {
                 return redirect()->to('/admin/subjects/edit/' . $id)->with('error', 'Subject code already exists in this curriculum.');
             }
             

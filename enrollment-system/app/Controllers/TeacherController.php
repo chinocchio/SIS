@@ -311,13 +311,96 @@ class TeacherController extends BaseController
         $teacherId = session()->get('user_id');
         $teacherModel = new TeacherModel();
         $schoolYearModel = new SchoolYearModel();
+        $db = \Config\Database::connect();
         
         // Get teacher's assigned subjects and sections
         $assignments = $teacherModel->getTeacherWithAssignments($teacherId);
         $activeSchoolYear = $schoolYearModel->getActiveSchoolYear();
         
+        $processedAssignments = [];
+        $seenSubjects = []; // Track unique subject+section combinations
+        
+        if (!empty($assignments['assignments'])) {
+            foreach ($assignments['assignments'] as $assignment) {
+                // Create unique key: subject_name + section_id + grade_level
+                $key = $assignment['subject_name'] . '_' . $assignment['section_id'] . '_' . $assignment['subject_grade_level'];
+                
+                if (!isset($seenSubjects[$key])) {
+                    $seenSubjects[$key] = true;
+                    
+                    // Get all subjects with the same name and grade_level
+                    $allSubjects = $db->table('subjects s')
+                        ->select('s.*')
+                        ->where('s.name', $assignment['subject_name'])
+                        ->where('s.grade_level', $assignment['subject_grade_level'])
+                        ->where('s.is_active', 1)
+                        ->orderBy('s.semester', 'ASC')
+                        ->orderBy('s.quarter', 'ASC')
+                        ->get()
+                        ->getResultArray();
+                    
+                    // Determine if JHS or SHS based on grade level
+                    $gradeLevel = (int)$assignment['subject_grade_level'];
+                    $isJHS = $gradeLevel < 10; // Grades 7, 8, 9 are JHS
+                    $isSHS = $gradeLevel >= 11; // Grades 11, 12 are SHS
+                    
+                    // Group subjects by quarter (JHS) or semester+quarter (SHS)
+                    $groupedSubjects = [];
+                    
+                    if ($isJHS) {
+                        // JHS: Group by quarter (1-4)
+                        for ($q = 1; $q <= 4; $q++) {
+                            $quarterSubjects = array_filter($allSubjects, function($s) use ($q) {
+                                return (int)$s['quarter'] === $q;
+                            });
+                            
+                            if (!empty($quarterSubjects)) {
+                                $groupedSubjects['quarter_' . $q] = [
+                                    'quarter' => $q,
+                                    'subjects' => array_values($quarterSubjects)
+                                ];
+                            }
+                        }
+                    } elseif ($isSHS) {
+                        // SHS: Group by semester and quarter
+                        // Semester 1: Quarters 1-2
+                        // Semester 2: Quarters 3-4
+                        for ($sem = 1; $sem <= 2; $sem++) {
+                            $quarters = $sem === 1 ? [1, 2] : [3, 4];
+                            
+                            foreach ($quarters as $q) {
+                                $quarterSubjects = array_filter($allSubjects, function($s) use ($sem, $q) {
+                                    return (int)$s['semester'] === $sem && (int)$s['quarter'] === $q;
+                                });
+                                
+                                if (!empty($quarterSubjects)) {
+                                    $groupKey = 'semester_' . $sem . '_quarter_' . $q;
+                                    $groupedSubjects[$groupKey] = [
+                                        'semester' => $sem,
+                                        'quarter' => $q,
+                                        'subjects' => array_values($quarterSubjects)
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (!empty($groupedSubjects)) {
+                        $processedAssignments[] = [
+                            'base_assignment' => $assignment,
+                            'is_jhs' => $isJHS,
+                            'is_shs' => $isSHS,
+                            'grade_level' => $gradeLevel,
+                            'grouped_subjects' => $groupedSubjects,
+                            'all_subjects' => $allSubjects
+                        ];
+                    }
+                }
+            }
+        }
+        
         $data = [
-            'assignments' => $assignments['assignments'] ?? [],
+            'assignments' => $processedAssignments,
             'activeSchoolYear' => $activeSchoolYear
         ];
         
