@@ -18,7 +18,7 @@ class TeacherModel extends Model
         'last_name' => 'required|min_length[2]|max_length[100]',
         'email' => 'required|valid_email|is_unique[teachers.email,id,{id}]',
         'username' => 'required|min_length[3]|max_length[100]|is_unique[teachers.username,id,{id}]',
-        'password' => 'required|min_length[6]'
+        'password' => 'permit_empty|min_length[6]'
     ];
     
     protected $validationMessages = [

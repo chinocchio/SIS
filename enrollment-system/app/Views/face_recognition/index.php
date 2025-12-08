@@ -254,7 +254,7 @@
         <?php endif; ?>
         
         <!-- Quick Actions -->
-        <div class="quick-actions">
+        <!-- <div class="quick-actions">
             <h3>⚡ Quick Actions</h3>
             <div class="action-buttons">
                 <a href="/face-recognition/test" class="btn btn-warning">🧪 Test Camera</a>
@@ -263,7 +263,7 @@
                 <a href="/teacher/grades" class="btn btn-secondary">📊 Grade Management</a>
                 <a href="/auth/change-password" class="btn btn-secondary">🔒 Change Password</a> -->
             </div>
-        </div>
+        </div> -->
     <?php include __DIR__ . '/../teacher/partials/layout_end.php'; ?>
 
     <script>
