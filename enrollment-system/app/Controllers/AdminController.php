@@ -1366,7 +1366,10 @@ class AdminController extends BaseController
         }
         
         $studentModel = new StudentModel();
-        $student = $studentModel->find($id);
+        $strandModel = new StrandModel();
+        $curriculumModel = new CurriculumModel();
+        
+        $student = $studentModel->getStudentWithDetails($id);
         
         if (!$student) {
             return redirect()->to('/admin/students')->with('error', 'Student not found');
@@ -1374,24 +1377,85 @@ class AdminController extends BaseController
         
         if ($this->request->getMethod() === 'POST') {
             // Handle update
+            $postedFullName = trim((string)$this->request->getPost('full_name'));
+            $firstName = trim((string)$this->request->getPost('first_name'));
+            $middleName = trim((string)$this->request->getPost('middle_name'));
+            $lastName = trim((string)$this->request->getPost('last_name'));
+
+            // If only full_name is provided (new UI), parse it to parts
+            if ($postedFullName && (!$firstName && !$lastName)) {
+                $parts = preg_split('/\s+/', $postedFullName);
+                $firstName = $parts ? array_shift($parts) : '';
+                $lastName = $parts ? array_pop($parts) : '';
+                $middleName = !empty($parts) ? implode(' ', $parts) : null;
+            }
+
+            // Build full_name consistently
+            $computedFullName = trim(implode(' ', array_filter([$firstName, $middleName, $lastName], fn($v) => $v !== null && $v !== '')));
+            if (!$computedFullName && $postedFullName) {
+                $computedFullName = $postedFullName;
+            }
+            
             $data = [
-                'first_name' => $this->request->getPost('first_name'),
-                'last_name' => $this->request->getPost('last_name'),
-                'middle_name' => $this->request->getPost('middle_name'),
+                'lrn' => $this->request->getPost('lrn'),
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'middle_name' => $middleName !== '' ? $middleName : null,
+                'full_name' => $computedFullName,
+                'email' => $this->request->getPost('email'),
+                'birth_date' => $this->request->getPost('birth_date'),
+                'gender' => $this->request->getPost('gender'),
                 'grade_level' => $this->request->getPost('grade_level'),
+                'previous_grade_level' => $this->request->getPost('previous_grade_level'),
                 'enrollment_type' => $this->request->getPost('enrollment_type'),
+                'admission_type' => $this->request->getPost('admission_type'),
+                'strand_id' => $this->request->getPost('strand_id') ?: null,
+                'curriculum_id' => $this->request->getPost('curriculum_id') ?: null,
+                'previous_school' => $this->request->getPost('previous_school'),
+                'previous_school_year' => $this->request->getPost('previous_school_year'),
                 'status' => $this->request->getPost('status')
             ];
             
+            // Update password only if provided
+            if ($this->request->getPost('password')) {
+                $data['password'] = password_hash($this->request->getPost('password'), PASSWORD_DEFAULT);
+            }
+            
+            // Check if LRN already exists (excluding current student)
+            $existingLrn = $studentModel->where('lrn', $data['lrn'])->where('id !=', $id)->first();
+            if ($existingLrn) {
+                return redirect()->to('/admin/students/edit/' . $id)->with('error', 'LRN already exists in the system');
+            }
+            
+            // Check if email already exists (excluding current student)
+            $existingEmail = $studentModel->where('email', $data['email'])->where('id !=', $id)->first();
+            if ($existingEmail) {
+                return redirect()->to('/admin/students/edit/' . $id)->with('error', 'Email already exists in the system');
+            }
+            
             try {
-                $studentModel->update($id, $data);
-                return redirect()->to('/admin/students')->with('success', 'Student updated successfully');
+                if ($studentModel->update($id, $data)) {
+                    return redirect()->to('/admin/students')->with('success', 'Student updated successfully');
+                } else {
+                    $errors = $studentModel->errors();
+                    $message = 'Failed to update student. Please check your input.';
+                    if (!empty($errors)) {
+                        $message .= ' ' . implode(' ', array_values($errors));
+                    }
+                    return redirect()->to('/admin/students/edit/' . $id)->with('error', $message);
+                }
             } catch (\Exception $e) {
-                return redirect()->to('/admin/students')->with('error', 'Error updating student: ' . $e->getMessage());
+                return redirect()->to('/admin/students/edit/' . $id)->with('error', 'Error updating student: ' . $e->getMessage());
             }
         }
         
-        return view('admin/edit_student', ['student' => $student]);
+        $data = [
+            'student' => $student,
+            'strands' => $strandModel->findAll(),
+            'curriculums' => $curriculumModel->findAll()
+        ];
+        
+        return view('admin/edit_student', $data);
     }
     
     public function updateStudent($id = null)

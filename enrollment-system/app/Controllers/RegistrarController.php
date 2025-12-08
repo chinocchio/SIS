@@ -112,10 +112,10 @@ class RegistrarController extends BaseController
              return $this->exportStudents($query);
          }
          
-         // Get paginated results
-         $pager = $studentModel->pager;
-         $students = $query->orderBy('created_at', 'DESC')
-                           ->paginate(20);
+        // Get paginated results
+        $students = $query->orderBy('created_at', 'DESC')
+                          ->paginate(15);
+        $pager = $query->pager;
          
          // Calculate summary statistics
          $totalStudents = $studentModel->countAllResults();
@@ -356,12 +356,31 @@ class RegistrarController extends BaseController
         }
 
         // Get form data
+        $postedFullName = trim((string)$this->request->getPost('full_name'));
+        $firstName = trim((string)$this->request->getPost('first_name'));
+        $middleName = trim((string)$this->request->getPost('middle_name'));
+        $lastName = trim((string)$this->request->getPost('last_name'));
+
+        // If only full_name is provided (new UI), parse it to parts
+        if ($postedFullName && (!$firstName && !$lastName)) {
+            $parts = preg_split('/\s+/', $postedFullName);
+            $firstName = $parts ? array_shift($parts) : '';
+            $lastName = $parts ? array_pop($parts) : '';
+            $middleName = !empty($parts) ? implode(' ', $parts) : null;
+        }
+
+        // Build full_name consistently
+        $computedFullName = trim(implode(' ', array_filter([$firstName, $middleName, $lastName], fn($v) => $v !== null && $v !== '')));
+        if (!$computedFullName && $postedFullName) {
+            $computedFullName = $postedFullName;
+        }
+
         $data = [
             'lrn' => $this->request->getPost('lrn'),
-            'first_name' => $this->request->getPost('first_name'),
-            'last_name' => $this->request->getPost('last_name'),
-            'middle_name' => $this->request->getPost('middle_name'),
-            'full_name' => trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('middle_name') . ' ' . $this->request->getPost('last_name')),
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'middle_name' => $middleName !== '' ? $middleName : null,
+            'full_name' => $computedFullName,
             'email' => $this->request->getPost('email'),
             'birth_date' => $this->request->getPost('birth_date'),
             'gender' => $this->request->getPost('gender'),
@@ -375,14 +394,17 @@ class RegistrarController extends BaseController
             'previous_school_year' => $this->request->getPost('previous_school_year')
         ];
 
+        // Ensure validation placeholders like {id} in model rules are populated
+        $data['id'] = $studentId;
+
         // Update password only if provided
         if ($this->request->getPost('password')) {
             $data['password'] = password_hash($this->request->getPost('password'), PASSWORD_DEFAULT);
         }
 
         // Validate required fields
-        if (empty($data['lrn']) || empty($data['first_name']) || empty($data['last_name'])) {
-            return redirect()->to('/registrar/students/edit/' . $studentId)->with('error', 'LRN, First Name, and Last Name are required');
+        if (empty($data['lrn']) || empty($data['full_name'])) {
+            return redirect()->to('/registrar/students/edit/' . $studentId)->with('error', 'LRN and Full Name are required');
         }
 
         // Check if LRN already exists (excluding current student)
@@ -401,7 +423,12 @@ class RegistrarController extends BaseController
             if ($studentModel->update($studentId, $data)) {
                 return redirect()->to('/registrar/students')->with('success', 'Student updated successfully!');
             } else {
-                return redirect()->to('/registrar/students/edit/' . $studentId)->with('error', 'Failed to update student. Please check your input.');
+                $errors = $studentModel->errors();
+                $message = 'Failed to update student. Please check your input.';
+                if (!empty($errors)) {
+                    $message .= ' ' . implode(' ', array_values($errors));
+                }
+                return redirect()->to('/registrar/students/edit/' . $studentId)->with('error', $message);
             }
         } catch (\Exception $e) {
             log_message('error', 'Student update error: ' . $e->getMessage());

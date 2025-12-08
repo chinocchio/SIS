@@ -19,10 +19,13 @@ class StudentModel extends Model
     ];
     
     protected $validationRules = [
-        'lrn' => 'required|min_length[12]|max_length[12]|is_unique[students.lrn,id,{id}]',
+        // Uniqueness is checked in controllers to avoid placeholder issues
+        'lrn' => 'required|min_length[12]|max_length[12]',
         'full_name' => 'required|min_length[2]|max_length[255]',
-        'email' => 'required|valid_email|is_unique[students.email,id,{id}]',
-        'password' => 'required|min_length[6]'
+        'email' => 'required|valid_email',
+        // Password is required on create but optional on update
+        // Using permit_empty allows updates without changing password
+        'password' => 'permit_empty|min_length[6]'
         // Removed strict validation for other fields to allow minimal student creation
     ];
     
