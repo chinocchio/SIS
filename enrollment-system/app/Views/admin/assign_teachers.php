@@ -6,33 +6,36 @@
     <title>Assign Teachers to Subjects - Admin Dashboard</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: #f5f6fb;
+            padding: 0;
+            background-color: #f8f9fc;
+            color: #5a5c69;
         }
         
         .container {
-            max-width: 1400px;
+            width: 100%;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
         
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
             margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e9ecef;
         }
         
         .header h1 {
-            color: #333;
             margin: 0;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
         
         .btn {
@@ -248,12 +251,15 @@
             }
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>👨‍🏫 Assign Teachers to Subjects</h1>
-            <div>
+            <p>Assign teachers to subjects and sections for the current school year</p>
+            <div style="margin-top: 15px;">
                 <a href="/admin/teachers" class="btn btn-secondary">← Back to Teachers</a>
                 <a href="/admin/dashboard" class="btn">Dashboard</a>
             </div>
@@ -272,7 +278,8 @@
         <?php endif; ?>
         
         <!-- Statistics -->
-        <div class="stats-grid">
+        <div class="card">
+            <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number"><?= $totalTeachers ?></div>
                 <div class="stat-label">Total Teachers</div>
@@ -290,9 +297,11 @@
                 <div class="stat-label">Available Sections</div>
             </div>
         </div>
+        </div>
         
         <!-- Assignment Form -->
-        <div class="assignment-form">
+        <div class="card">
+            <div class="assignment-form">
             <h4>➕ Assign Teacher to Subject</h4>
             <?php if ($activeSchoolYear): ?>
                 <form method="POST" action="/admin/teachers/assign-subject">
@@ -437,14 +446,97 @@
                     <a href="/admin/create-school-year" class="btn btn-warning">Create School Year</a>
                 </div>
             <?php endif; ?>
+            </div>
         </div>
         
         <!-- Current Assignments -->
-        <div class="filters-section">
+        <div class="card">
+            <div class="filters-section">
             <h3>📋 Current Teacher Assignments</h3>
             
+            <!-- Filter Controls -->
+            <div class="filters-grid">
+                <div class="form-group">
+                    <label for="filter_teacher">Filter by Teacher</label>
+                    <select id="filter_teacher" onchange="filterAssignments()">
+                        <option value="">All Teachers</option>
+                        <?php if (!empty($assignments)): ?>
+                            <?php 
+                            $uniqueTeachers = [];
+                            foreach ($assignments as $assignment) {
+                                $teacherName = $assignment['teacher_name'] ?? 'Unknown';
+                                if (!in_array($teacherName, $uniqueTeachers)) {
+                                    $uniqueTeachers[] = $teacherName;
+                                }
+                            }
+                            foreach ($uniqueTeachers as $teacherName): ?>
+                                <option value="<?= esc($teacherName) ?>"><?= esc($teacherName) ?></option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="filter_subject">Filter by Subject</label>
+                    <select id="filter_subject" onchange="filterAssignments()">
+                        <option value="">All Subjects</option>
+                        <?php if (!empty($assignments)): ?>
+                            <?php 
+                            $uniqueSubjects = [];
+                            foreach ($assignments as $assignment) {
+                                $subjectName = $assignment['subject_name'] ?? 'Unknown';
+                                if (!in_array($subjectName, $uniqueSubjects)) {
+                                    $uniqueSubjects[] = $subjectName;
+                                }
+                            }
+                            foreach ($uniqueSubjects as $subjectName): ?>
+                                <option value="<?= esc($subjectName) ?>"><?= esc($subjectName) ?></option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="filter_section">Filter by Section</label>
+                    <select id="filter_section" onchange="filterAssignments()">
+                        <option value="">All Sections</option>
+                        <?php if (!empty($assignments)): ?>
+                            <?php 
+                            $uniqueSections = [];
+                            foreach ($assignments as $assignment) {
+                                $sectionName = $assignment['section_name'] ?? 'Unknown';
+                                if (!in_array($sectionName, $uniqueSections)) {
+                                    $uniqueSections[] = $sectionName;
+                                }
+                            }
+                            foreach ($uniqueSections as $sectionName): ?>
+                                <option value="<?= esc($sectionName) ?>"><?= esc($sectionName) ?></option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="filter_status">Filter by Status</label>
+                    <select id="filter_status" onchange="filterAssignments()">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="search_box">Search</label>
+                    <input type="text" id="search_box" placeholder="Search assignments..." onkeyup="filterAssignments()">
+                </div>
+                
+                <div class="form-group">
+                    <button type="button" class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+                </div>
+            </div>
+            
             <?php if (!empty($assignments) && is_array($assignments)): ?>
-                <table class="assignments-table">
+                <table class="assignments-table" id="assignmentsTable">
                     <thead>
                         <tr>
                             <th>Teacher</th>
@@ -458,7 +550,11 @@
                     </thead>
                     <tbody>
                         <?php foreach ($assignments as $assignment): ?>
-                            <tr>
+                            <tr data-teacher="<?= esc($assignment['teacher_name'] ?? 'Unknown') ?>" 
+                                data-subject="<?= esc($assignment['subject_name'] ?? 'Unknown') ?>"
+                                data-section="<?= esc($assignment['section_name'] ?? 'Unknown') ?>"
+                                data-status="<?= $assignment['is_active'] ? 'active' : 'inactive' ?>"
+                                data-search-text="<?= esc(strtolower($assignment['teacher_name'] . ' ' . $assignment['subject_name'] . ' ' . $assignment['section_name'] . ' ' . $assignment['school_year'])) ?>">
                                 <td>
                                     <strong><?= esc($assignment['teacher_name'] ?? 'Unknown') ?></strong>
                                 </td>
@@ -494,7 +590,94 @@
                     <p>No teacher assignments found.</p>
                 </div>
             <?php endif; ?>
+            </div>
         </div>
     </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
+    </div>
+    
+    <script>
+        function filterAssignments() {
+            const teacherFilter = document.getElementById('filter_teacher').value.toLowerCase();
+            const subjectFilter = document.getElementById('filter_subject').value.toLowerCase();
+            const sectionFilter = document.getElementById('filter_section').value.toLowerCase();
+            const statusFilter = document.getElementById('filter_status').value.toLowerCase();
+            const searchText = document.getElementById('search_box').value.toLowerCase();
+            
+            const table = document.getElementById('assignmentsTable');
+            const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const teacher = row.getAttribute('data-teacher').toLowerCase();
+                const subject = row.getAttribute('data-subject').toLowerCase();
+                const section = row.getAttribute('data-section').toLowerCase();
+                const status = row.getAttribute('data-status').toLowerCase();
+                const searchData = row.getAttribute('data-search-text');
+                
+                let showRow = true;
+                
+                // Filter by teacher
+                if (teacherFilter && !teacher.includes(teacherFilter)) {
+                    showRow = false;
+                }
+                
+                // Filter by subject
+                if (subjectFilter && !subject.includes(subjectFilter)) {
+                    showRow = false;
+                }
+                
+                // Filter by section
+                if (sectionFilter && !section.includes(sectionFilter)) {
+                    showRow = false;
+                }
+                
+                // Filter by status
+                if (statusFilter && status !== statusFilter) {
+                    showRow = false;
+                }
+                
+                // Filter by search text
+                if (searchText && !searchData.includes(searchText)) {
+                    showRow = false;
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            }
+            
+            // Update row count or show no results message
+            updateRowCount();
+        }
+        
+        function clearFilters() {
+            document.getElementById('filter_teacher').value = '';
+            document.getElementById('filter_subject').value = '';
+            document.getElementById('filter_section').value = '';
+            document.getElementById('filter_status').value = '';
+            document.getElementById('search_box').value = '';
+            
+            filterAssignments();
+        }
+        
+        function updateRowCount() {
+            const table = document.getElementById('assignmentsTable');
+            const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+            let visibleCount = 0;
+            
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].style.display !== 'none') {
+                    visibleCount++;
+                }
+            }
+            
+            // You can add a counter display here if needed
+            console.log('Visible rows:', visibleCount);
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            filterAssignments();
+        });
+    </script>
 </body>
 </html>

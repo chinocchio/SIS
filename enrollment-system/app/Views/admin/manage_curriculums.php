@@ -6,14 +6,15 @@
     <title>Manage Curriculums - Admin</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            background-color: #f8f9fc;
+            color: #5a5c69;
         }
         
         .container {
-            max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
         }
         
@@ -201,22 +202,16 @@
             background-color: #fff3cd;
             color: #856404;
         }
+        
+        .main-content {
+            padding: 1.5rem;
+            min-height: 100vh;
+        }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
-    <div class="container">
-        <div class="nav">
-            <div>
-                <a href="/admin" class="btn">← Back to Dashboard</a>
-            </div>
-            <div>
-                <h2>Curriculum Management</h2>
-            </div>
-            <div>
-                <a href="/admin/subjects" class="btn btn-info">📚 Manage Subjects</a>
-                <a href="/auth/logout" class="btn btn-danger">Logout</a>
-            </div>
-        </div>
+    <?php include __DIR__ . '/partials/layout_start.php'; ?>
         
         <div class="header">
             <h1>Manage Curriculums</h1>
@@ -263,10 +258,8 @@
                     <button type="reset" class="btn btn-secondary">Reset Form</button>
                 </div>
             </form>
-        </div>
-        
-        <!-- Curriculums List -->
-        <div class="card">
+
+            <div class="card">
             <h3>All Curriculums</h3>
             <table class="table">
                                  <thead>
@@ -306,6 +299,10 @@
                 </tbody>
             </table>
         </div>
+        </div>
+        
+        <!-- Curriculums List -->
+
         
         <!-- Edit Curriculum Modal -->
         <div id="editModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
@@ -337,9 +334,10 @@
                 </form>
             </div>
         </div>
-    </div>
+        
+    <?php include __DIR__ . '/partials/layout_end.php'; ?>
     
-         <script>
+    <script>
         function editCurriculum(id, name, description, isActive) {
             document.getElementById('edit_name').value = name;
             document.getElementById('edit_description').value = description || '';

@@ -8,7 +8,7 @@ class DocumentModel extends Model
 {
     protected $table = 'documents';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['student_id', 'document_type', 'file_path', 'status', 'uploaded_at'];
+    protected $allowedFields = ['student_id', 'document_type', 'file_path', 'original_filename', 'file_size', 'description', 'status', 'uploaded_at'];
     public $useTimestamps = false;
 
     public function getDocumentsByStudent(int $studentId)

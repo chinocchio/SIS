@@ -9,13 +9,7 @@ use App\Models\DocumentModel;
 
 class RegistrarController extends BaseController
 {
-    public function __construct()
-    {
-        // Check if user is logged in and is a registrar
-        if (!session()->get('is_logged_in') || session()->get('role') !== 'registrar') {
-            return redirect()->to('/auth/login');
-        }
-    }
+    // Auth for registrar is enforced via the 'registrarauth' route filter
     
     public function index()
     {
@@ -118,14 +112,14 @@ class RegistrarController extends BaseController
              return $this->exportStudents($query);
          }
          
-         // Get paginated results
-         $pager = $studentModel->pager;
-         $students = $query->orderBy('created_at', 'DESC')
-                           ->paginate(20);
+        // Get paginated results
+        $students = $query->orderBy('created_at', 'DESC')
+                          ->paginate(15);
+        $pager = $query->pager;
          
          // Calculate summary statistics
          $totalStudents = $studentModel->countAllResults();
-         $draftStudents = $studentModel->where('status', 'draft')->countAllResults();
+         $rejectedStudents = $studentModel->where('status', 'rejected')->countAllResults();
          $pendingStudents = $studentModel->where('status', 'pending')->countAllResults();
          $approvedStudents = $studentModel->where('status', 'approved')->countAllResults();
          
@@ -138,7 +132,7 @@ class RegistrarController extends BaseController
              'enrollment_filter' => $enrollment_filter,
              'admission_filter' => $admission_filter,
              'totalStudents' => $totalStudents,
-             'draftStudents' => $draftStudents,
+             'rejectedStudents' => $rejectedStudents,
              'pendingStudents' => $pendingStudents,
              'approvedStudents' => $approvedStudents
          ];
@@ -245,37 +239,37 @@ class RegistrarController extends BaseController
 
         $studentModel = new StudentModel();
         
-        // Get registrar's full name from session
-        $registrarFirstName = session()->get('first_name');
-        $registrarLastName = session()->get('last_name');
-        $registrarFullName = trim($registrarFirstName . ' ' . $registrarLastName);
+        // Get registrar's ID from session
+        $registrarId = session()->get('user_id');
         
-        // Get form data
+        // Get form data - align with database schema
         $data = [
             'lrn' => $this->request->getPost('lrn'),
-            'first_name' => $this->request->getPost('first_name'),
-            'last_name' => $this->request->getPost('last_name'),
-            'middle_name' => $this->request->getPost('middle_name'),
-            'full_name' => trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('middle_name') . ' ' . $this->request->getPost('last_name')),
+            'first_name' => '', // Empty since we're using full_name only
+            'last_name' => '', // Empty since we're using full_name only
+            'middle_name' => null, // Null since we're using full_name only
+            'full_name' => trim($this->request->getPost('full_name')),
             'email' => $this->request->getPost('email'),
             'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'birth_date' => $this->request->getPost('birth_date'),
-            'gender' => $this->request->getPost('gender'),
+            'birth_date' => $this->request->getPost('birth_date') ?: null,
+            'gender' => $this->request->getPost('gender') ?: null,
             'grade_level' => $this->request->getPost('grade_level'),
-            'previous_grade_level' => $this->request->getPost('previous_grade_level'),
-            'admission_type' => $this->request->getPost('admission_type'),
-            'enrollment_type' => $this->request->getPost('enrollment_type'),
+            'previous_grade_level' => null, // Not collected in form anymore
+            'admission_type' => $this->request->getPost('admission_type') ?: 'regular',
+            'enrollment_type' => $this->request->getPost('enrollment_type') ?: 'new',
+            'previous_school' => null, // Not collected in form anymore
             'strand_id' => $this->request->getPost('strand_id') ?: null,
             'curriculum_id' => $this->request->getPost('curriculum_id') ?: null,
-            'previous_school' => $this->request->getPost('previous_school'),
-            'status' => 'approved', // Registrar can directly approve
-            'approved_by' => $registrarFullName,
-            'approved_at' => date('Y-m-d H:i:s')
+            'section_id' => null, // Will be assigned later
+            'previous_section_id' => null,
+            'previous_school_year' => null,
+            'status' => 'pending', // Student needs to be approved separately
+            'approved_by' => null // Will be set when approved
         ];
 
         // Validate required fields
-        if (empty($data['lrn']) || empty($data['first_name']) || empty($data['last_name'])) {
-            return redirect()->to('/registrar/students/add')->with('error', 'LRN, First Name, and Last Name are required');
+        if (empty($data['lrn']) || empty($data['full_name'])) {
+            return redirect()->to('/registrar/students/add')->with('error', 'LRN and Full Name are required');
         }
 
         // Check if LRN already exists
@@ -288,14 +282,34 @@ class RegistrarController extends BaseController
             return redirect()->to('/registrar/students/add')->with('error', 'Email already exists in the system');
         }
 
+        // Log the data being inserted for debugging
+        log_message('info', 'Attempting to create student with data: ' . json_encode($data, JSON_PRETTY_PRINT));
+        
+        // Clean up the data array - remove null values that might cause issues
+        $cleanData = array_filter($data, function($value) {
+            return $value !== null && $value !== '';
+        });
+        
+        log_message('info', 'Cleaned data for insertion: ' . json_encode($cleanData, JSON_PRETTY_PRINT));
+
         try {
-            if ($studentModel->insert($data)) {
-                return redirect()->to('/registrar/students')->with('success', 'Student created and approved successfully!');
+            // Check if insert was successful
+            $result = $studentModel->insert($cleanData);
+            
+            if ($result) {
+                log_message('info', 'Student created successfully with ID: ' . $result);
+                return redirect()->to('/registrar/students')->with('success', 'Student created successfully! Status: Pending approval.');
             } else {
-                return redirect()->to('/registrar/students/add')->with('error', 'Failed to create student. Please check your input.');
+                // Get the last database error
+                $db = \Config\Database::connect();
+                $error = $db->error();
+                log_message('error', 'Student creation failed - Database error: ' . json_encode($error));
+                log_message('error', 'Student model errors: ' . json_encode($studentModel->errors()));
+                return redirect()->to('/registrar/students/add')->with('error', 'Failed to create student. Database error: ' . ($error['message'] ?? 'Unknown error'));
             }
         } catch (\Exception $e) {
-            log_message('error', 'Student creation error: ' . $e->getMessage());
+            log_message('error', 'Student creation exception: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
             return redirect()->to('/registrar/students/add')->with('error', 'Error creating student: ' . $e->getMessage());
         }
     }
@@ -342,12 +356,31 @@ class RegistrarController extends BaseController
         }
 
         // Get form data
+        $postedFullName = trim((string)$this->request->getPost('full_name'));
+        $firstName = trim((string)$this->request->getPost('first_name'));
+        $middleName = trim((string)$this->request->getPost('middle_name'));
+        $lastName = trim((string)$this->request->getPost('last_name'));
+
+        // If only full_name is provided (new UI), parse it to parts
+        if ($postedFullName && (!$firstName && !$lastName)) {
+            $parts = preg_split('/\s+/', $postedFullName);
+            $firstName = $parts ? array_shift($parts) : '';
+            $lastName = $parts ? array_pop($parts) : '';
+            $middleName = !empty($parts) ? implode(' ', $parts) : null;
+        }
+
+        // Build full_name consistently
+        $computedFullName = trim(implode(' ', array_filter([$firstName, $middleName, $lastName], fn($v) => $v !== null && $v !== '')));
+        if (!$computedFullName && $postedFullName) {
+            $computedFullName = $postedFullName;
+        }
+
         $data = [
             'lrn' => $this->request->getPost('lrn'),
-            'first_name' => $this->request->getPost('first_name'),
-            'last_name' => $this->request->getPost('last_name'),
-            'middle_name' => $this->request->getPost('middle_name'),
-            'full_name' => trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('middle_name') . ' ' . $this->request->getPost('last_name')),
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'middle_name' => $middleName !== '' ? $middleName : null,
+            'full_name' => $computedFullName,
             'email' => $this->request->getPost('email'),
             'birth_date' => $this->request->getPost('birth_date'),
             'gender' => $this->request->getPost('gender'),
@@ -361,14 +394,17 @@ class RegistrarController extends BaseController
             'previous_school_year' => $this->request->getPost('previous_school_year')
         ];
 
+        // Ensure validation placeholders like {id} in model rules are populated
+        $data['id'] = $studentId;
+
         // Update password only if provided
         if ($this->request->getPost('password')) {
             $data['password'] = password_hash($this->request->getPost('password'), PASSWORD_DEFAULT);
         }
 
         // Validate required fields
-        if (empty($data['lrn']) || empty($data['first_name']) || empty($data['last_name'])) {
-            return redirect()->to('/registrar/students/edit/' . $studentId)->with('error', 'LRN, First Name, and Last Name are required');
+        if (empty($data['lrn']) || empty($data['full_name'])) {
+            return redirect()->to('/registrar/students/edit/' . $studentId)->with('error', 'LRN and Full Name are required');
         }
 
         // Check if LRN already exists (excluding current student)
@@ -387,7 +423,12 @@ class RegistrarController extends BaseController
             if ($studentModel->update($studentId, $data)) {
                 return redirect()->to('/registrar/students')->with('success', 'Student updated successfully!');
             } else {
-                return redirect()->to('/registrar/students/edit/' . $studentId)->with('error', 'Failed to update student. Please check your input.');
+                $errors = $studentModel->errors();
+                $message = 'Failed to update student. Please check your input.';
+                if (!empty($errors)) {
+                    $message .= ' ' . implode(' ', array_values($errors));
+                }
+                return redirect()->to('/registrar/students/edit/' . $studentId)->with('error', $message);
             }
         } catch (\Exception $e) {
             log_message('error', 'Student update error: ' . $e->getMessage());
@@ -710,7 +751,48 @@ class RegistrarController extends BaseController
              ]);
          }
          
-         fclose($output);
-         exit;
-     }
+        fclose($output);
+        exit;
+    }
+    
+    public function changePassword()
+    {
+        if ($this->request->getMethod() === 'POST') {
+            $userId = session()->get('user_id');
+            $currentPassword = $this->request->getPost('current_password');
+            $newPassword = $this->request->getPost('new_password');
+            $confirmPassword = $this->request->getPost('confirm_password');
+            
+            // Validate passwords
+            if ($newPassword !== $confirmPassword) {
+                return redirect()->back()->with('error', 'New passwords do not match.');
+            }
+            
+            if (strlen($newPassword) < 6) {
+                return redirect()->back()->with('error', 'New password must be at least 6 characters long.');
+            }
+            
+            // Get current user data
+            $userModel = new UserModel();
+            $user = $userModel->find($userId);
+            
+            if (!$user) {
+                return redirect()->back()->with('error', 'User not found.');
+            }
+            
+            // Verify current password
+            if (!password_verify($currentPassword, $user['password'])) {
+                return redirect()->back()->with('error', 'Current password is incorrect.');
+            }
+            
+            // Update password
+            if ($userModel->updatePassword($userId, $newPassword)) {
+                return redirect()->back()->with('success', 'Password changed successfully!');
+            } else {
+                return redirect()->back()->with('error', 'Failed to update password.');
+            }
+        }
+        
+        return view('registrar/change_password');
+    }
 }

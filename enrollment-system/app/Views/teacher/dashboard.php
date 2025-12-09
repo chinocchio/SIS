@@ -8,72 +8,35 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: #f5f6fb;
+            padding: 0;
+            background: #f8f9fc;
         }
         
         .container {
-            max-width: 1400px;
+            width: 100%;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 0;
         }
         
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e9ecef;
+            padding: 2rem;
+            background: white;
+            border-bottom: 1px solid #e3e6f0;
         }
         
         .header h1 {
             color: #333;
             margin: 0;
+            font-size: 2rem;
         }
         
-        .btn {
-            background: #667eea;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            margin-left: 10px;
+        .header p {
+            color: #6c757d;
+            margin: 0.5rem 0 0 0;
         }
         
-        .btn:hover {
-            background: #5a6fd8;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-        
-        .btn-success {
-            background: #28a745;
-        }
-        
-        .btn-success:hover {
-            background: #218838;
-        }
-        
-        .btn-info {
-            background: #17a2b8;
-        }
-        
-        .btn-info:hover {
-            background: #138496;
+        .content {
+            padding: 2rem;
         }
         
         .alert {
@@ -95,43 +58,29 @@
         }
         
         .teacher-info {
-            background: #e3f2fd;
-            padding: 20px;
+            background: #e8f5e8;
+            padding: 25px;
             border-radius: 8px;
-            border: 1px solid #bbdefb;
+            border: 1px solid #c3e6cb;
             margin-bottom: 30px;
         }
         
         .teacher-info h2 {
             margin-top: 0;
-            color: #1976d2;
+            color: #155724;
         }
         
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        .school-year-info {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #c3e6cb;
+            margin-top: 15px;
         }
         
-        .stat-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            color: #6c757d;
-            font-size: 14px;
+        .school-year-info h4 {
+            margin-top: 0;
+            color: #155724;
         }
         
         .assignments-section {
@@ -155,44 +104,51 @@
             background: #f8f9fa;
             border: 1px solid #e9ecef;
             border-radius: 8px;
-            overflow: hidden;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .assignment-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
         }
         
         .assignment-header {
-            background: #667eea;
-            color: white;
-            padding: 15px;
+            margin-bottom: 15px;
         }
         
         .assignment-header h4 {
-            margin: 0;
-            font-size: 16px;
+            margin: 0 0 5px 0;
+            color: #333;
+            font-size: 18px;
         }
         
-        .assignment-header p {
-            margin: 5px 0 0 0;
+        .assignment-subject {
+            color: #6c757d;
             font-size: 14px;
-            opacity: 0.9;
+            font-weight: bold;
         }
         
         .assignment-content {
-            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .assignment-content p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #6c757d;
         }
         
         .students-list {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #e9ecef;
-            border-radius: 4px;
-            background: white;
+            margin: 15px 0;
         }
         
         .student-item {
-            padding: 8px 12px;
-            border-bottom: 1px solid #f1f3f4;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
         }
         
         .student-item:last-child {
@@ -205,24 +161,11 @@
         }
         
         .student-lrn {
+            color: #6c757d;
             font-size: 12px;
-            color: #6c757d;
-        }
-        
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-            font-style: italic;
-        }
-        
-        .no-data h4 {
-            color: #495057;
-            margin-bottom: 10px;
         }
         
         .action-buttons {
-            margin-top: 15px;
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
@@ -230,21 +173,20 @@
         
         .action-buttons .btn {
             margin: 0;
-            font-size: 12px;
-            padding: 6px 12px;
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
         }
         
-        .school-year-info {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
         }
         
-        .school-year-info h4 {
-            margin-top: 0;
-            color: #856404;
+        .no-data h4 {
+            margin-bottom: 10px;
+            color: #495057;
         }
         
         @media (max-width: 768px) {
@@ -252,138 +194,112 @@
                 grid-template-columns: 1fr;
             }
             
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .action-buttons .btn {
+                flex: none;
             }
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>👨‍🏫 Teacher Dashboard</h1>
-            <div>
-                <a href="/auth/logout" class="btn btn-secondary">🚪 Logout</a>
-            </div>
+            <p>Manage your assigned subjects and students from this dashboard.</p>
         </div>
         
-        <?php if (session()->getFlashdata('success')): ?>
-            <div class="alert alert-success">
-                <?= session()->getFlashdata('success') ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if (session()->getFlashdata('error')): ?>
-            <div class="alert alert-error">
-                <?= session()->getFlashdata('error') ?>
-            </div>
-        <?php endif; ?>
-        
-        <!-- Teacher Welcome Section -->
-        <div class="teacher-info">
-            <h2>Welcome, <?= esc(session()->get('first_name', 'Teacher') . ' ' . session()->get('last_name', '')) ?>!</h2>
-            <p>Manage your assigned subjects and students from this dashboard.</p>
-            
-            <?php if ($activeSchoolYear): ?>
-                <div class="school-year-info">
-                    <h4>📅 Current School Year: <?= esc($activeSchoolYear['name']) ?></h4>
-                    <p>You are viewing assignments for the <?= esc($activeSchoolYear['name']) ?> school year.</p>
+        <div class="content">
+            <?php if (session()->getFlashdata('success')): ?>
+                <div class="alert alert-success">
+                    <?= session()->getFlashdata('success') ?>
                 </div>
             <?php endif; ?>
-        </div>
-        
-        <!-- Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number"><?= $totalAssignments ?></div>
-                <div class="stat-label">Subject Assignments</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?= $totalStudents ?></div>
-                <div class="stat-label">Total Students</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?= count($sectionsWithStudents) ?></div>
-                <div class="stat-label">Sections</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?= $activeSchoolYear ? 'Active' : 'None' ?></div>
-                <div class="stat-label">School Year Status</div>
-            </div>
-        </div>
-        
-        <!-- Assignments Section -->
-        <div class="assignments-section">
-            <h3>📚 My Subject Assignments</h3>
             
-            <?php if (!empty($sectionsWithStudents)): ?>
-                <div class="assignments-grid">
-                    <?php foreach ($sectionsWithStudents as $sectionData): ?>
-                        <?php $assignment = $sectionData['assignment']; ?>
-                        <?php $students = $sectionData['students']; ?>
-                        <?php $studentCount = $sectionData['student_count']; ?>
-                        
-                        <div class="assignment-card">
-                            <div class="assignment-header">
-                                <h4><?= esc($assignment['subject_name']) ?></h4>
-                                <p><?= esc($assignment['section_name']) ?> - Grade <?= $assignment['section_grade_level'] ?></p>
-                            </div>
-                            
-                            <div class="assignment-content">
-                                <p><strong>Subject Code:</strong> <?= esc($assignment['subject_code']) ?></p>
-                                <p><strong>School Year:</strong> <?= esc($assignment['school_year']) ?></p>
-                                <p><strong>Students:</strong> <?= $studentCount ?> enrolled</p>
+            <?php if (session()->getFlashdata('error')): ?>
+                <div class="alert alert-error">
+                    <?= session()->getFlashdata('error') ?>
+                </div>
+            <?php endif; ?>
+            
+            <!-- Teacher Welcome Section -->
+            <div class="teacher-info">
+                <h2>Welcome, <?= esc(session()->get('first_name', 'Teacher') . ' ' . session()->get('last_name', '')) ?>!</h2>
+                <p>Manage your assigned subjects and students from this dashboard.</p>
+                
+                <?php if ($activeSchoolYear): ?>
+                    <div class="school-year-info">
+                        <h4>📅 Current School Year: <?= esc($activeSchoolYear['name']) ?></h4>
+                        <p>You are viewing assignments for the <?= esc($activeSchoolYear['name']) ?> school year.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+            
+            <!-- Assignments Section -->
+            <div class="assignments-section">
+                <h3>📚 Your Subject Assignments</h3>
+                
+                <?php if (!empty($assignments)): ?>
+                    <div class="assignments-grid">
+                        <?php foreach ($assignments as $assignment): ?>
+                            <?php 
+                            // Get students for this section
+                            $studentModel = new \App\Models\StudentModel();
+                            $students = $studentModel->getStudentsBySection($assignment['section_id']);
+                            ?>
+                            <div class="assignment-card">
+                                <div class="assignment-header">
+                                    <h4><?= esc($assignment['subject_name']) ?></h4>
+                                    <div class="assignment-subject"><?= esc($assignment['subject_code']) ?></div>
+                                </div>
                                 
-                                <?php if (!empty($students)): ?>
-                                    <div class="students-list">
-                                        <?php foreach ($students as $student): ?>
-                                            <div class="student-item">
-                                                <div>
-                                                    <div class="student-name"><?= esc($student['full_name']) ?></div>
-                                                    <div class="student-lrn">LRN: <?= esc($student['lrn']) ?></div>
+                                <div class="assignment-content">
+                                    <p><strong>Subject Code:</strong> <?= esc($assignment['subject_code']) ?></p>
+                                    <p><strong>School Year:</strong> <?= esc($assignment['school_year']) ?></p>
+                                    
+                                    <?php if (!empty($students)): ?>
+                                        <div class="students-list">
+                                            <?php foreach ($students as $student): ?>
+                                                <div class="student-item">
+                                                    <div>
+                                                        <div class="student-name"><?= esc($student['full_name']) ?></div>
+                                                        <div class="student-lrn">LRN: <?= esc($student['lrn']) ?></div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        <?php endforeach; ?>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="no-data">
+                                            <p>No students enrolled in this section.</p>
+                                        </div>
+                                    <?php endif; ?>
+                                    
+                                    <div class="action-buttons">
+                                        <a href="/teacher/students/<?= $assignment['section_id'] ?>" class="btn btn-info">
+                                            👥 View Students
+                                        </a>
+                                        <a href="/teacher/grades/<?= $assignment['section_id'] ?>?subject_id=<?= $assignment['subject_id'] ?>" class="btn btn-success">
+                                            📝 Input Grades
+                                        </a>
                                     </div>
-                                <?php else: ?>
-                                    <div class="no-data">
-                                        <p>No students enrolled in this section.</p>
-                                    </div>
-                                <?php endif; ?>
-                                
-                                <div class="action-buttons">
-                                    <a href="/teacher/students/<?= $assignment['section_id'] ?>" class="btn btn-info">
-                                        👥 View Students
-                                    </a>
-                                    <a href="/teacher/grades/<?= $assignment['section_id'] ?>" class="btn btn-success">
-                                        📝 Input Grades
-                                    </a>
                                 </div>
                             </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="no-data">
-                    <h4>No Subject Assignments Found</h4>
-                    <p>You haven't been assigned to any subjects yet.</p>
-                    <p><strong>Contact your administrator to get subject assignments.</strong></p>
-                </div>
-            <?php endif; ?>
-        </div>
-        
-        <!-- Quick Actions -->
-        <div class="assignments-section">
-            <h3>⚡ Quick Actions</h3>
-            <div class="action-buttons">
-                <a href="/teacher/grades" class="btn btn-success">📊 Grade Management</a>
-                <a href="/face-recognition" class="btn btn-warning">📷 Face Recognition</a>
-                <a href="/face-recognition/capture" class="btn btn-primary">📸 Capture Faces</a>
-                <a href="/teacher/attendance" class="btn btn-info">📋 Attendance</a>
-                <a href="/teacher/reports" class="btn btn-secondary">📋 Generate Reports</a>
-                <a href="/auth/change-password" class="btn btn-secondary">🔒 Change Password</a>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="no-data">
+                        <h4>No Subject Assignments Found</h4>
+                        <p>You haven't been assigned to any subjects yet.</p>
+                        <p><strong>Contact your administrator to get subject assignments.</strong></p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
 </body>
 </html>

@@ -200,7 +200,10 @@ class AdminController extends BaseController
 
         try {
             $data['strands'] = $strandModel->findAll();
-            $data['tracks'] = $trackModel->getAllActiveTracks();
+            // Include both active and inactive tracks in display
+            $data['tracks'] = $trackModel->orderBy('level', 'ASC')
+                                         ->orderBy('name', 'ASC')
+                                         ->findAll();
         } catch (\Exception $e) {
             $data['strands'] = [];
             $data['tracks'] = [];
@@ -555,37 +558,39 @@ class AdminController extends BaseController
             $allSubjects = $subjectModel->findAll();
             log_message('info', 'Total subjects in database: ' . count($allSubjects));
             
-            // Try the JOIN method first
-            try {
-                $subjects = $subjectModel->getAllActiveSubjectsWithCurriculumAndStrand();
-                log_message('info', 'Subjects after JOIN query: ' . count($subjects));
-            } catch (\Exception $joinError) {
-                log_message('error', 'JOIN query failed: ' . $joinError->getMessage());
-                $subjects = [];
-            }
+            // Get all subjects (both active and inactive)
+            $subjects = $subjectModel->orderBy('grade_level', 'ASC')
+                                    ->orderBy('code', 'ASC')
+                                    ->findAll();
+            log_message('info', 'All subjects found: ' . count($subjects));
             
-            // If JOIN query returns no results or fails, try fallback method
-            if (empty($subjects)) {
-                log_message('info', 'JOIN query returned no results, trying fallback method');
-                $subjects = $subjectModel->getAllActiveSubjectsSimple();
-                log_message('info', 'Subjects from fallback method: ' . count($subjects));
-                
-                // Manually populate curriculum and strand names
-                if (!empty($subjects)) {
-                    foreach ($subjects as &$subject) {
-                        if (!empty($subject['curriculum_id'])) {
-                            $curriculum = $curriculumModel->find($subject['curriculum_id']);
-                            $subject['curriculum_name'] = $curriculum ? $curriculum['name'] : 'Unknown';
-                        } else {
-                            $subject['curriculum_name'] = null;
-                        }
-                        
-                        if (!empty($subject['strand_id'])) {
-                            $strand = $strandModel->find($subject['strand_id']);
-                            $subject['strand_name'] = $strand ? $strand['name'] : 'Unknown';
-                        } else {
-                            $subject['strand_name'] = null;
-                        }
+            // Debug: Log subject status distribution
+            $activeCount = 0;
+            $inactiveCount = 0;
+            foreach ($subjects as $subject) {
+                if ($subject['is_active'] == 1) {
+                    $activeCount++;
+                } else {
+                    $inactiveCount++;
+                }
+            }
+            log_message('info', 'Active subjects: ' . $activeCount . ', Inactive subjects: ' . $inactiveCount);
+            
+            // Manually populate curriculum and strand names
+            if (!empty($subjects)) {
+                foreach ($subjects as &$subject) {
+                    if (!empty($subject['curriculum_id'])) {
+                        $curriculum = $curriculumModel->find($subject['curriculum_id']);
+                        $subject['curriculum_name'] = $curriculum ? $curriculum['name'] : 'Unknown';
+                    } else {
+                        $subject['curriculum_name'] = null;
+                    }
+                    
+                    if (!empty($subject['strand_id'])) {
+                        $strand = $strandModel->find($subject['strand_id']);
+                        $subject['strand_name'] = $strand ? $strand['name'] : 'Unknown';
+                    } else {
+                        $subject['strand_name'] = null;
                     }
                 }
             }
@@ -596,6 +601,7 @@ class AdminController extends BaseController
             $strands = $strandModel->getActiveStrandsWithTracks();
             log_message('info', 'Strands found: ' . count($strands));
             
+            // No pagination - show all subjects
             $data['subjects'] = $subjects;
             $data['curriculums'] = $curriculums;
             $data['strands'] = $strands;
@@ -811,8 +817,13 @@ class AdminController extends BaseController
             $isCore = $this->request->getPost('is_core') ?? 'core';
             $isActive = $this->request->getPost('is_active') ? 1 : 0;
             
+            // Get existing subject values for validation
+            $gradeLevel = $subject['grade_level'] ?? 7;
+            $semester = $subject['semester'] ?? null;
+            $quarter = $subject['quarter'] ?? 1;
+            
             // Check if subject code is unique within the curriculum (excluding current subject)
-            if (!$subjectModel->isCodeUniqueInCurriculum($code, $curriculumId, $id)) {
+            if (!$subjectModel->isCodeUniqueInCurriculum($code, $curriculumId, $gradeLevel, $semester, $quarter, $id)) {
                 return redirect()->to('/admin/subjects/edit/' . $id)->with('error', 'Subject code already exists in this curriculum.');
             }
             
@@ -1021,12 +1032,30 @@ class AdminController extends BaseController
             
             // Only update password if provided
             if (!empty($password)) {
+                if (strlen($password) < 6) {
+                    return redirect()->to('/admin/registrars/edit/' . $id)->with('error', 'Password must be at least 6 characters long.');
+                }
                 $updateData['password'] = password_hash($password, PASSWORD_DEFAULT);
             }
             
             try {
-                $userModel->update($id, $updateData);
-                return redirect()->to('/admin/registrars')->with('success', 'Registrar updated successfully');
+                // Skip validation since we're doing manual checks and the model's
+                // is_unique rules with {id} placeholder may not work correctly
+                // Also, username and role are not being updated, so validation would fail
+                $userModel->setValidationRules([]);
+                
+                $result = $userModel->update($id, $updateData);
+                
+                if ($result) {
+                    return redirect()->to('/admin/registrars')->with('success', 'Registrar updated successfully');
+                } else {
+                    $errors = $userModel->errors();
+                    $message = 'Failed to update registrar. Please check your input.';
+                    if (!empty($errors)) {
+                        $message .= ' ' . implode(' ', array_values($errors));
+                    }
+                    return redirect()->to('/admin/registrars/edit/' . $id)->with('error', $message);
+                }
             } catch (\Exception $e) {
                 log_message('error', 'Registrar update error: ' . $e->getMessage());
                 return redirect()->to('/admin/registrars/edit/' . $id)->with('error', 'Error updating registrar: ' . $e->getMessage());
@@ -1355,7 +1384,10 @@ class AdminController extends BaseController
         }
         
         $studentModel = new StudentModel();
-        $student = $studentModel->find($id);
+        $strandModel = new StrandModel();
+        $curriculumModel = new CurriculumModel();
+        
+        $student = $studentModel->getStudentWithDetails($id);
         
         if (!$student) {
             return redirect()->to('/admin/students')->with('error', 'Student not found');
@@ -1363,24 +1395,85 @@ class AdminController extends BaseController
         
         if ($this->request->getMethod() === 'POST') {
             // Handle update
+            $postedFullName = trim((string)$this->request->getPost('full_name'));
+            $firstName = trim((string)$this->request->getPost('first_name'));
+            $middleName = trim((string)$this->request->getPost('middle_name'));
+            $lastName = trim((string)$this->request->getPost('last_name'));
+
+            // If only full_name is provided (new UI), parse it to parts
+            if ($postedFullName && (!$firstName && !$lastName)) {
+                $parts = preg_split('/\s+/', $postedFullName);
+                $firstName = $parts ? array_shift($parts) : '';
+                $lastName = $parts ? array_pop($parts) : '';
+                $middleName = !empty($parts) ? implode(' ', $parts) : null;
+            }
+
+            // Build full_name consistently
+            $computedFullName = trim(implode(' ', array_filter([$firstName, $middleName, $lastName], fn($v) => $v !== null && $v !== '')));
+            if (!$computedFullName && $postedFullName) {
+                $computedFullName = $postedFullName;
+            }
+            
             $data = [
-                'first_name' => $this->request->getPost('first_name'),
-                'last_name' => $this->request->getPost('last_name'),
-                'middle_name' => $this->request->getPost('middle_name'),
+                'lrn' => $this->request->getPost('lrn'),
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'middle_name' => $middleName !== '' ? $middleName : null,
+                'full_name' => $computedFullName,
+                'email' => $this->request->getPost('email'),
+                'birth_date' => $this->request->getPost('birth_date'),
+                'gender' => $this->request->getPost('gender'),
                 'grade_level' => $this->request->getPost('grade_level'),
+                'previous_grade_level' => $this->request->getPost('previous_grade_level'),
                 'enrollment_type' => $this->request->getPost('enrollment_type'),
+                'admission_type' => $this->request->getPost('admission_type'),
+                'strand_id' => $this->request->getPost('strand_id') ?: null,
+                'curriculum_id' => $this->request->getPost('curriculum_id') ?: null,
+                'previous_school' => $this->request->getPost('previous_school'),
+                'previous_school_year' => $this->request->getPost('previous_school_year'),
                 'status' => $this->request->getPost('status')
             ];
             
+            // Update password only if provided
+            if ($this->request->getPost('password')) {
+                $data['password'] = password_hash($this->request->getPost('password'), PASSWORD_DEFAULT);
+            }
+            
+            // Check if LRN already exists (excluding current student)
+            $existingLrn = $studentModel->where('lrn', $data['lrn'])->where('id !=', $id)->first();
+            if ($existingLrn) {
+                return redirect()->to('/admin/students/edit/' . $id)->with('error', 'LRN already exists in the system');
+            }
+            
+            // Check if email already exists (excluding current student)
+            $existingEmail = $studentModel->where('email', $data['email'])->where('id !=', $id)->first();
+            if ($existingEmail) {
+                return redirect()->to('/admin/students/edit/' . $id)->with('error', 'Email already exists in the system');
+            }
+            
             try {
-                $studentModel->update($id, $data);
-                return redirect()->to('/admin/students')->with('success', 'Student updated successfully');
+                if ($studentModel->update($id, $data)) {
+                    return redirect()->to('/admin/students')->with('success', 'Student updated successfully');
+                } else {
+                    $errors = $studentModel->errors();
+                    $message = 'Failed to update student. Please check your input.';
+                    if (!empty($errors)) {
+                        $message .= ' ' . implode(' ', array_values($errors));
+                    }
+                    return redirect()->to('/admin/students/edit/' . $id)->with('error', $message);
+                }
             } catch (\Exception $e) {
-                return redirect()->to('/admin/students')->with('error', 'Error updating student: ' . $e->getMessage());
+                return redirect()->to('/admin/students/edit/' . $id)->with('error', 'Error updating student: ' . $e->getMessage());
             }
         }
         
-        return view('admin/edit_student', ['student' => $student]);
+        $data = [
+            'student' => $student,
+            'strands' => $strandModel->findAll(),
+            'curriculums' => $curriculumModel->findAll()
+        ];
+        
+        return view('admin/edit_student', $data);
     }
     
     public function updateStudent($id = null)
@@ -1969,10 +2062,17 @@ class AdminController extends BaseController
         // Update password if provided
         $newPassword = $this->request->getPost('password');
         if (!empty($newPassword)) {
+            if (strlen($newPassword) < 6) {
+                return redirect()->to('/admin/teachers/edit/' . $teacherId)->with('error', 'Password must be at least 6 characters long.');
+            }
             $data['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
         }
         
         try {
+            // Skip validation since we're doing manual checks for uniqueness
+            // and the model's is_unique rules with {id} placeholder may not work correctly
+            $teacherModel->setValidationRules([]);
+            
             if ($teacherModel->update($teacherId, $data)) {
                 return redirect()->to('/admin/teachers')->with('success', 'Teacher updated successfully!');
             } else {

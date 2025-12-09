@@ -13,7 +13,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
             background: white;
             padding: 30px;
@@ -263,9 +263,11 @@
             }
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         <div class="header">
             <h1>👨‍🏫 Teacher Profile</h1>
             <div>
@@ -438,6 +440,7 @@
                 </div>
             <?php endif; ?>
         </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
 </body>
 </html>

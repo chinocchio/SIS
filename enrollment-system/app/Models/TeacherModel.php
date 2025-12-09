@@ -18,7 +18,7 @@ class TeacherModel extends Model
         'last_name' => 'required|min_length[2]|max_length[100]',
         'email' => 'required|valid_email|is_unique[teachers.email,id,{id}]',
         'username' => 'required|min_length[3]|max_length[100]|is_unique[teachers.username,id,{id}]',
-        'password' => 'required|min_length[6]'
+        'password' => 'permit_empty|min_length[6]'
     ];
     
     protected $validationMessages = [
@@ -83,6 +83,8 @@ class TeacherModel extends Model
         // Get subject assignments
         $assignments = $db->table('teacher_subject_assignments tsa')
                          ->select('tsa.*, s.name as subject_name, s.code as subject_code,
+                                  s.grade_level as subject_grade_level, s.semester as subject_semester,
+                                  s.quarter as subject_quarter, s.curriculum_id, s.strand_id,
                                   sec.name as section_name, sec.grade_level as section_grade_level,
                                   sy.name as school_year')
                          ->join('subjects s', 's.id = tsa.subject_id')
@@ -274,5 +276,13 @@ class TeacherModel extends Model
                     ->get();
         
         return $query->getResultArray();
+    }
+    
+    public function updatePassword($id, $newPassword)
+    {
+        // Hash the new password
+        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+        
+        return $this->update($id, ['password' => $hashedPassword]);
     }
 }

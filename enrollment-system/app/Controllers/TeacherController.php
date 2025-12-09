@@ -95,23 +95,39 @@ class TeacherController extends BaseController
         $teacherModel = new TeacherModel();
         $schoolYearModel = new SchoolYearModel();
         
-        // Verify teacher is assigned to this section
+        // Get all subjects assigned to teacher for this section
         $teacherAssignments = $teacherModel->getTeacherWithAssignments($teacherId);
-        $isAssigned = false;
-        $subjectInfo = null;
+        $assignedSubjects = [];
         
         if (!empty($teacherAssignments['assignments'])) {
             foreach ($teacherAssignments['assignments'] as $assignment) {
                 if ($assignment['section_id'] == $sectionId) {
-                    $isAssigned = true;
-                    $subjectInfo = $assignment;
+                    $assignedSubjects[] = $assignment;
+                }
+            }
+        }
+        
+        if (empty($assignedSubjects)) {
+            return redirect()->to('/teacher/dashboard')->with('error', 'You are not assigned to this section.');
+        }
+        
+        // Get selected subject from URL parameter or default to first subject
+        $selectedSubjectId = $this->request->getGet('subject_id');
+        $subjectInfo = null;
+        
+        if ($selectedSubjectId) {
+            // Find the selected subject
+            foreach ($assignedSubjects as $subject) {
+                if ($subject['subject_id'] == $selectedSubjectId) {
+                    $subjectInfo = $subject;
                     break;
                 }
             }
         }
         
-        if (!$isAssigned) {
-            return redirect()->to('/teacher/dashboard')->with('error', 'You are not assigned to this section.');
+        // If no valid subject selected, use the first one
+        if (!$subjectInfo) {
+            $subjectInfo = $assignedSubjects[0];
         }
         
         $section = $sectionModel->find($sectionId);
@@ -139,6 +155,7 @@ class TeacherController extends BaseController
             'section' => $section,
             'students' => $students,
             'subjectInfo' => $subjectInfo,
+            'assignedSubjects' => $assignedSubjects,
             'activeSchoolYear' => $activeSchoolYear,
             'gradesLookup' => $gradesLookup
         ];
@@ -294,13 +311,96 @@ class TeacherController extends BaseController
         $teacherId = session()->get('user_id');
         $teacherModel = new TeacherModel();
         $schoolYearModel = new SchoolYearModel();
+        $db = \Config\Database::connect();
         
         // Get teacher's assigned subjects and sections
         $assignments = $teacherModel->getTeacherWithAssignments($teacherId);
         $activeSchoolYear = $schoolYearModel->getActiveSchoolYear();
         
+        $processedAssignments = [];
+        $seenSubjects = []; // Track unique subject+section combinations
+        
+        if (!empty($assignments['assignments'])) {
+            foreach ($assignments['assignments'] as $assignment) {
+                // Create unique key: subject_name + section_id + grade_level
+                $key = $assignment['subject_name'] . '_' . $assignment['section_id'] . '_' . $assignment['subject_grade_level'];
+                
+                if (!isset($seenSubjects[$key])) {
+                    $seenSubjects[$key] = true;
+                    
+                    // Get all subjects with the same name and grade_level
+                    $allSubjects = $db->table('subjects s')
+                        ->select('s.*')
+                        ->where('s.name', $assignment['subject_name'])
+                        ->where('s.grade_level', $assignment['subject_grade_level'])
+                        ->where('s.is_active', 1)
+                        ->orderBy('s.semester', 'ASC')
+                        ->orderBy('s.quarter', 'ASC')
+                        ->get()
+                        ->getResultArray();
+                    
+                    // Determine if JHS or SHS based on grade level
+                    $gradeLevel = (int)$assignment['subject_grade_level'];
+                    $isJHS = $gradeLevel < 10; // Grades 7, 8, 9 are JHS
+                    $isSHS = $gradeLevel >= 11; // Grades 11, 12 are SHS
+                    
+                    // Group subjects by quarter (JHS) or semester+quarter (SHS)
+                    $groupedSubjects = [];
+                    
+                    if ($isJHS) {
+                        // JHS: Group by quarter (1-4)
+                        for ($q = 1; $q <= 4; $q++) {
+                            $quarterSubjects = array_filter($allSubjects, function($s) use ($q) {
+                                return (int)$s['quarter'] === $q;
+                            });
+                            
+                            if (!empty($quarterSubjects)) {
+                                $groupedSubjects['quarter_' . $q] = [
+                                    'quarter' => $q,
+                                    'subjects' => array_values($quarterSubjects)
+                                ];
+                            }
+                        }
+                    } elseif ($isSHS) {
+                        // SHS: Group by semester and quarter
+                        // Semester 1: Quarters 1-2
+                        // Semester 2: Quarters 3-4
+                        for ($sem = 1; $sem <= 2; $sem++) {
+                            $quarters = $sem === 1 ? [1, 2] : [3, 4];
+                            
+                            foreach ($quarters as $q) {
+                                $quarterSubjects = array_filter($allSubjects, function($s) use ($sem, $q) {
+                                    return (int)$s['semester'] === $sem && (int)$s['quarter'] === $q;
+                                });
+                                
+                                if (!empty($quarterSubjects)) {
+                                    $groupKey = 'semester_' . $sem . '_quarter_' . $q;
+                                    $groupedSubjects[$groupKey] = [
+                                        'semester' => $sem,
+                                        'quarter' => $q,
+                                        'subjects' => array_values($quarterSubjects)
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (!empty($groupedSubjects)) {
+                        $processedAssignments[] = [
+                            'base_assignment' => $assignment,
+                            'is_jhs' => $isJHS,
+                            'is_shs' => $isSHS,
+                            'grade_level' => $gradeLevel,
+                            'grouped_subjects' => $groupedSubjects,
+                            'all_subjects' => $allSubjects
+                        ];
+                    }
+                }
+            }
+        }
+        
         $data = [
-            'assignments' => $assignments['assignments'] ?? [],
+            'assignments' => $processedAssignments,
             'activeSchoolYear' => $activeSchoolYear
         ];
         
@@ -329,14 +429,106 @@ class TeacherController extends BaseController
     {
         $teacherId = session()->get('user_id');
         $attendanceModel = new AttendanceModel();
+        $teacherModel = new TeacherModel();
+        $studentModel = new StudentModel();
+        $schoolYearModel = new SchoolYearModel();
         
-        $attendance = $attendanceModel->getTeacherAttendance($teacherId);
+        // Get teacher's assigned subjects and sections
+        $assignments = $teacherModel->getTeacherWithAssignments($teacherId);
+        $activeSchoolYear = $schoolYearModel->getActiveSchoolYear();
+        
+        // Get all students enrolled in teacher's assigned sections
+        $allStudents = [];
+        $attendanceData = [];
+        
+        if (!empty($assignments['assignments'])) {
+            foreach ($assignments['assignments'] as $assignment) {
+                $sectionId = $assignment['section_id'];
+                $subjectId = $assignment['subject_id'];
+                
+                // Get students for this section
+                $students = $studentModel->getStudentsBySection($sectionId);
+                
+                // Get attendance records for this subject
+                $attendanceRecords = $attendanceModel->where('subject_id', $subjectId)->findAll();
+                
+                // Create attendance lookup by student_id and date
+                $attendanceLookup = [];
+                foreach ($attendanceRecords as $record) {
+                    $date = date('Y-m-d', strtotime($record['recorded_at']));
+                    $attendanceLookup[$record['student_id']][$date] = true;
+                }
+                
+                // Get all unique dates from attendance records
+                $allDates = [];
+                foreach ($attendanceRecords as $record) {
+                    $date = date('Y-m-d', strtotime($record['recorded_at']));
+                    if (!in_array($date, $allDates)) {
+                        $allDates[] = $date;
+                    }
+                }
+                rsort($allDates); // Sort dates descending (newest first)
+                
+                // Build attendance data for this subject
+                $subjectAttendanceData = [
+                    'subject' => $assignment,
+                    'students' => $students,
+                    'dates' => $allDates,
+                    'attendance_lookup' => $attendanceLookup
+                ];
+                
+                $attendanceData[] = $subjectAttendanceData;
+            }
+        }
         
         $data = [
-            'attendance' => $attendance,
+            'assignments' => $assignments['assignments'] ?? [],
+            'attendanceData' => $attendanceData,
+            'activeSchoolYear' => $activeSchoolYear,
             'teacher' => session()->get()
         ];
         
         return view('teacher/attendance', $data);
+    }
+    
+    public function changePassword()
+    {
+        if ($this->request->getMethod() === 'POST') {
+            $teacherId = session()->get('user_id');
+            $currentPassword = $this->request->getPost('current_password');
+            $newPassword = $this->request->getPost('new_password');
+            $confirmPassword = $this->request->getPost('confirm_password');
+            
+            // Validate passwords
+            if ($newPassword !== $confirmPassword) {
+                return redirect()->back()->with('error', 'New passwords do not match.');
+            }
+            
+            if (strlen($newPassword) < 6) {
+                return redirect()->back()->with('error', 'New password must be at least 6 characters long.');
+            }
+            
+            // Get current teacher data
+            $teacherModel = new TeacherModel();
+            $teacher = $teacherModel->find($teacherId);
+            
+            if (!$teacher) {
+                return redirect()->back()->with('error', 'Teacher not found.');
+            }
+            
+            // Verify current password
+            if (!password_verify($currentPassword, $teacher['password'])) {
+                return redirect()->back()->with('error', 'Current password is incorrect.');
+            }
+            
+            // Update password
+            if ($teacherModel->updatePassword($teacherId, $newPassword)) {
+                return redirect()->back()->with('success', 'Password changed successfully!');
+            } else {
+                return redirect()->back()->with('error', 'Failed to update password.');
+            }
+        }
+        
+        return view('teacher/change_password');
     }
 }

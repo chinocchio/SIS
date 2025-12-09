@@ -9,14 +9,15 @@
     <title>Admin Dashboard - SIS</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            background-color: #f8f9fc;
+            color: #5a5c69;
         }
         
         .container {
-            max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
         }
         
@@ -143,107 +144,129 @@
             background-color: #f8f9fa;
             font-weight: bold;
         }
+        
+        /* Sidebar layout */
+        .layout {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .sidebar {
+            width: 240px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+        }
+        
+        .sidebar .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .sidebar .btn {
+            width: 100%;
+            text-align: left;
+            margin: 0;
+            display: block;
+            box-sizing: border-box;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 0;
+        }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
+    <?php include __DIR__ . '/partials/header.php'; ?>
     <div class="container">
-        <div class="nav" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-            <div>
-                <a href="/admin/dashboard" class="btn">Dashboard</a>
-                <a href="/admin/registrars" class="btn btn-info">👨‍💼 Registrars</a>
-                <a href="/admin/teachers" class="btn btn-info">👨‍🏫 Teachers</a>
-                <a href="/admin/teachers/assign" class="btn btn-warning">📋 Assign Teachers</a>
-                <a href="/admin/students" class="btn btn-success">👥 Students</a>
-                <a href="/admin/sections" class="btn btn-warning">🏫 Sections</a>
-                <a href="/admin/create-school-year" class="btn">School Years</a>
-                <a href="/admin/create-admission-timeframe" class="btn">Admission Timeframe</a>
-                <a href="/admin/strands" class="btn btn-warning">Strands & Tracks</a>
-                <a href="/admin/curriculums" class="btn">Curriculums</a>
-                <a href="/admin/subjects" class="btn btn-info">📚 Subjects</a>
-                <a href="/admin/users" class="btn">Users</a>
-            </div>
-            <div>
-                <a href="/auth/change-password" class="btn">Change Password</a>
-                <a href="/auth/logout" class="btn" style="background-color:#dc3545;">Logout</a>
-            </div>
-        </div>
-        <div class="header">
-            <h1>Admin Dashboard</h1>
-            <p>Manage School Years, Admission Timeframes, and Student Promotions</p>
-        </div>
+        <div class="layout">
+            <?php include __DIR__ . '/partials/sidebar.php'; ?>
+            <main class="main-content">
+                <div class="header">
+                    <h1>Admin Dashboard</h1>
+                    <p>Manage School Years, and Student Promotions</p>
+                </div>
         
-        <?php if (session()->getFlashdata('success')): ?>
-            <div class="alert alert-success">
-                <?= session()->getFlashdata('success') ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if (session()->getFlashdata('error')): ?>
-            <div class="alert alert-error">
-                <?= session()->getFlashdata('error') ?>
-            </div>
-        <?php endif; ?>
-        
-        <div class="dashboard-grid">
-            <!-- Current School Year -->
-            <div class="card">
-                <h3>Current School Year</h3>
-                <?php if (isset($activeSchoolYear)): ?>
-                    <p><strong>Name:</strong> <?= $activeSchoolYear['name'] ?></p>
-                    <p><strong>Start Date:</strong> <?= date('M d, Y', strtotime($activeSchoolYear['start_date'])) ?></p>
-                    <p><strong>End Date:</strong> <?= date('M d, Y', strtotime($activeSchoolYear['end_date'])) ?></p>
-                    <p><strong>Status:</strong> <span class="status-active">Active</span></p>
-                    <p><em>Note: Only one school year can be active at a time.</em></p>
-                <?php else: ?>
-                    <p>No active school year found.</p>
-                    <p><em>You need to activate a school year to manage admissions and student promotions.</em></p>
+                <?php if (session()->getFlashdata('success')): ?>
+                    <div class="alert alert-success">
+                        <?= session()->getFlashdata('success') ?>
+                    </div>
                 <?php endif; ?>
-                
-                <div style="margin-top: 20px;">
-                    <a href="/admin/create-school-year" class="btn">Create New School Year</a>
-                </div>
-            </div>
-            
-            <!-- Admission Timeframe -->
-            <div class="card">
-                <h3>Admission Timeframe</h3>
-                <?php if (isset($admissionTimeframe)): ?>
-                    <p><strong>Start Date:</strong> <?= date('M d, Y', strtotime($admissionTimeframe['start_date'])) ?></p>
-                    <p><strong>End Date:</strong> <?= date('M d, Y', strtotime($admissionTimeframe['end_date'])) ?></p>
-                    <p><strong>Status:</strong> 
-                        <?php 
-                        $today = date('Y-m-d');
-                        $isOpen = ($today >= $admissionTimeframe['start_date'] && $today <= $admissionTimeframe['end_date']);
-                        ?>
-                        <span class="<?= $isOpen ? 'status-active' : 'status-inactive' ?>">
-                            <?= $isOpen ? 'Open' : 'Closed' ?>
-                        </span>
-                    </p>
-                <?php else: ?>
-                    <p>No admission timeframe set.</p>
+        
+                <?php if (session()->getFlashdata('error')): ?>
+                    <div class="alert alert-error">
+                        <?= session()->getFlashdata('error') ?>
+                    </div>
                 <?php endif; ?>
-                
-                <div style="margin-top: 20px;">
-                    <a href="/admin/create-admission-timeframe" class="btn">Set Timeframe</a>
+        
+                <div class="dashboard-grid">
+                    <!-- Current School Year -->
+                    <div class="card">
+                        <h3>Current School Year</h3>
+                        <?php if (isset($activeSchoolYear)): ?>
+                            <p><strong>Name:</strong> <?= $activeSchoolYear['name'] ?></p>
+                            <p><strong>Start Date:</strong> <?= date('M d, Y', strtotime($activeSchoolYear['start_date'])) ?></p>
+                            <p><strong>End Date:</strong> <?= date('M d, Y', strtotime($activeSchoolYear['end_date'])) ?></p>
+                            <p><strong>Status:</strong> <span class="status-active">Active</span></p>
+                            <p><em>Note: Only one school year can be active at a time.</em></p>
+                        <?php else: ?>
+                            <p>No active school year found.</p>
+                            <p><em>You need to activate a school year to manage admissions and student promotions.</em></p>
+                        <?php endif; ?>
+                        
+                        <div style="margin-top: 20px;">
+                            <a href="/admin/create-school-year" class="btn">Create New School Year</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Admission Timeframe -->
+                    <!-- <div class="card">
+                        <h3>Admission Timeframe</h3>
+                        <?php if (isset($admissionTimeframe)): ?>
+                            <p><strong>Start Date:</strong> <?= date('M d, Y', strtotime($admissionTimeframe['start_date'])) ?></p>
+                            <p><strong>End Date:</strong> <?= date('M d, Y', strtotime($admissionTimeframe['end_date'])) ?></p>
+                            <p><strong>Status:</strong> 
+                                <?php 
+                                $today = date('Y-m-d');
+                                $isOpen = ($today >= $admissionTimeframe['start_date'] && $today <= $admissionTimeframe['end_date']);
+                                ?>
+                                <span class="<?= $isOpen ? 'status-active' : 'status-inactive' ?>">
+                                    <?= $isOpen ? 'Open' : 'Closed' ?>
+                                </span>
+                            </p>
+                        <?php else: ?>
+                            <p>No admission timeframe set.</p>
+                        <?php endif; ?>
+                        
+                        <div style="margin-top: 20px;">
+                            <a href="/admin/create-admission-timeframe" class="btn">Set Timeframe</a>
+                        </div>
+                    </div> -->
+                    
+                    <!-- Student Management -->
+                    <div class="card">
+                        <h3>Student Management</h3>
+                        <p>Manage student promotions and grade progression.</p>
+                        
+                        <div style="margin-top: 20px;">
+                            <a href="/admin/promote-students" class="btn btn-success" onclick="return confirm('This will promote all eligible students to the next grade level. Continue?')">
+                                Promote Students
+                            </a>
+                            <!-- <a href="/admin/strands" class="btn btn-warning">Manage Strands</a> -->
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Student Management -->
-            <div class="card">
-                <h3>Student Management</h3>
-                <p>Manage student promotions and grade progression.</p>
-                
-                <div style="margin-top: 20px;">
-                    <a href="/admin/promote-students" class="btn btn-success" onclick="return confirm('This will promote all eligible students to the next grade level. Continue?')">
-                        Promote Students
-                    </a>
-                    <a href="/admin/strands" class="btn btn-warning">Manage Strands</a>
-                </div>
-            </div>
-        </div>
         
         <!-- School Years List -->
-        <div class="card">
+                <div class="card">
             <h3>All School Years</h3>
             <table class="table">
                 <thead>
@@ -290,10 +313,10 @@
                     <?php endif; ?>
                 </tbody>
             </table>
-        </div>
+                </div>
         
         <!-- Admission Timeframes List -->
-        <div class="card">
+        <!-- <div class="card">
             <h3>All Admission Timeframes</h3>
             <table class="table">
                 <thead>
@@ -338,6 +361,8 @@
                     <?php endif; ?>
                 </tbody>
             </table>
+        </div> -->
+            </main>
         </div>
     </div>
 </body>

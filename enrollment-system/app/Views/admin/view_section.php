@@ -13,7 +13,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
         }
         
@@ -256,27 +256,11 @@
             color: #333;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
-        <div class="nav">
-            <div>
-                <a href="/admin/dashboard" class="btn">Dashboard</a>
-                <a href="/admin/registrars" class="btn btn-info">👨‍💼 Registrars</a>
-                <a href="/admin/students" class="btn btn-success">👥 Students</a>
-                <a href="/admin/sections" class="btn btn-warning">🏫 Sections</a>
-                <a href="/admin/create-school-year" class="btn">School Years</a>
-                <a href="/admin/create-admission-timeframe" class="btn">Admission Timeframe</a>
-                <a href="/admin/strands" class="btn btn-warning">Strands & Tracks</a>
-                <a href="/admin/curriculums" class="btn">Curriculums</a>
-                <a href="/admin/subjects" class="btn btn-info">📚 Subjects</a>
-                <a href="/admin/users" class="btn">Users</a>
-            </div>
-            <div>
-                <a href="/auth/change-password" class="btn">Change Password</a>
-                <a href="/auth/logout" class="btn btn-danger">Logout</a>
-            </div>
-        </div>
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
         
         <div class="header">
             <h1>👁️ Section Details</h1>
@@ -410,6 +394,7 @@
                 </div>
             <?php endif; ?>
         </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
 </body>
 </html>

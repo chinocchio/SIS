@@ -6,19 +6,25 @@
     <title>Registrar Profile - Admin Dashboard</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: #f5f6fb;
+            padding: 0;
+            background-color: #f8f9fc;
+            color: #5a5c69;
         }
         
-        .container {
-            max-width: 800px;
+        .content-container {
+            width: 100%;
             margin: 0 auto;
             background: white;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .main-content {
+            padding: 1.5rem;
+            min-height: 100vh;
         }
         
         .header {
@@ -186,9 +192,11 @@
             flex-wrap: wrap;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
-    <div class="container">
+    <?php include __DIR__ . '/partials/layout_start.php'; ?>
+        <div class="content-container">
         <div class="header">
             <h1>👨‍💼 Registrar Profile</h1>
             <div>
@@ -271,7 +279,8 @@
                 <a href="/admin/dashboard" class="btn btn-secondary">🏠 Back to Dashboard</a>
             </div>
         </div>
-    </div>
+        </div>
+    <?php include __DIR__ . '/partials/layout_end.php'; ?>
 </body>
 </html>
 

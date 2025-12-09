@@ -148,7 +148,7 @@
     <div class="login-container">
         <div class="header">
             <h1>🔐 Login</h1>
-            <p>School Information System</p>
+            <p>RNTVS Enrollment System</p>
         </div>
         
         <?php if (session()->getFlashdata('error')): ?>

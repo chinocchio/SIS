@@ -136,6 +136,8 @@ $routes->post('/registrar/approve/(:num)', 'RegistrarController::approveEnrollme
 $routes->post('/registrar/reject/(:num)', 'RegistrarController::rejectEnrollment/$1', ['filter' => 'registrarauth']);
 $routes->get('/registrar/search', 'RegistrarController::searchStudents', ['filter' => 'registrarauth']);
 $routes->get('/registrar/report', 'RegistrarController::generateReport', ['filter' => 'registrarauth']);
+$routes->get('/registrar/change-password', 'RegistrarController::changePassword', ['filter' => 'registrarauth']);
+$routes->post('/registrar/change-password', 'RegistrarController::changePassword', ['filter' => 'registrarauth']);
 
 // Registrar Student Management Routes
 $routes->get('/registrar/students', 'RegistrarController::manageStudents', ['filter' => 'registrarauth']);
@@ -161,14 +163,19 @@ $routes->get('/teacher/reports', 'TeacherController::reports', ['filter' => 'tea
 $routes->get('/teacher/attendance', 'TeacherController::attendance', ['filter' => 'teacherauth']);
 $routes->get('/teacher/student/(:num)/grades/(:num)', 'TeacherController::viewGrades/$1/$2', ['filter' => 'teacherauth']);
 $routes->get('/teacher/student/(:num)/report-card/(:num)', 'TeacherController::generateReportCard/$1/$2', ['filter' => 'teacherauth']);
+$routes->get('/teacher/change-password', 'TeacherController::changePassword', ['filter' => 'teacherauth']);
+$routes->post('/teacher/change-password', 'TeacherController::changePassword', ['filter' => 'teacherauth']);
 
 // Student
 $routes->get('/student/dashboard', 'StudentController::index', ['filter' => 'studentauth']);
+$routes->get('/student/grades', 'StudentController::grades', ['filter' => 'studentauth']);
+$routes->get('/student/documents', 'StudentController::documents', ['filter' => 'studentauth']);
 $routes->post('/student/submit-document', 'StudentController::submitDocument', ['filter' => 'studentauth']);
 $routes->get('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);
 $routes->post('/student/change-password', 'StudentController::changePassword', ['filter' => 'studentauth']);
 $routes->get('/student/document/view/(:num)', 'StudentController::viewDocument/$1', ['filter' => 'studentauth']);
 $routes->get('/student/document/download/(:num)', 'StudentController::downloadDocument/$1', ['filter' => 'studentauth']);
+$routes->get('/student/document/delete/(:num)', 'StudentController::deleteDocument/$1', ['filter' => 'studentauth']);
 $routes->get('/student/attendance', 'StudentController::attendance', ['filter' => 'studentauth']);
 
 // Face Recognition Routes

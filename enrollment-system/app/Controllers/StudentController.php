@@ -140,7 +140,7 @@ class StudentController extends BaseController
         
         // Generate unique filename
         $newName = $file->getRandomName();
-        $uploadPath = 'uploads/documents/';
+        $uploadPath = WRITEPATH . 'uploads/documents/';
         
         // Create directory if it doesn't exist
         if (!is_dir($uploadPath)) {
@@ -154,7 +154,7 @@ class StudentController extends BaseController
             $documentData = [
                 'student_id' => $studentId,
                 'document_type' => $documentType,
-                'file_path' => $uploadPath . $newName,
+                'file_path' => 'uploads/documents/' . $newName,
                 'original_filename' => $file->getClientName(),
                 'file_size' => $file->getSize(),
                 'description' => $description,
@@ -210,6 +210,37 @@ class StudentController extends BaseController
         }
 
         return $this->response->download($fullPath, null, true);
+    }
+
+    public function deleteDocument($documentId)
+    {
+        $studentId = session()->get('user_id');
+        $documentModel = new DocumentModel();
+        $doc = $documentModel->find((int)$documentId);
+        
+        // Check if document exists and belongs to the student
+        if (!$doc || (int)$doc['student_id'] !== (int)$studentId) {
+            return redirect()->back()->with('error', 'Document not found or access denied.');
+        }
+        
+        // Check if document can be deleted (only draft or pending status)
+        if (!in_array($doc['status'], ['draft', 'pending'])) {
+            return redirect()->back()->with('error', 'Cannot delete documents that have been reviewed.');
+        }
+        
+        // Get full file path
+        $fullPath = $this->resolveDocumentFullPath($doc['file_path']);
+        
+        // Delete the document record from database
+        if ($documentModel->delete($documentId)) {
+            // If database deletion successful, try to delete the physical file
+            if ($fullPath && is_file($fullPath)) {
+                unlink($fullPath);
+            }
+            return redirect()->back()->with('success', 'Document deleted successfully.');
+        } else {
+            return redirect()->back()->with('error', 'Failed to delete document.');
+        }
     }
 
     private function resolveDocumentFullPath(string $storedPath): ?string
@@ -290,5 +321,106 @@ class StudentController extends BaseController
         ];
         
         return view('student/attendance', $data);
+    }
+    
+    public function grades()
+    {
+        $studentId = session()->get('user_id');
+        $studentModel = new StudentModel();
+        $schoolYearModel = new SchoolYearModel();
+        
+        // Get student details
+        $student = $studentModel->getStudentWithDetails($studentId);
+        
+        if (!$student) {
+            return redirect()->to('/auth/login')->with('error', 'Student not found.');
+        }
+        
+        // Get active school year
+        $activeSchoolYear = $schoolYearModel->getActiveSchoolYear();
+        
+        // Get all subjects for student's curriculum/strand and grade level
+        $subjectModel = new SubjectModel();
+        $allSubjects = [];
+        $grades = [];
+        
+        try {
+            if ($activeSchoolYear) {
+                $db = \Config\Database::connect();
+                
+                // Get all subjects for the student's curriculum/strand and grade level
+                if ($student['curriculum_id']) {
+                    // JHS - get subjects by curriculum and grade level
+                    $allSubjects = $db->table('subjects s')
+                        ->select('s.*')
+                        ->where('s.curriculum_id', $student['curriculum_id'])
+                        ->where('s.grade_level', $student['grade_level'])
+                        ->orderBy('s.quarter', 'ASC')
+                        ->orderBy('s.name', 'ASC')
+                        ->get()
+                        ->getResultArray();
+                } elseif ($student['strand_id']) {
+                    // SHS - get subjects by strand and grade level
+                    $allSubjects = $db->table('subjects s')
+                        ->select('s.*')
+                        ->where('s.strand_id', $student['strand_id'])
+                        ->where('s.grade_level', $student['grade_level'])
+                        ->orderBy('s.semester', 'ASC')
+                        ->orderBy('s.quarter', 'ASC')
+                        ->orderBy('s.name', 'ASC')
+                        ->get()
+                        ->getResultArray();
+                }
+                
+                // Get recorded grades for this student
+                if (!empty($allSubjects)) {
+                    $subjectIds = array_column($allSubjects, 'id');
+                    $grades = $db->table('student_grades sg')
+                        ->select('sg.*')
+                        ->where('sg.student_id', $studentId)
+                        ->whereIn('sg.subject_id', $subjectIds)
+                        ->where('sg.school_year_id', $activeSchoolYear['id'])
+                        ->get()
+                        ->getResultArray();
+                }
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Error fetching student grades: ' . $e->getMessage());
+        }
+        
+        $data = [
+            'student' => $student,
+            'allSubjects' => $allSubjects,
+            'grades' => $grades,
+            'activeSchoolYear' => $activeSchoolYear
+        ];
+        
+        return view('student/grades', $data);
+    }
+    
+    public function documents()
+    {
+        $studentId = session()->get('user_id');
+        $studentModel = new StudentModel();
+        $documentModel = new DocumentModel();
+        
+        // Get student details
+        $student = $studentModel->getStudentWithDetails($studentId);
+        
+        if (!$student) {
+            return redirect()->to('/auth/login')->with('error', 'Student not found.');
+        }
+        
+        // Get student documents
+        $documents = $documentModel->where('student_id', $studentId)
+                                  ->orderBy('uploaded_at', 'DESC')
+                                  ->findAll();
+        
+        $data = [
+            'student' => $student,
+            'documents' => $documents
+        ];
+        
+        return view('student/documents', $data);
     }
 }

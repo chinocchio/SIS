@@ -6,24 +6,35 @@
     <title>Subject Management - Admin Dashboard</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: #f5f6fb;
+            padding: 0;
+            background-color: #f8f9fc;
+            color: #5a5c69;
         }
         
         .container {
-            max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
         
-        h1 {
-            color: #333;
-            text-align: center;
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            margin: 0;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
         
@@ -124,6 +135,10 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+        }
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
         }
         
         th, td {
@@ -236,10 +251,15 @@
             min-width: 200px;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
-        <h1>📚 Subject Management</h1>
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
+        <div class="header">
+            <h1>📚 Subject Management</h1>
+            <p>Manage subjects, curriculums, and academic content</p>
+        </div>
         
         <?php if (session()->getFlashdata('error')): ?>
             <div class="alert alert-error"><?= session()->getFlashdata('error') ?></div>
@@ -250,7 +270,8 @@
         <?php endif; ?>
         
         <!-- Subject Count Summary -->
-        <div class="subject-count">
+        <div class="card">
+            <div class="subject-count">
             <h3>📊 Subject Summary</h3>
             <div class="count-grid">
                 <div class="count-item">
@@ -270,6 +291,7 @@
                     <div class="count-label">Curriculums</div>
                 </div>
             </div>
+        </div>
         </div>
         
         <div class="header-actions">
@@ -328,10 +350,12 @@
             </div>
         </div>
         
-        <?php if (!empty($subjects)): ?>
-            <div style="margin-bottom: 20px; padding: 10px; background: #e8f5e8; border-radius: 6px; border: 1px solid #c3e6c3;">
-                <strong>📊 Found <?= count($subjects) ?> subjects</strong>
-            </div>
+        <div class="card">
+            <?php if (!empty($subjects)): ?>
+                <div style="margin-bottom: 20px; padding: 10px; background: #e8f5e8; border-radius: 6px; border: 1px solid #c3e6c3;">
+                    <strong>📊 Found <?= count($subjects) ?> subjects</strong>
+                </div>
+                <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
@@ -378,33 +402,21 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php else: ?>
-            <div class="no-subjects">
-                <h3>📚 No Subjects Found</h3>
-                <p>There are no subjects in the system yet. Start by adding subjects to your curriculums.</p>
-                <a href="/admin/subjects/add" class="btn btn-success">➕ Add First Subject</a>
             </div>
-        <?php endif; ?>
+            <?php else: ?>
+                <div class="no-subjects">
+                    <h3>📚 No Subjects Found</h3>
+                    <p>There are no subjects in the system yet. Start by adding subjects to your curriculums.</p>
+                    <a href="/admin/subjects/add" class="btn btn-success">➕ Add First Subject</a>
+                </div>
+            <?php endif; ?>
+        </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
     
     <script>
-        function searchSubjects() {
+        function applyAllFilters() {
             const searchTerm = document.getElementById('searchInput').value.trim();
-            if (searchTerm) {
-                // Simple client-side search
-                const rows = document.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    if (text.includes(searchTerm.toLowerCase())) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            }
-        }
-        
-        function filterSubjects() {
             const curriculumId = document.getElementById('curriculumFilter').value;
             const strandId = document.getElementById('strandFilter').value;
             const gradeLevel = document.getElementById('gradeFilter').value;
@@ -414,25 +426,39 @@
                 const rowCurriculum = row.dataset.curriculum;
                 const rowStrand = row.dataset.strand;
                 const rowGrade = row.dataset.grade;
+                const rowText = row.textContent.toLowerCase();
 
-                // Check if row matches all selected filters
+                // Check search match
+                const searchMatch = !searchTerm || rowText.includes(searchTerm.toLowerCase());
+                
+                // Check filter matches
                 const curriculumMatch = !curriculumId || rowCurriculum === curriculumId;
                 const strandMatch = !strandId || rowStrand === strandId;
                 const gradeMatch = !gradeLevel || rowGrade === gradeLevel;
 
-                if (curriculumMatch && strandMatch && gradeMatch) {
+                // Show row only if it matches ALL criteria
+                if (searchMatch && curriculumMatch && strandMatch && gradeMatch) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
                 }
             });
         }
+        
+        function searchSubjects() {
+            applyAllFilters();
+        }
+        
+        function filterSubjects() {
+            applyAllFilters();
+        }
 
         function clearFilters() {
             document.getElementById('curriculumFilter').value = '';
             document.getElementById('strandFilter').value = '';
             document.getElementById('gradeFilter').value = '';
-            filterSubjects(); // Apply filters after clearing
+            document.getElementById('searchInput').value = '';
+            applyAllFilters(); // Apply filters after clearing
         }
         
         // Search on Enter key
@@ -447,6 +473,11 @@
         document.getElementById('searchInput').addEventListener('input', function() {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(searchSubjects, 500);
+        });
+        
+        // Initialize filters when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            applyAllFilters();
         });
     </script>
 </body>

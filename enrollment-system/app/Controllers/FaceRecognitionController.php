@@ -155,9 +155,14 @@ class FaceRecognitionController extends BaseController
         }
         
         try {
+            // Detect operating system and set appropriate Python command
+            $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+            $pythonCommand = $this->getPythonCommand($pythonScript, $isWindows);
+            
             // Call Python face recognition script (redirect stderr to null to avoid warnings)
             $command = sprintf(
-                'python "%s" "%s" %d 2>nul',
+                $isWindows ? '%s "%s" "%s" %d 2>nul' : '%s "%s" "%s" %d 2>/dev/null',
+                $pythonCommand,
                 $pythonScript,
                 $imagePath,
                 $subjectId
@@ -377,9 +382,14 @@ class FaceRecognitionController extends BaseController
         }
         
         try {
+            // Detect operating system and set appropriate Python command
+            $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+            $pythonCommand = $this->getPythonCommand($pythonScript, $isWindows);
+            
             // Call Python face capture script (redirect stderr to null to avoid warnings)
             $command = sprintf(
-                'python "%s" "%s" "%s" 2>nul',
+                $isWindows ? '%s "%s" "%s" "%s" 2>nul' : '%s "%s" "%s" "%s" 2>/dev/null',
+                $pythonCommand,
                 $pythonScript,
                 $imagePath,
                 $lrn
@@ -410,6 +420,88 @@ class FaceRecognitionController extends BaseController
                 'error' => 'Face capture processing failed: ' . $e->getMessage()
             ];
         }
+    }
+    
+    /**
+     * Get the appropriate Python command for the current operating system
+     */
+    private function getPythonCommand($pythonScript, $isWindows)
+    {
+        if ($isWindows) {
+            // Windows: Try different Python commands
+            $pythonCommands = [
+                'python',           // Default Python
+                'python3',          // Python 3
+                'py',              // Python launcher
+                'C:\\Python39\\python.exe',  // Specific Python 3.9
+                'C:\\Python310\\python.exe', // Specific Python 3.10
+                'C:\\Python311\\python.exe', // Specific Python 3.11
+                'C:\\Python312\\python.exe', // Specific Python 3.12
+            ];
+        } else {
+            // Linux: First try to find virtual environment
+            $venvPython = $this->getVenvPythonPath();
+            if ($venvPython) {
+                log_message('info', 'Found virtual environment Python: ' . $venvPython);
+                return $venvPython;
+            }
+            
+            // Fallback to system Python commands
+            $pythonCommands = [
+                '/usr/bin/python3',     // System Python 3
+                '/usr/bin/python3.10',  // Specific Python 3.10
+                '/usr/bin/python3.11',  // Specific Python 3.11
+                '/usr/bin/python3.12',  // Specific Python 3.12
+                'python3',              // Default Python 3
+                'python',               // Default Python
+            ];
+        }
+        
+        // Test each command to find one that works
+        foreach ($pythonCommands as $cmd) {
+            if ($this->testPythonCommand($cmd)) {
+                log_message('info', 'Using Python command: ' . $cmd);
+                return $cmd;
+            }
+        }
+        
+        // Fallback to default
+        return $isWindows ? 'python' : 'python3';
+    }
+    
+    /**
+     * Test if a Python command works
+     */
+    private function testPythonCommand($command)
+    {
+        $testCommand = $command . ' --version 2>/dev/null';
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $testCommand = $command . ' --version 2>nul';
+        }
+        
+        $output = shell_exec($testCommand);
+        return !empty($output) && strpos($output, 'Python') !== false;
+    }
+    
+    /**
+     * Get the virtual environment Python path
+     */
+    private function getVenvPythonPath()
+    {
+        $possiblePaths = [
+            ROOTPATH . 'face_recognition_app/venv/bin/python',
+            ROOTPATH . 'SIS/enrollment-system/face_recognition_app/venv/bin/python',
+            '/var/www/html/sis/SIS/enrollment-system/face_recognition_app/venv/bin/python',
+            '/var/www/html/sis/enrollment-system/face_recognition_app/venv/bin/python',
+        ];
+        
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path) && $this->testPythonCommand($path)) {
+                return $path;
+            }
+        }
+        
+        return null;
     }
     
 }

@@ -6,24 +6,35 @@
     <title>Registrar Management - Admin Dashboard</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: #f5f6fb;
+            padding: 0;
+            background-color: #f8f9fc;
+            color: #5a5c69;
         }
         
         .container {
-            max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
         
-        h1 {
-            color: #333;
-            text-align: center;
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            margin: 0;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
         
@@ -225,10 +236,15 @@
             border: 1px solid #f5c6cb;
         }
     </style>
+    <?php include __DIR__ . '/partials/sidebar_styles.php'; ?>
 </head>
 <body>
     <div class="container">
-        <h1>👨‍💼 Registrar Management</h1>
+        <?php include __DIR__ . '/partials/layout_start.php'; ?>
+        <div class="header">
+            <h1>👨‍💼 Registrar Management</h1>
+            <p>Manage registrar accounts and permissions</p>
+        </div>
         
         <?php if (session()->getFlashdata('error')): ?>
             <div class="alert alert-error"><?= session()->getFlashdata('error') ?></div>
@@ -239,20 +255,22 @@
         <?php endif; ?>
         
         <!-- Registrar Count Summary -->
-        <div class="registrar-count">
-            <h3>📊 Registrar Summary</h3>
-            <div class="count-grid">
-                <div class="count-item">
-                    <div class="count-number"><?= $totalRegistrars ?? 0 ?></div>
-                    <div class="count-label">Total Registrars</div>
-                </div>
-                <div class="count-item">
-                    <div class="count-number"><?= $activeRegistrars ?? 0 ?></div>
-                    <div class="count-label">Active</div>
-                </div>
-                <div class="count-item">
-                    <div class="count-number"><?= $inactiveRegistrars ?? 0 ?></div>
-                    <div class="count-label">Inactive</div>
+        <div class="card">
+            <div class="registrar-count">
+                <h3>📊 Registrar Summary</h3>
+                <div class="count-grid">
+                    <div class="count-item">
+                        <div class="count-number"><?= $totalRegistrars ?? 0 ?></div>
+                        <div class="count-label">Total Registrars</div>
+                    </div>
+                    <div class="count-item">
+                        <div class="count-number"><?= $activeRegistrars ?? 0 ?></div>
+                        <div class="count-label">Active</div>
+                    </div>
+                    <div class="count-item">
+                        <div class="count-number"><?= $inactiveRegistrars ?? 0 ?></div>
+                        <div class="count-label">Inactive</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -269,52 +287,55 @@
             </div>
         </div>
         
-        <?php if (!empty($registrars)): ?>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Full Name</th>
-                        <th>Email</th>
-                        <th>Status</th>
-                        <th>Last Login</th>
-                        <th>Created Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($registrars as $registrar): ?>
+        <div class="card">
+            <?php if (!empty($registrars)): ?>
+                <table>
+                    <thead>
                         <tr>
-                            <td><strong><?= esc($registrar['username'] ?? 'N/A') ?></strong></td>
-                            <td>
-                                <strong><?= esc($registrar['first_name'] . ' ' . $registrar['last_name']) ?></strong>
-                            </td>
-                            <td><?= esc($registrar['email'] ?? 'N/A') ?></td>
-                            <td>
-                                <span class="status-badge status-<?= $registrar['is_active'] ? 'active' : 'inactive' ?>">
-                                    <?= $registrar['is_active'] ? 'Active' : 'Inactive' ?>
-                                </span>
-                            </td>
-                            <td>
-                                <?= $registrar['last_login'] ? date('M d, Y g:i A', strtotime($registrar['last_login'])) : 'Never' ?>
-                            </td>
-                            <td><?= esc(date('M d, Y', strtotime($registrar['created_at'] ?? 'now'))) ?></td>
-                            <td class="actions">
-                                <a href="/admin/registrars/view/<?= $registrar['id'] ?>" class="btn btn-info">👁️ View</a>
-                                <a href="/admin/registrars/edit/<?= $registrar['id'] ?>" class="btn btn-warning">✏️ Edit</a>
-                                <a href="/admin/registrars/delete/<?= $registrar['id'] ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this registrar?')">🗑️ Delete</a>
-                            </td>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Last Login</th>
+                            <th>Created Date</th>
+                            <th>Actions</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else: ?>
-            <div class="no-registrars">
-                <h3>👨‍💼 No Registrars Found</h3>
-                <p>There are no registrars in the system yet. Start by adding a registrar account.</p>
-                <a href="/admin/registrars/add" class="btn btn-success">➕ Add First Registrar</a>
-            </div>
-        <?php endif; ?>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($registrars as $registrar): ?>
+                            <tr>
+                                <td><strong><?= esc($registrar['username'] ?? 'N/A') ?></strong></td>
+                                <td>
+                                    <strong><?= esc($registrar['first_name'] . ' ' . $registrar['last_name']) ?></strong>
+                                </td>
+                                <td><?= esc($registrar['email'] ?? 'N/A') ?></td>
+                                <td>
+                                    <span class="status-badge status-<?= $registrar['is_active'] ? 'active' : 'inactive' ?>">
+                                        <?= $registrar['is_active'] ? 'Active' : 'Inactive' ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <?= $registrar['last_login'] ? date('M d, Y g:i A', strtotime($registrar['last_login'])) : 'Never' ?>
+                                </td>
+                                <td><?= esc(date('M d, Y', strtotime($registrar['created_at'] ?? 'now'))) ?></td>
+                                <td class="actions">
+                                    <a href="/admin/registrars/view/<?= $registrar['id'] ?>" class="btn btn-info">👁️ View</a>
+                                    <a href="/admin/registrars/edit/<?= $registrar['id'] ?>" class="btn btn-warning">✏️ Edit</a>
+                                    <a href="/admin/registrars/delete/<?= $registrar['id'] ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this registrar?')">🗑️ Delete</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <div class="no-registrars">
+                    <h3>👨‍💼 No Registrars Found</h3>
+                    <p>There are no registrars in the system yet. Start by adding a registrar account.</p>
+                    <a href="/admin/registrars/add" class="btn btn-success">➕ Add First Registrar</a>
+                </div>
+            <?php endif; ?>
+        </div>
+        <?php include __DIR__ . '/partials/layout_end.php'; ?>
     </div>
     
     <script>

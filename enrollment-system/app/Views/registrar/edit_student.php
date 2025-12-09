@@ -205,11 +205,11 @@
     <div class="nav">
         <div>
             <a href="/registrar/students">👥 Student Management</a>
-            <a href="/registrar/enrollments/pending">Pending Enrollments</a>
+            <!-- <a href="/registrar/enrollments/pending">Pending Enrollments</a>
             <a href="/registrar/enrollments/approved">Approved</a>
             <a href="/registrar/enrollments/rejected">Rejected</a>
             <a href="/registrar/search">Search Students</a>
-            <a href="/registrar/report">Generate Report</a>
+            <a href="/registrar/report">Generate Report</a> -->
         </div>
     </div>
     
@@ -235,8 +235,8 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="lrn">LRN <span class="required">*</span></label>
-                    <input type="text" id="lrn" name="lrn" value="<?= esc($student['lrn']) ?>" required>
-                    <div class="help-text">Learner Reference Number</div>
+                    <input type="text" id="lrn" name="lrn" value="<?= esc($student['lrn']) ?>" required readonly>
+                    <div class="help-text">Learner Reference Number (cannot be edited)</div>
                 </div>
                 
                 <div class="form-group">
@@ -245,21 +245,10 @@
                 </div>
             </div>
             
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="first_name">First Name <span class="required">*</span></label>
-                    <input type="text" id="first_name" name="first_name" value="<?= esc($student['first_name']) ?>" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="middle_name">Middle Name</label>
-                    <input type="text" id="middle_name" name="middle_name" value="<?= esc($student['middle_name'] ?? '') ?>">
-                </div>
-            </div>
-            
             <div class="form-group">
-                <label for="last_name">Last Name <span class="required">*</span></label>
-                <input type="text" id="last_name" name="last_name" value="<?= esc($student['last_name']) ?>" required>
+                <label for="full_name">Full Name <span class="required">*</span></label>
+                <input type="text" id="full_name" name="full_name" value="<?= esc($student['full_name'] ?? trim(($student['first_name'] ?? '') . ' ' . ($student['middle_name'] ?? '') . ' ' . ($student['last_name'] ?? ''))) ?>" required>
+                <div class="help-text">Enter the student's full name</div>
             </div>
             
             <div class="form-row">

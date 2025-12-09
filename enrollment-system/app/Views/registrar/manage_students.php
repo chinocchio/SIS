@@ -317,19 +317,19 @@
              <p>Welcome, <?= session()->get('first_name') ?> <?= session()->get('last_name') ?> (<?= ucfirst(session()->get('role')) ?>)</p>
          </div>
          <div>
-             <a href="/auth/change-password" class="nav-link" style="margin-right:10px;color:#fff;text-decoration:underline;">Change Password</a>
-             <a href="/auth/logout" class="logout" style="padding:8px 12px;border-radius:6px;">Logout</a>
+             <a href="/index.php/registrar/change-password" class="nav-link" style="margin-right:10px;color:#fff;text-decoration:underline;padding:8px 12px;border-radius:6px;background-color:rgba(255,255,255,0.2);transition:background-color 0.3s;">Change Password</a>
+             <a href="/auth/logout" class="logout" style="padding:8px 12px;border-radius:6px;background-color:#dc3545;color:white;text-decoration:none;">Logout</a>
          </div>
      </div>
     
     <div class="nav">
         <div>
             <a href="/registrar/students">👥 Student Management</a>
-            <a href="/registrar/enrollments/pending">Pending Enrollments</a>
+            <!-- <a href="/registrar/enrollments/pending">Pending Enrollments</a>
             <a href="/registrar/enrollments/approved">Approved</a>
             <a href="/registrar/enrollments/rejected">Rejected</a>
             <a href="/registrar/search">Search Students</a>
-            <a href="/registrar/report">Generate Report</a>
+            <a href="/registrar/report">Generate Report</a> -->
         </div>
     </div>
     
@@ -352,8 +352,8 @@
                     <div class="count-label">Total Students</div>
                 </div>
                 <div class="count-item">
-                    <div class="count-number"><?= $draftStudents ?? 0 ?></div>
-                    <div class="count-label">Draft Status</div>
+                    <div class="count-number"><?= $rejectedStudents ?? 0 ?></div>
+                    <div class="count-label">Rejected</div>
                 </div>
                 <div class="count-item">
                     <div class="count-number"><?= $pendingStudents ?? 0 ?></div>

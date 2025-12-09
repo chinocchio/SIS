@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Face Recognition Attendance - <?= esc($subject['name']) ?></title>
+    <?php include __DIR__ . '/../teacher/partials/sidebar_styles.php'; ?>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -263,13 +264,9 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📷 Face Recognition Attendance</h1>
-            <div>
-                <a href="/face-recognition" class="btn btn-secondary">← Back to Subjects</a>
-                <a href="/teacher/dashboard" class="btn btn-secondary">🏠 Dashboard</a>
-            </div>
+    <?php include __DIR__ . '/../teacher/partials/layout_start.php'; ?>
+        <div class="page-header">
+            <h1>📷 Face Recognition Attendance - <?= esc($subject['name']) ?></h1>
         </div>
         
         <div class="subject-info">
@@ -314,7 +311,7 @@
             <p>Your browser doesn't support camera access or camera is not available.</p>
             <p>Please use a modern browser (Chrome, Firefox, Safari, Edge) with camera access.</p>
         </div>
-    </div>
+    <?php include __DIR__ . '/../teacher/partials/layout_end.php'; ?>
 
     <script>
         let video = document.getElementById('video');
