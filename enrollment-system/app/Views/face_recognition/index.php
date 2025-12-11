@@ -232,6 +232,11 @@
                             <div class="subject-info">
                                 <p><strong>Code:</strong> <?= esc($subject['code']) ?></p>
                                 <p><strong>Section:</strong> <?= esc($subject['section_name']) ?></p>
+                                <?php if (!empty($subject['curriculum_name']) && $subject['grade_level'] <= 10): ?>
+                                    <p><strong>Curriculum:</strong> <?= esc($subject['curriculum_name']) ?></p>
+                                <?php elseif (!empty($subject['strand_name']) && $subject['grade_level'] >= 11): ?>
+                                    <p><strong>Strand:</strong> <?= esc($subject['strand_name']) ?></p>
+                                <?php endif; ?>
                             </div>
                             <div class="action-buttons">
                                 <a href="/face-recognition/attendance/<?= $subject['id'] ?>" class="btn btn-success">

@@ -432,6 +432,7 @@ class TeacherController extends BaseController
         $teacherModel = new TeacherModel();
         $studentModel = new StudentModel();
         $schoolYearModel = new SchoolYearModel();
+        $db = \Config\Database::connect();
         
         // Get teacher's assigned subjects and sections
         $assignments = $teacherModel->getTeacherWithAssignments($teacherId);
@@ -440,17 +441,78 @@ class TeacherController extends BaseController
         // Get all students enrolled in teacher's assigned sections
         $allStudents = [];
         $attendanceData = [];
+        $processedSubjects = []; // Track processed subject combinations
         
         if (!empty($assignments['assignments'])) {
             foreach ($assignments['assignments'] as $assignment) {
                 $sectionId = $assignment['section_id'];
                 $subjectId = $assignment['subject_id'];
+                $gradeLevel = (int)$assignment['subject_grade_level'];
+                $subjectName = $assignment['subject_name'];
+                
+                // Create a unique key for this subject+section+grade combination
+                $subjectKey = $subjectName . '_' . $gradeLevel . '_' . $sectionId;
+                
+                // Skip if we've already processed this subject combination
+                if (isset($processedSubjects[$subjectKey])) {
+                    continue;
+                }
+                
+                // Mark as processed
+                $processedSubjects[$subjectKey] = true;
                 
                 // Get students for this section
                 $students = $studentModel->getStudentsBySection($sectionId);
                 
-                // Get attendance records for this subject
-                $attendanceRecords = $attendanceModel->where('subject_id', $subjectId)->findAll();
+                // Determine if JHS (grade 10 and below) or SHS (grade 11 and above)
+                $isJHS = $gradeLevel <= 10;
+                $isSHS = $gradeLevel >= 11;
+                
+                // Get curriculum or strand name based on grade level
+                $curriculumName = null;
+                $strandName = null;
+                
+                if ($isJHS && !empty($assignment['curriculum_id'])) {
+                    // For JHS, get curriculum name
+                    $curriculum = $db->table('curriculums')
+                        ->select('name')
+                        ->where('id', $assignment['curriculum_id'])
+                        ->get()
+                        ->getRowArray();
+                    $curriculumName = $curriculum['name'] ?? null;
+                } elseif ($isSHS && !empty($assignment['strand_id'])) {
+                    // For SHS, get strand name
+                    $strand = $db->table('strands')
+                        ->select('name')
+                        ->where('id', $assignment['strand_id'])
+                        ->get()
+                        ->getRowArray();
+                    $strandName = $strand['name'] ?? null;
+                }
+                
+                // Get all subject IDs for this subject name and grade level
+                $subjectQuery = $db->table('subjects s')
+                    ->select('s.id')
+                    ->where('s.name', $subjectName)
+                    ->where('s.grade_level', $gradeLevel)
+                    ->where('s.is_active', 1);
+                
+                if ($isJHS) {
+                    // For JHS (grade 10 and below), get all 4 quarters
+                    $subjectQuery->whereIn('s.quarter', [1, 2, 3, 4]);
+                } elseif ($isSHS) {
+                    // For SHS (grade 11-12), preserve original behavior - get quarters 1 and 2
+                    // This matches the original behavior that was working fine
+                    $subjectQuery->whereIn('s.quarter', [1, 2]);
+                }
+                
+                $allSubjectIds = array_column($subjectQuery->get()->getResultArray(), 'id');
+                
+                // Get attendance records for all relevant subject IDs
+                $attendanceRecords = [];
+                if (!empty($allSubjectIds)) {
+                    $attendanceRecords = $attendanceModel->whereIn('subject_id', $allSubjectIds)->findAll();
+                }
                 
                 // Create attendance lookup by student_id and date
                 $attendanceLookup = [];
@@ -474,7 +536,10 @@ class TeacherController extends BaseController
                     'subject' => $assignment,
                     'students' => $students,
                     'dates' => $allDates,
-                    'attendance_lookup' => $attendanceLookup
+                    'attendance_lookup' => $attendanceLookup,
+                    'curriculum_name' => $curriculumName,
+                    'strand_name' => $strandName,
+                    'grade_level' => $gradeLevel
                 ];
                 
                 $attendanceData[] = $subjectAttendanceData;
