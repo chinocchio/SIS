@@ -266,13 +266,18 @@
 <body>
     <?php include __DIR__ . '/../teacher/partials/layout_start.php'; ?>
         <div class="page-header">
-            <h1>📷 Face Recognition Attendance - <?= esc($subject['name']) ?></h1>
+            <h1>📷 Face Recognition Attendance<?= esc($subject['name']) ?></h1>
         </div>
         
         <div class="subject-info">
             <h3>📚 Subject: <?= esc($subject['name']) ?></h3>
             <p><strong>Code:</strong> <?= esc($subject['code']) ?></p>
             <p><strong>Grade Level:</strong> <?= esc($subject['grade_level']) ?></p>
+            <?php if (!empty($curriculum_name) && $grade_level <= 10): ?>
+                <p><strong>Curriculum:</strong> <?= esc($curriculum_name) ?></p>
+            <?php elseif (!empty($strand_name) && $grade_level >= 11): ?>
+                <p><strong>Strand:</strong> <?= esc($strand_name) ?></p>
+            <?php endif; ?>
         </div>
         
         <div class="instructions">

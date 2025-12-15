@@ -371,7 +371,15 @@
                 <?php foreach ($attendanceData as $subjectData): ?>
                     <div class="assignments-section">
                         <h3>📋 <?= esc($subjectData['subject']['subject_name']) ?> - <?= esc($subjectData['subject']['subject_code']) ?></h3>
-                        <p><strong>Section:</strong> <?= esc($subjectData['subject']['section_name']) ?> | <strong>School Year:</strong> <?= esc($subjectData['subject']['school_year']) ?></p>
+                        <p>
+                            <strong>Section:</strong> <?= esc($subjectData['subject']['section_name']) ?> | 
+                            <strong>School Year:</strong> <?= esc($subjectData['subject']['school_year']) ?>
+                            <?php if (!empty($subjectData['curriculum_name']) && $subjectData['grade_level'] <= 10): ?>
+                                | <strong>Curriculum:</strong> <?= esc($subjectData['curriculum_name']) ?>
+                            <?php elseif (!empty($subjectData['strand_name']) && $subjectData['grade_level'] >= 11): ?>
+                                | <strong>Strand:</strong> <?= esc($subjectData['strand_name']) ?>
+                            <?php endif; ?>
+                        </p>
                         
                         <?php if (!empty($subjectData['students']) && !empty($subjectData['dates'])): ?>
                             <div class="table-container">

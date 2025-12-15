@@ -19,16 +19,46 @@ class FaceRecognitionController extends BaseController
         // Get teacher's assigned subjects for current school year
         $assignments = $teacherModel->getTeacherWithAssignments($teacherId);
         $subjects = [];
+        $db = \Config\Database::connect();
         
         if (!empty($assignments['assignments'])) {
             foreach ($assignments['assignments'] as $assignment) {
                 $subject = $subjectModel->find($assignment['subject_id']);
                 if ($subject) {
+                    $gradeLevel = (int)$subject['grade_level'];
+                    $isJHS = $gradeLevel <= 10;
+                    $isSHS = $gradeLevel >= 11;
+                    
+                    // Get curriculum or strand name based on grade level
+                    $curriculumName = null;
+                    $strandName = null;
+                    
+                    if ($isJHS && !empty($subject['curriculum_id'])) {
+                        // For JHS, get curriculum name
+                        $curriculum = $db->table('curriculums')
+                            ->select('name')
+                            ->where('id', $subject['curriculum_id'])
+                            ->get()
+                            ->getRowArray();
+                        $curriculumName = $curriculum['name'] ?? null;
+                    } elseif ($isSHS && !empty($subject['strand_id'])) {
+                        // For SHS, get strand name
+                        $strand = $db->table('strands')
+                            ->select('name')
+                            ->where('id', $subject['strand_id'])
+                            ->get()
+                            ->getRowArray();
+                        $strandName = $strand['name'] ?? null;
+                    }
+                    
                     $subjects[] = [
                         'id' => $subject['id'],
                         'name' => $subject['name'],
                         'code' => $subject['code'],
-                        'section_name' => $assignment['section_name']
+                        'section_name' => $assignment['section_name'],
+                        'curriculum_name' => $curriculumName,
+                        'strand_name' => $strandName,
+                        'grade_level' => $gradeLevel
                     ];
                 }
             }
@@ -71,8 +101,38 @@ class FaceRecognitionController extends BaseController
             return redirect()->to('/face-recognition')->with('error', 'Subject not found.');
         }
         
+        // Get curriculum or strand name based on grade level
+        $curriculumName = null;
+        $strandName = null;
+        $gradeLevel = (int)$subject['grade_level'];
+        $isJHS = $gradeLevel <= 10;
+        $isSHS = $gradeLevel >= 11;
+        
+        $db = \Config\Database::connect();
+        
+        if ($isJHS && !empty($subject['curriculum_id'])) {
+            // For JHS, get curriculum name
+            $curriculum = $db->table('curriculums')
+                ->select('name')
+                ->where('id', $subject['curriculum_id'])
+                ->get()
+                ->getRowArray();
+            $curriculumName = $curriculum['name'] ?? null;
+        } elseif ($isSHS && !empty($subject['strand_id'])) {
+            // For SHS, get strand name
+            $strand = $db->table('strands')
+                ->select('name')
+                ->where('id', $subject['strand_id'])
+                ->get()
+                ->getRowArray();
+            $strandName = $strand['name'] ?? null;
+        }
+        
         return view('face_recognition/attendance', [
-            'subject' => $subject
+            'subject' => $subject,
+            'curriculum_name' => $curriculumName,
+            'strand_name' => $strandName,
+            'grade_level' => $gradeLevel
         ]);
     }
     
