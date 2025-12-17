@@ -223,7 +223,7 @@ include __DIR__ . '/partials/layout_start.php';
 }
 
 .full-name-display {
-    background: #28a745;
+    background: #4e73df;
     color: white;
     padding: 15px;
     border-radius: 8px;

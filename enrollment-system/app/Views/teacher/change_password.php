@@ -88,12 +88,12 @@
         
         .form-group input:focus {
             outline: none;
-            border-color: #28a745;
+            border-color: #4e73df;
             box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
         }
         
         .btn {
-            background: #28a745;
+            background: #4e73df;
             color: white;
             padding: 12px 24px;
             border: none;

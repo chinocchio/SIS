@@ -15,7 +15,7 @@
     .header-brand {
         font-size: 1.25rem;
         font-weight: 800;
-        color: #28a745;
+        color: #4e73df;
         text-decoration: none;
     }
 
@@ -47,7 +47,7 @@
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -143,7 +143,7 @@
 
     .dropdown-item:hover {
         background: #f8f9fc;
-        color: #28a745;
+        color: #4e73df;
     }
 
     .dropdown-item i,
