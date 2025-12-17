@@ -225,7 +225,7 @@ include __DIR__ . '/partials/layout_start.php';
 .grade-value {
     font-size: 18px;
     font-weight: bold;
-    color: #28a745;
+    color: #4e73df;
 }
 
 .no-grades {

@@ -125,7 +125,7 @@
         .stat-number {
             font-size: 24px;
             font-weight: bold;
-            color: #28a745;
+            color: #4e73df;
             margin-bottom: 5px;
         }
         

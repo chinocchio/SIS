@@ -18,7 +18,7 @@
     /* Enhanced Sidebar */
     .sidebar {
         width: 224px;
-        background: linear-gradient(180deg, #28a745 10%, #1e7e34 100%);
+        background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
         padding: 0;
         box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
         height: calc(100vh - 65px);
@@ -118,21 +118,21 @@
     }
     
     .btn:not(.sidebar .btn) {
-        background-color: #28a745;
+        background-color: #4e73df;
         color: #ffffff;
-        border-color: #28a745;
+        border-color: #4e73df;
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     }
     
     .btn:not(.sidebar .btn):hover {
         background-color: #218838;
-        border-color: #1e7e34;
+        border-color: #224abe;
         box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
         transform: translateY(-1px);
     }
     
     .btn:not(.sidebar .btn):active {
-        background-color: #1e7e34;
+        background-color: #224abe;
         border-color: #1c7430;
         transform: translateY(0);
     }
@@ -149,13 +149,13 @@
     }
     
     .btn-success {
-        background-color: #28a745;
-        border-color: #28a745;
+        background-color: #4e73df;
+        border-color: #4e73df;
     }
     
     .btn-success:hover {
         background-color: #218838;
-        border-color: #1e7e34;
+        border-color: #224abe;
     }
     
     .btn-info {

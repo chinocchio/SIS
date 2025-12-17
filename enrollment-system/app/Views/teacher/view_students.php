@@ -258,7 +258,7 @@
                                 <td><?= esc($student['lrn']) ?></td>
                                 <td><?= esc($student['email']) ?></td>
                                 <td>
-                                    <span style="color: <?= $student['status'] === 'approved' ? '#28a745' : ($student['status'] === 'pending' ? '#ffc107' : '#dc3545') ?>;">
+                                    <span style="color: <?= $student['status'] === 'approved' ? '#4e73df' : ($student['status'] === 'pending' ? '#ffc107' : '#dc3545') ?>;">
                                         <?= ucfirst($student['status']) ?>
                                     </span>
                                 </td>

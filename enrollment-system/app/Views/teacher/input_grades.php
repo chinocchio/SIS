@@ -395,7 +395,7 @@
                                 <td><?= esc($student['lrn']) ?></td>
                                 <td>
                                     <?php if ($currentGrade !== null): ?>
-                                        <strong style="color: #28a745;"><?= $currentGrade ?></strong>
+                                        <strong style="color: #4e73df;"><?= $currentGrade ?></strong>
                                     <?php else: ?>
                                         <span style="color: #6c757d;">No grade</span>
                                     <?php endif; ?>
