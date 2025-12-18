@@ -79,6 +79,7 @@
         <?php endif; ?>
 
         <form method="post" action="/auth/authenticate">
+            <?= csrf_field() ?>
             <div class="form-group">
                 <label for="lrn">LRN (Learner Reference Number)</label>
                 <input type="text" id="lrn" name="username" placeholder="Enter your 12-digit LRN" required maxlength="12" pattern="[0-9]{12}">

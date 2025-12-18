@@ -72,17 +72,28 @@ class StudentModel extends Model
     
     public function canPromoteToNextGrade($studentId, $schoolYearId)
     {
-        // Check if student has failing grades (< 75)
+        // Student must have a grade for every subject in their current grade level (for this school year), and no grade < 75
         $db = \Config\Database::connect();
-        
-        $query = $db->table('student_grades sg')
-                    ->join('subjects s', 's.id = sg.subject_id')
-                    ->where('sg.student_id', $studentId)
-                    ->where('sg.school_year_id', $schoolYearId)
-                    ->where('sg.grade <', 75)
-                    ->get();
-        
-        return $query->getNumRows() === 0;
+        $student = $this->find($studentId);
+        if (!$student) return false;
+
+        // Get all subjects for this student in their current grade level
+        $subjectModel = new \App\Models\SubjectModel();
+        $subjects = $subjectModel->getSubjectsForStudent($student);
+        if (empty($subjects)) return false;
+
+        // For each subject, check if a grade exists and is >= 75
+        foreach ($subjects as $subject) {
+            $gradeRow = $db->table('student_grades')
+                ->where('student_id', $studentId)
+                ->where('subject_id', $subject['id'])
+                ->where('school_year_id', $schoolYearId)
+                ->get()->getRowArray();
+            if (!$gradeRow || !isset($gradeRow['grade']) || $gradeRow['grade'] < 75) {
+                return false;
+            }
+        }
+        return true;
     }
     
     public function promoteStudentsToNextGrade($schoolYearId)
