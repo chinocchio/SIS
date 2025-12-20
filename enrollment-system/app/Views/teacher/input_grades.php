@@ -401,14 +401,19 @@
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <input type="number" 
-                                           name="grades[<?= $student['id'] ?>]" 
-                                           class="grade-input" 
-                                           min="0" 
-                                           max="100" 
-                                           step="0.01"
-                                           value="<?= $currentGrade ?? '' ?>"
-                                           placeholder="0-100">
+                                    <?php if ($currentGrade !== null): ?>
+                                        <button type="button" class="btn btn-warning btn-edit-grade" data-student-id="<?= $student['id'] ?>">Edit</button>
+                                    <?php else: ?>
+                                        <input type="number" 
+                                               name="grades[<?= $student['id'] ?>]" 
+                                               class="grade-input" 
+                                               min="0" 
+                                               max="100" 
+                                               step="0.01"
+                                               value=""
+                                               placeholder="0-100"
+                                               id="grade-input-<?= $student['id'] ?>">
+                                    <?php endif; ?>
                                 </td>
                                 <td>
                                     <?php if ($currentGrade !== null): ?>
@@ -434,14 +439,33 @@
     </div>
     
     <script>
-        function changeSubject() {
-            const subjectSelect = document.getElementById('subject-select');
-            const selectedSubjectId = subjectSelect.value;
-            const currentUrl = window.location.pathname;
-            
-            // Redirect to the same page with the selected subject_id parameter
-            window.location.href = currentUrl + '?subject_id=' + selectedSubjectId;
-        }
+    function changeSubject() {
+        const subjectSelect = document.getElementById('subject-select');
+        const selectedSubjectId = subjectSelect.value;
+        const currentUrl = window.location.pathname;
+        window.location.href = currentUrl + '?subject_id=' + selectedSubjectId;
+    }
+
+    // Handle Edit button for grades
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.btn-edit-grade').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var studentId = this.getAttribute('data-student-id');
+                var gradeCell = this.parentElement;
+                gradeCell.innerHTML = '';
+                var input = document.createElement('input');
+                input.type = 'number';
+                input.name = 'grades[' + studentId + ']';
+                input.className = 'grade-input';
+                input.min = 0;
+                input.max = 100;
+                input.step = 0.01;
+                input.placeholder = '0-100';
+                input.id = 'grade-input-' + studentId;
+                gradeCell.appendChild(input);
+            });
+        });
+    });
     </script>
 </body>
 </html>
